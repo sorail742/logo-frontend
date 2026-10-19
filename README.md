@@ -52,10 +52,11 @@ noms de paramètres). En mode API réelle :
   vérification de l'adresse e-mail, profil et export des données, espaces, membres et invitations,
   projets et brief, noms et vérifications, logos (génération, import, éditeur, versions),
   export serveur (archive ZIP : SVG et PDF vectoriels, PNG, JPG, icônes d'app, réseaux sociaux),
-  historique d'activité, crédits et grand livre, notifications, back-office (indicateurs,
-  utilisateurs, crédits, journal d'audit).
-- **Bientôt disponible** (phases 4 à 6 de l'API) : slogans et signatures, kit de marque et partage,
-  commentaires, paiements et factures, modération des cachets, connexion par SMS. Ces écrans
+  slogans et devises, signatures e-mail, paraphes et cachets (validation manuelle des cachets
+  officiels), historique d'activité, crédits et grand livre, notifications, back-office
+  (indicateurs, utilisateurs, crédits, modération, journal d'audit).
+- **Bientôt disponible** (phases 5 et 6 de l'API) : kit de marque et partage, commentaires,
+  paiements et factures, connexion par SMS. Ces écrans
   affichent « Bientôt disponible » ; `api.isAvailable(feature)` indique ce que l'API sert.
 - L'offre gratuite exporte le PNG 512 px filigrané depuis le navigateur ; les offres payantes
   téléchargent l'archive produite par le serveur (dernière version enregistrée du logo).

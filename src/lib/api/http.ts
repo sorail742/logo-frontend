@@ -11,14 +11,14 @@ import type { GenerationJob, JobEvent, JobStatus, Plan } from "@/lib/types";
 
 const BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1").replace(/\/$/, "");
 
-/** Modules servis par l'API ; les phases 4 à 6 du planning ne sont pas encore livrées. */
+/** Modules servis par l'API ; les phases 5 et 6 du planning ne sont pas encore livrées. */
 const FEATURES: Record<ApiFeature, boolean> = {
-  slogans: false,
-  signatures: false,
+  slogans: true,
+  signatures: true,
   brandKits: false,
   comments: false,
   payments: false,
-  moderation: false,
+  moderation: true,
   smsLogin: false,
   googleLogin: Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID),
 };
@@ -274,10 +274,22 @@ export const httpClient: ApiClient = {
     requestExport: (lid, input) => post(`/logos/${lid}/export`, input),
   },
 
-  // Phases 4 et 5 (slogans, signatures, kit, commentaires) : routes pas encore servies.
-  slogans: { generate: unavailable, list: none, update: unavailable },
+  slogans: {
+    generate: (pid, input, key) => post(`/projects/${pid}/slogans/generate`, input, key),
+    list: (pid) => get(`/projects/${pid}/slogans`),
+    update: (sid, body) => patch(`/slogans/${sid}`, body),
+  },
 
-  signatures: { list: none, create: unavailable, update: unavailable, html: unavailable, fileUrl: unavailable, batch: unavailable },
+  signatures: {
+    list: (pid) => get(`/projects/${pid}/signatures`),
+    create: (pid, input) => post(`/projects/${pid}/signatures`, input),
+    update: (sid, body) => patch(`/signatures/${sid}`, body),
+    html: (sid) => get(`/signatures/${sid}/html`),
+    fileUrl: (sid) => get(`/signatures/${sid}/file`),
+    batch: (pid, csv, templateId) => post(`/projects/${pid}/signatures/batch`, { csv, templateId }),
+  },
+
+  // Phase 5 (kit de marque) : routes pas encore servies.
 
   brandKits: {
     list: none,
@@ -327,8 +339,8 @@ export const httpClient: ApiClient = {
     adjustCredits: (input) => post("/admin/credits/adjust", input),
     payments: none,
     refund: unavailable,
-    moderation: none,
-    review: unavailable,
+    moderation: () => get("/admin/moderation"),
+    review: (id, decision, note) => patch(`/admin/signatures/${id}/review`, { decision, note: note || undefined }),
     auditLogs: () => items("/admin/audit-logs"),
   },
 };
