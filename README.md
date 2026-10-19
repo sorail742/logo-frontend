@@ -97,6 +97,13 @@ navigateur, les exports sont des aperçus fidèles ; la charte s'enregistre en P
 L'éditeur de logo est piloté par une spec déclarative (`LogoSpec`) rendue en SVG ; le cahier
 prévoit Fabric.js, qui pourra s'y brancher pour la manipulation directe sur canevas.
 
+## Polices
+
+Les polices (interface et bibliothèque des logos, licence OFL) sont auto-hébergées dans
+`src/fonts` et chargées avec `next/font/local` : le build ne dépend pas de Google Fonts.
+Pour ajouter ou mettre à jour une police : modifier la liste dans `scripts/fetch-fonts.py`, puis
+lancer `python scripts/fetch-fonts.py` (régénère aussi `src/app/fonts.ts`).
+
 ## Scripts
 
 ```bash
