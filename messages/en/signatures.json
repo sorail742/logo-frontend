@@ -1,0 +1,139 @@
+{
+  "title": "Signatures",
+  "description": "Tagline, email signature, initials and stamp automatically reuse the project's name, logo and colours.",
+  "tabs": {
+    "slogan": "Tagline & motto",
+    "email": "Email signature",
+    "handwritten": "Initials",
+    "stamp": "Stamp"
+  },
+  "slogan": {
+    "tone": "Tone",
+    "tones": {
+      "INSPIRING": "Inspiring",
+      "INSTITUTIONAL": "Institutional",
+      "CATCHY": "Catchy",
+      "ENGAGED": "Committed"
+    },
+    "kind": "Type",
+    "kinds": {
+      "SLOGAN": "Taglines",
+      "DEVISE": "Three-word motto",
+      "MISSION": "Mission statement"
+    },
+    "maxWords": "Maximum number of words",
+    "language": "Language",
+    "generate": "Generate",
+    "empty": "No proposals yet.",
+    "choose": "Choose",
+    "chosen": "Chosen",
+    "chosenToast": "Brand tagline chosen",
+    "edit": "Edit text",
+    "withLogo": "Logo with tagline",
+    "withLogoBody": "Your favourite logo combined with the chosen tagline, ready to export.",
+    "downloadSvg": "Download SVG",
+    "noLogo": "Generate a logo first to combine it with the tagline.",
+    "similarWarning": "Taglines too close to a known one are flagged by the server."
+  },
+  "email": {
+    "form": "Your details",
+    "fullName": "Full name",
+    "jobTitle": "Job title",
+    "phones": "Phone numbers",
+    "addPhone": "Add a number",
+    "phoneHint": "International format, e.g. +224 620 00 00 00",
+    "email": "Email",
+    "website": "Website",
+    "address": "Address",
+    "socials": "Social networks",
+    "socialUrl": "{network} link",
+    "photo": "Photo (HTTPS URL)",
+    "legal": "Legal notice",
+    "legalPlaceholder": "E.g. Registered association no. …, RCCM …, confidentiality notice",
+    "banner": "Promotional banner (image URL)",
+    "bannerLink": "Banner link",
+    "template": "Template",
+    "preview": "Preview",
+    "copy": "Copy signature",
+    "copied": "Signature copied: paste it in your email settings.",
+    "copyHtml": "Copy HTML code",
+    "plainText": "Plain text version",
+    "copyText": "Copy text",
+    "save": "Save to project",
+    "saved": "Email signature saved",
+    "imageNote": "In the final version, the logo is served as a PNG from an absolute HTTPS URL, compatible with every email client.",
+    "install": "Installation guide",
+    "guides": {
+      "gmail": "Gmail: Settings › See all settings › General › Signature › Create new, then paste.",
+      "outlook": "Outlook (desktop): File › Options › Mail › Signatures › New, then paste.",
+      "outlookWeb": "Outlook (web): Settings › Mail › Compose and reply › Email signature, then paste.",
+      "apple": "Apple Mail: Mail › Settings › Signatures › +, untick “Always match my default message font”, then paste.",
+      "thunderbird": "Thunderbird: Account settings › Signature text › tick “Use HTML”, then paste the HTML code."
+    },
+    "batch": "Signatures for the whole team (CSV)",
+    "batchBody": "Columns: name, title, email, phone. A ZIP archive contains one HTML signature per member.",
+    "batchFile": "CSV file",
+    "batchDone": "{count, plural, one {# signature generated} other {# signatures generated}}",
+    "batchProOnly": "Batch signatures are included in the Pro and Agency plans.",
+    "poweredBy": "Signature made with Marka",
+    "organisation": "Organisation",
+    "color": "Main colour"
+  },
+  "handwritten": {
+    "text": "Initials text",
+    "mode": "Mode",
+    "modes": {
+      "font": "Handwriting fonts",
+      "draw": "Draw with finger or mouse"
+    },
+    "ink": "Ink colour",
+    "clear": "Clear",
+    "drawHint": "Draw your initials in the frame. The stroke is smoothed then vectorised, transparent background.",
+    "pick": "Pick this style",
+    "save": "Save initials",
+    "saved": "Initials saved (private)"
+  },
+  "stamp": {
+    "shape": "Shape",
+    "shapes": {
+      "round": "Round",
+      "oval": "Oval",
+      "rectangle": "Rectangular"
+    },
+    "ringText": "Ring text (name)",
+    "bottomText": "Bottom text (city, country)",
+    "center": "Centre",
+    "centerModes": {
+      "acronym": "Acronym",
+      "title": "Title (e.g. “The President”)",
+      "logo": "Logo"
+    },
+    "centerText": "Centre text",
+    "ink": "Ink colour",
+    "inkEffect": "Ink effect",
+    "save": "Save stamp",
+    "saved": "Stamp saved",
+    "pending": "This stamp contains official terms ({terms}): it will be reviewed manually before being available.",
+    "pendingStatus": "Under manual review",
+    "rejected": "Rejected by moderation",
+    "officialWarning": "Official terms detected: {terms}. The stamp will go through manual review."
+  },
+  "inks": {
+    "blue": "Blue",
+    "violet": "Purple",
+    "red": "Red",
+    "black": "Black"
+  },
+  "security": {
+    "notLegal": "Initials and stamps are images: they do not have the value of a qualified electronic signature.",
+    "attest": "I certify that I own this name or am authorised to represent the organisation.",
+    "attestRequired": "Tick the attestation to continue.",
+    "private": "Private file, served through a short-lived signed link."
+  },
+  "export": {
+    "svg": "SVG",
+    "png": "HD transparent PNG",
+    "requiresSave": "Save first to export."
+  },
+  "saved": "Saved"
+}

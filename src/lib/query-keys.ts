@@ -1,0 +1,24 @@
+import type { ProjectFilters } from "@/lib/api";
+
+export const qk = {
+  workspaces: ["workspaces"] as const,
+  members: (wid: string) => ["workspaces", wid, "members"] as const,
+  invitations: (wid: string) => ["workspaces", wid, "invitations"] as const,
+  projects: (wid: string, filters?: ProjectFilters) => ["workspaces", wid, "projects", filters ?? {}] as const,
+  project: (pid: string) => ["projects", pid] as const,
+  activity: (pid: string) => ["projects", pid, "activity"] as const,
+  names: (pid: string) => ["projects", pid, "names"] as const,
+  logos: (pid: string) => ["projects", pid, "logos"] as const,
+  logo: (lid: string) => ["logos", lid] as const,
+  logoVersions: (lid: string) => ["logos", lid, "versions"] as const,
+  slogans: (pid: string) => ["projects", pid, "slogans"] as const,
+  signatures: (pid: string) => ["projects", pid, "signatures"] as const,
+  brandKits: (pid: string) => ["projects", pid, "brand-kits"] as const,
+  comments: (pid: string) => ["projects", pid, "comments"] as const,
+  credits: (wid: string) => ["workspaces", wid, "credits"] as const,
+  ledger: (wid: string) => ["workspaces", wid, "ledger"] as const,
+  invoices: (wid: string) => ["workspaces", wid, "invoices"] as const,
+  plans: ["plans"] as const,
+  notifications: ["notifications"] as const,
+  admin: (section: string, q?: string) => ["admin", section, q ?? ""] as const,
+};

@@ -1,0 +1,148 @@
+{
+  "hero": {
+    "eyebrow": "For associations, apps, startups and projects",
+    "title": "Your name, your logo and your signatures, in one flow",
+    "subtitle": "Find an available name, create an editable vector logo, get your tagline, email signature and stamp. Pay in GNF with Orange Money.",
+    "cta": "Start for free",
+    "secondary": "Try without an account",
+    "proof": "No card required · 3 name batches per day for free"
+  },
+  "problem": {
+    "title": "An identity shouldn't take weeks",
+    "items": {
+      "cost": "A designer is expensive and requires several rounds of feedback.",
+      "skills": "Associations and student projects lack budget and design skills.",
+      "tools": "Existing tools are in English, billed in foreign currencies, without mobile payment.",
+      "taken": "A name chosen without checking often turns out to be taken."
+    }
+  },
+  "modules": {
+    "title": "Three modules, one kit",
+    "names": {
+      "title": "Name generator",
+      "body": "Batches of 10 explained names, with acronyms for associations, a score and domain (.com, .org, .gn, .africa…) and social handle checks."
+    },
+    "logos": {
+      "title": "Logo generator and editor",
+      "body": "8 vector proposals per batch shown in context, then an editor to adjust font, colours, icon and layout. SVG, PNG, PDF export and app icon pack."
+    },
+    "signatures": {
+      "title": "Signatures",
+      "body": "Tagline or motto, email signature compatible with Gmail and Outlook, stylised initials and an association stamp ready for a rubber stamp."
+    },
+    "kit": {
+      "title": "Brand kit",
+      "body": "A shareable page, an automatically generated PDF brand guide and a tidy ZIP archive."
+    }
+  },
+  "journey": {
+    "title": "How it works",
+    "steps": {
+      "1": "Create a project and pick its type",
+      "2": "Describe your organisation in a few lines",
+      "3": "Generate names and check availability",
+      "4": "Generate your logo, then fine-tune it",
+      "5": "Get your tagline, email signature and stamp",
+      "6": "Download or share your kit"
+    },
+    "shortcuts": "Already have a name or a logo? Jump straight to the next step."
+  },
+  "personas": {
+    "title": "Built for you",
+    "association": "Association leaders: name, logo, stamp and association pricing.",
+    "app": "App makers: a name with a free domain, app icon and favicon.",
+    "startup": "Startups and SMEs: full kit, PDF guide, teamwork.",
+    "agency": "Freelancers and agencies: quick directions, batch exports, one workspace per client.",
+    "student": "Students and clubs: free plan, fast results."
+  },
+  "payment": {
+    "title": "Pay the way you are used to",
+    "body": "Prices in Guinean francs. Pay with Orange Money, other mobile wallets and card. Numbered invoices.",
+    "cta": "See pricing"
+  },
+  "cta": {
+    "title": "Your identity starts with a name",
+    "body": "Try the name generator without creating an account.",
+    "button": "Generate names"
+  },
+  "pricing": {
+    "title": "Plans for every organisation",
+    "subtitle": "Start for free. Each generation uses credits; availability checks and the email signature are included.",
+    "provisional": "Provisional prices, subject to change before launch.",
+    "oneOff": "one-off payment",
+    "perMonth": "/ month",
+    "choose": "Choose",
+    "current": "Current plan",
+    "popular": "Most popular",
+    "members": "{count, plural, one {# member} other {# members}}",
+    "costsTitle": "Credit cost per action",
+    "faqTitle": "FAQ",
+    "faq": {
+      "q1": "Can I pay with Orange Money?",
+      "a1": "Yes, Orange Money is our primary payment method. You confirm the payment on your phone.",
+      "q2": "What if a generation fails?",
+      "a2": "Your credits are refunded automatically.",
+      "q3": "Do I own the logo?",
+      "a3": "On purchase, commercial usage rights are assigned to you and the logo becomes exclusive. We recommend registering the trademark with OAPI.",
+      "q4": "How do I get association pricing?",
+      "a4": "Upload your registration proof from the Billing page; an administrator validates it."
+    }
+  },
+  "features": {
+    "free": {
+      "names": "3 name batches per day",
+      "logos": "1 logo batch per day",
+      "png": "512 px PNG with watermark",
+      "email": "Email signature with platform credit"
+    },
+    "pack": {
+      "project": "1 complete project",
+      "noWatermark": "Exports without watermark",
+      "guide": "PDF brand guide",
+      "stamp": "Stamp and initials",
+      "credits": "100 credits"
+    },
+    "association": {
+      "pack": "Identity Pack at a reduced price",
+      "proof": "After validation of a registration proof"
+    },
+    "pro": {
+      "projects": "Unlimited projects",
+      "credits": "500 credits per month",
+      "members": "5 members",
+      "batch": "Batch email signatures"
+    },
+    "agency": {
+      "credits": "2,000 credits per month",
+      "spaces": "Unlimited client workspaces",
+      "members": "15 members"
+    }
+  },
+  "costs": {
+    "NAMES_BATCH": "Batch of 10 names",
+    "AVAILABILITY_CHECK": "Availability check",
+    "LOGOS_SVG_COMPOSER": "Batch of 8 logos (vector composition)",
+    "LOGOS_IMAGE_VECTORIZE": "Logo batch (AI image + vectorisation)",
+    "SLOGANS_BATCH": "Batch of 10 taglines",
+    "EMAIL_SIGNATURE": "Email signature",
+    "HANDWRITTEN_OR_STAMP": "Initials or stamp",
+    "BRAND_GUIDE_PDF": "PDF brand guide"
+  },
+  "nameTool": {
+    "title": "Free name generator",
+    "subtitle": "Describe your project in a few words and get 10 name ideas. 3 tries per day without an account.",
+    "type": "Organisation type",
+    "sector": "Sector",
+    "sectorPlaceholder": "E.g. education, agriculture, fintech",
+    "keywords": "Keywords",
+    "keywordsPlaceholder": "E.g. youth, future (press Enter)",
+    "submit": "Generate 10 names",
+    "remaining": "{count, plural, =0 {No tries left today} one {# try left today} other {# tries left today}}",
+    "signupCta": "Create a free account to check availability and keep your favourites.",
+    "empty": "Your name ideas will appear here."
+  },
+  "emailTool": {
+    "title": "Free email signature generator",
+    "subtitle": "Create a professional signature compatible with Gmail, Outlook and Apple Mail, no account needed."
+  }
+}

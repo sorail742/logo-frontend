@@ -1,0 +1,67 @@
+{
+  "title": "Credits & billing",
+  "description": "Credits, plan and payments belong to the workspace.",
+  "balance": "Balance",
+  "plan": "Plan",
+  "renews": "Renews on {date}",
+  "ownerOnly": "Only the workspace owner can buy credits and manage the subscription.",
+  "plans": "Change plan",
+  "checkout": {
+    "title": "Payment — {plan}",
+    "amount": "Amount",
+    "interval": "Billing",
+    "monthly": "Monthly",
+    "yearly": "Yearly (2 months free)",
+    "method": "Payment method",
+    "methods": {
+      "ORANGE_MONEY": "Orange Money",
+      "MOBILE_MONEY_AGGREGATOR": "Other mobile wallet",
+      "CARD": "Card"
+    },
+    "phone": "Mobile money number",
+    "phoneHint": "Format +224 6XX XX XX XX",
+    "pay": "Pay {amount}",
+    "pending": "Waiting for confirmation on your phone…",
+    "pendingBody": "Confirm the payment on your phone. Credits are added as soon as the operator confirms.",
+    "succeeded": "Payment confirmed: credits added.",
+    "failed": "The payment failed. Nothing was charged.",
+    "cardUnavailable": "Card payment will be available soon.",
+    "secure": "No credit is granted without confirmation from the payment provider."
+  },
+  "promo": "Promo code",
+  "promoApply": "Apply",
+  "promoApplied": "{credits} credits added",
+  "association": "Association pricing",
+  "associationBody": "Upload your registration certificate (PDF or image, 5 MB max). An administrator validates it within 48 h.",
+  "associationSend": "Send proof",
+  "associationSent": "Proof sent: you will be notified of the decision.",
+  "cancel": "Cancel at period end",
+  "cancelConfirm": "The subscription stays active until the end of the current period.",
+  "canceled": "Cancellation recorded",
+  "ledger": "Credit history",
+  "ledgerEmpty": "No transactions.",
+  "reasons": {
+    "PURCHASE": "Purchase",
+    "SUBSCRIPTION_GRANT": "Subscription",
+    "GENERATION": "Generation",
+    "REFUND": "Refund",
+    "ADMIN_ADJUSTMENT": "Adjustment",
+    "PROMO": "Promotion"
+  },
+  "invoices": "Invoices",
+  "invoicesEmpty": "No invoices.",
+  "invoice": {
+    "number": "Number",
+    "date": "Date",
+    "amount": "Amount",
+    "tax": "Tax",
+    "pdf": "PDF"
+  },
+  "columns": {
+    "date": "Date",
+    "reason": "Reason",
+    "note": "Details",
+    "delta": "Credits"
+  },
+  "currency": "Display currency"
+}

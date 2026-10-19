@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "brand": "Marka",
+    "title": "Marka — Nom, logo et signatures pour votre structure",
+    "description": "Créez en un seul parcours le nom, le logo, les signatures et le kit de marque de votre association, application ou entreprise. Paiement en GNF par Orange Money."
+  },
+  "nav": {
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "tools": "Outils gratuits",
+    "nameTool": "Générateur de noms",
+    "emailTool": "Signature e-mail",
+    "login": "Connexion",
+    "signup": "Créer un compte",
+    "dashboard": "Mon espace",
+    "skip": "Aller au contenu"
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "continue": "Continuer",
+    "back": "Retour",
+    "next": "Suivant",
+    "delete": "Supprimer",
+    "restore": "Restaurer",
+    "duplicate": "Dupliquer",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "download": "Télécharger",
+    "generate": "Générer",
+    "regenerate": "Relancer",
+    "edit": "Modifier",
+    "open": "Ouvrir",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "retry": "Réessayer",
+    "share": "Partager",
+    "invite": "Inviter",
+    "confirm": "Confirmer"
+  },
+  "entityTypes": {
+    "ASSOCIATION": "Association",
+    "APPLICATION": "Application",
+    "PLATFORM": "Plateforme",
+    "COMPANY": "Entreprise",
+    "EVENT": "Événement",
+    "OTHER": "Autre"
+  },
+  "projectStatus": {
+    "DRAFT": "Brouillon",
+    "IN_PROGRESS": "En cours",
+    "FINALIZED": "Finalisé",
+    "ARCHIVED": "Archivé"
+  },
+  "roles": {
+    "OWNER": "Propriétaire",
+    "EDITOR": "Éditeur",
+    "VIEWER": "Lecteur",
+    "USER": "Utilisateur",
+    "SUPPORT": "Support",
+    "ADMIN": "Admin",
+    "SUPER_ADMIN": "Super admin"
+  },
+  "free": "Gratuit",
+  "credits": "{count, plural, =0 {0 crédit} one {# crédit} other {# crédits}}",
+  "loading": "Chargement…",
+  "error": "Une erreur est survenue.",
+  "notFound": {
+    "title": "Page introuvable",
+    "body": "Cette page n'existe pas ou a été déplacée.",
+    "home": "Retour à l'accueil"
+  },
+  "mockBanner": "Mode démonstration : l'API est simulée dans votre navigateur. Comptes de test : demo@exemple.gn / demo1234 — admin@exemple.gn / admin1234.",
+  "footer": {
+    "tagline": "L'identité de marque accessible à toutes les structures, en français et en GNF.",
+    "legal": "Mentions légales",
+    "privacy": "Confidentialité",
+    "terms": "CGU",
+    "contact": "Contact",
+    "rights": "© {year} Marka. Nom provisoire."
+  },
+  "offline": "Vous êtes hors ligne : les projets déjà ouverts restent consultables."
+}

@@ -1,0 +1,193 @@
+{
+  "nav": {
+    "projects": "Projects",
+    "trash": "Trash",
+    "workspace": "Workspace & members",
+    "billing": "Credits & billing",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "admin": "Back office",
+    "logout": "Log out",
+    "newProject": "New project",
+    "workspaces": "Workspaces",
+    "createWorkspace": "Create an organisation workspace"
+  },
+  "shell": {
+    "credits": "{count, plural, one {# credit} other {# credits}}",
+    "buyCredits": "Buy credits",
+    "readOnly": "You are a Viewer in this workspace: generation and editing are disabled."
+  },
+  "dashboard": {
+    "title": "My projects",
+    "description": "One project = one identity: name, logo, signatures and brand kit.",
+    "search": "Search a project",
+    "allTypes": "All types",
+    "allStatuses": "All statuses",
+    "empty": "No project yet",
+    "emptyBody": "Create your first project to generate a name, a logo and your signatures.",
+    "noResults": "No project matches these filters.",
+    "updated": "Updated {date}",
+    "deleteConfirm": "The project will be kept in the trash for 30 days.",
+    "deleted": "Project moved to trash",
+    "duplicated": "Project duplicated"
+  },
+  "trash": {
+    "title": "Trash",
+    "description": "Deleted projects can be restored for 30 days.",
+    "empty": "The trash is empty.",
+    "deletedOn": "Deleted {date}",
+    "restored": "Project restored"
+  },
+  "steps": {
+    "overview": "Overview",
+    "brief": "Brief",
+    "names": "Name",
+    "logos": "Logo",
+    "signatures": "Signatures",
+    "kit": "Brand kit"
+  },
+  "newProject": {
+    "title": "New project",
+    "description": "What kind of organisation do you want to brand?",
+    "workingTitle": "Working title",
+    "workingTitlePlaceholder": "E.g. Ratoma Youth Association",
+    "start": "Where do you want to start?",
+    "paths": {
+      "full": "Full journey",
+      "fullBody": "Brief, name, logo, signatures, then kit.",
+      "hasName": "I already have a name",
+      "hasNameBody": "Enter your name and go straight to the logo.",
+      "hasLogo": "I already have a logo",
+      "hasLogoBody": "Upload it: we extract its colours for your signatures and kit.",
+      "emailOnly": "Just an email signature",
+      "emailOnlyBody": "Short flow, no brief."
+    },
+    "existingName": "Your name",
+    "create": "Create project",
+    "created": "Project created"
+  },
+  "overview": {
+    "title": "Progress",
+    "next": "Next step",
+    "chosenName": "Chosen name",
+    "noName": "No name chosen",
+    "favoriteLogo": "Logo",
+    "noLogo": "No logo",
+    "activity": "Recent activity",
+    "noActivity": "No activity yet.",
+    "status": "Status",
+    "rename": "Working title",
+    "stepsDone": "{done} of {total} steps"
+  },
+  "brief": {
+    "title": "Brief",
+    "description": "This information guides name, logo and tagline generation. It is never used to train models.",
+    "entityType": "Organisation type",
+    "sector": "Sector",
+    "sectorPlaceholder": "E.g. education, health, agriculture, fintech",
+    "mission": "Mission",
+    "missionPlaceholder": "In one or two sentences, what your organisation does and for whom.",
+    "missionCount": "{count} / 500",
+    "values": "Values",
+    "valuesPlaceholder": "E.g. solidarity, innovation (Enter)",
+    "audience": "Target audience",
+    "audiencePlaceholder": "E.g. people aged 15 to 30, SMEs in Conakry",
+    "languages": "Name languages",
+    "styles": "Name styles",
+    "maxLength": "Maximum length",
+    "maxLengthHint": "In characters, empty = no limit",
+    "mustInclude": "Words to include",
+    "mustAvoid": "Words to avoid",
+    "tone": "Desired tone",
+    "tonePlaceholder": "E.g. committed, serious, warm",
+    "saved": "Brief saved",
+    "saveAndContinue": "Save and generate names"
+  },
+  "nameStyles": {
+    "DESCRIPTIVE": "Descriptive",
+    "INVENTED": "Invented",
+    "COMPOUND": "Compound",
+    "METAPHORICAL": "Metaphorical",
+    "ACRONYM": "Acronym",
+    "PROPER": "Proper name"
+  },
+  "languages": {
+    "fr": "French",
+    "en": "English"
+  },
+  "workspace": {
+    "title": "Workspace & members",
+    "name": "Workspace name",
+    "kind": {
+      "PERSONAL": "Personal workspace",
+      "ORGANIZATION": "Organisation workspace"
+    },
+    "members": "Members",
+    "invite": "Invite a member",
+    "inviteEmail": "Email address",
+    "inviteRole": "Role",
+    "inviteByEmail": "Send invitation",
+    "inviteByLink": "Create an invitation link",
+    "invited": "Invitation sent",
+    "linkCreated": "Invitation link created and copied",
+    "pending": "Pending invitations",
+    "expires": "Expires {date}",
+    "remove": "Remove",
+    "removed": "Member removed",
+    "roleUpdated": "Role updated",
+    "you": "you",
+    "ownerOnly": "Only the owner can manage members.",
+    "createTitle": "Create an organisation workspace",
+    "createBody": "One workspace per organisation or per client (agencies). Credits and subscription belong to each workspace.",
+    "create": "Create workspace",
+    "created": "Workspace created"
+  },
+  "profile": {
+    "title": "Profile",
+    "fullName": "Full name",
+    "email": "Email",
+    "language": "Language",
+    "country": "Country",
+    "saved": "Profile saved",
+    "security": "Security",
+    "twoFactor": "Two-factor authentication (TOTP)",
+    "twoFactorOn": "Enabled",
+    "twoFactorOff": "Disabled",
+    "twoFactorRequired": "Mandatory for Support, Admin and Super admin roles.",
+    "enable2fa": "Enable",
+    "scan": "Add this account to your authenticator app with the key below, then enter the 6-digit code.",
+    "secret": "Secret key",
+    "code": "6-digit code",
+    "verify": "Verify",
+    "backupCodes": "Backup codes (single use, keep them safe)",
+    "data": "My data",
+    "export": "Export my data",
+    "delete": "Delete my account",
+    "deleteConfirm": "Your account will be permanently deleted after 30 days. This cannot be undone.",
+    "deleted": "Account deleted"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications.",
+    "markRead": "Mark as read"
+  },
+  "comments": {
+    "title": "Comments",
+    "placeholder": "Write a comment… (@ to mention)",
+    "send": "Send",
+    "empty": "No comments."
+  },
+  "job": {
+    "QUEUED": "Queued…",
+    "RUNNING": "Generating…",
+    "SUCCEEDED": "Done",
+    "FAILED": "Failed, credits refunded",
+    "CANCELED": "Canceled"
+  },
+  "errors": {
+    "INSUFFICIENT_CREDITS": "Not enough credits. Top up your workspace to continue.",
+    "FREE_QUOTA": "Daily free quota reached.",
+    "forbidden": "Your role does not allow this action.",
+    "projectNotFound": "Project not found."
+  }
+}

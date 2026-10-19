@@ -1,0 +1,193 @@
+{
+  "nav": {
+    "projects": "Projets",
+    "trash": "Corbeille",
+    "workspace": "Espace et membres",
+    "billing": "Crédits et facturation",
+    "notifications": "Notifications",
+    "profile": "Profil",
+    "admin": "Back-office",
+    "logout": "Se déconnecter",
+    "newProject": "Nouveau projet",
+    "workspaces": "Espaces de travail",
+    "createWorkspace": "Créer un espace d'organisation"
+  },
+  "shell": {
+    "credits": "{count, plural, one {# crédit} other {# crédits}}",
+    "buyCredits": "Acheter des crédits",
+    "readOnly": "Vous êtes Lecteur dans cet espace : la génération et l'édition sont désactivées."
+  },
+  "dashboard": {
+    "title": "Mes projets",
+    "description": "Un projet = une identité : nom, logo, signatures et kit de marque.",
+    "search": "Rechercher un projet",
+    "allTypes": "Tous les types",
+    "allStatuses": "Tous les statuts",
+    "empty": "Aucun projet pour l'instant",
+    "emptyBody": "Créez votre premier projet pour générer un nom, un logo et vos signatures.",
+    "noResults": "Aucun projet ne correspond à ces filtres.",
+    "updated": "Modifié le {date}",
+    "deleteConfirm": "Le projet sera placé dans la corbeille pendant 30 jours.",
+    "deleted": "Projet placé dans la corbeille",
+    "duplicated": "Projet dupliqué"
+  },
+  "trash": {
+    "title": "Corbeille",
+    "description": "Les projets supprimés restent récupérables pendant 30 jours.",
+    "empty": "La corbeille est vide.",
+    "deletedOn": "Supprimé le {date}",
+    "restored": "Projet restauré"
+  },
+  "steps": {
+    "overview": "Aperçu",
+    "brief": "Brief",
+    "names": "Nom",
+    "logos": "Logo",
+    "signatures": "Signatures",
+    "kit": "Kit de marque"
+  },
+  "newProject": {
+    "title": "Nouveau projet",
+    "description": "Quel type de structure souhaitez-vous identifier ?",
+    "workingTitle": "Titre de travail",
+    "workingTitlePlaceholder": "Ex. Association des jeunes de Ratoma",
+    "start": "Par où commencer ?",
+    "paths": {
+      "full": "Parcours complet",
+      "fullBody": "Brief, nom, logo, signatures puis kit.",
+      "hasName": "J'ai déjà un nom",
+      "hasNameBody": "Saisissez votre nom et passez directement au logo.",
+      "hasLogo": "J'ai déjà un logo",
+      "hasLogoBody": "Importez-le : nous en extrayons les couleurs pour vos signatures et votre kit.",
+      "emailOnly": "Juste une signature e-mail",
+      "emailOnlyBody": "Parcours court, sans brief."
+    },
+    "existingName": "Votre nom",
+    "create": "Créer le projet",
+    "created": "Projet créé"
+  },
+  "overview": {
+    "title": "Avancement",
+    "next": "Étape suivante",
+    "chosenName": "Nom retenu",
+    "noName": "Aucun nom retenu",
+    "favoriteLogo": "Logo",
+    "noLogo": "Aucun logo",
+    "activity": "Activité récente",
+    "noActivity": "Aucune activité pour l'instant.",
+    "status": "Statut",
+    "rename": "Titre de travail",
+    "stepsDone": "{done} étapes sur {total}"
+  },
+  "brief": {
+    "title": "Brief",
+    "description": "Ces informations guident la génération des noms, logos et slogans. Elles ne servent jamais à entraîner des modèles.",
+    "entityType": "Type de structure",
+    "sector": "Secteur d'activité",
+    "sectorPlaceholder": "Ex. éducation, santé, agriculture, fintech",
+    "mission": "Mission",
+    "missionPlaceholder": "En une ou deux phrases, ce que fait votre structure et pour qui.",
+    "missionCount": "{count} / 500",
+    "values": "Valeurs",
+    "valuesPlaceholder": "Ex. solidarité, innovation (Entrée)",
+    "audience": "Public cible",
+    "audiencePlaceholder": "Ex. jeunes de 15 à 30 ans, PME de Conakry",
+    "languages": "Langues des noms",
+    "styles": "Styles de nom",
+    "maxLength": "Longueur maximale",
+    "maxLengthHint": "En nombre de caractères, vide = sans limite",
+    "mustInclude": "Mots à inclure",
+    "mustAvoid": "Mots à éviter",
+    "tone": "Ton souhaité",
+    "tonePlaceholder": "Ex. engagé, sérieux, chaleureux",
+    "saved": "Brief enregistré",
+    "saveAndContinue": "Enregistrer et générer des noms"
+  },
+  "nameStyles": {
+    "DESCRIPTIVE": "Descriptif",
+    "INVENTED": "Inventé",
+    "COMPOUND": "Composé",
+    "METAPHORICAL": "Métaphorique",
+    "ACRONYM": "Acronyme ou sigle",
+    "PROPER": "Nom propre"
+  },
+  "languages": {
+    "fr": "Français",
+    "en": "Anglais"
+  },
+  "workspace": {
+    "title": "Espace et membres",
+    "name": "Nom de l'espace",
+    "kind": {
+      "PERSONAL": "Espace personnel",
+      "ORGANIZATION": "Espace d'organisation"
+    },
+    "members": "Membres",
+    "invite": "Inviter un membre",
+    "inviteEmail": "Adresse e-mail",
+    "inviteRole": "Rôle",
+    "inviteByEmail": "Envoyer l'invitation",
+    "inviteByLink": "Créer un lien d'invitation",
+    "invited": "Invitation envoyée",
+    "linkCreated": "Lien d'invitation créé et copié",
+    "pending": "Invitations en attente",
+    "expires": "Expire le {date}",
+    "remove": "Retirer",
+    "removed": "Membre retiré",
+    "roleUpdated": "Rôle mis à jour",
+    "you": "vous",
+    "ownerOnly": "Seul le propriétaire peut gérer les membres.",
+    "createTitle": "Créer un espace d'organisation",
+    "createBody": "Un espace par organisation ou par client (agences). Les crédits et l'abonnement sont propres à chaque espace.",
+    "create": "Créer l'espace",
+    "created": "Espace créé"
+  },
+  "profile": {
+    "title": "Profil",
+    "fullName": "Nom complet",
+    "email": "E-mail",
+    "language": "Langue",
+    "country": "Pays",
+    "saved": "Profil enregistré",
+    "security": "Sécurité",
+    "twoFactor": "Double authentification (TOTP)",
+    "twoFactorOn": "Activée",
+    "twoFactorOff": "Désactivée",
+    "twoFactorRequired": "Obligatoire pour les rôles Support, Admin et Super admin.",
+    "enable2fa": "Activer",
+    "scan": "Ajoutez ce compte dans votre application d'authentification avec la clé ci-dessous, puis saisissez le code à 6 chiffres.",
+    "secret": "Clé secrète",
+    "code": "Code à 6 chiffres",
+    "verify": "Vérifier",
+    "backupCodes": "Codes de secours (à usage unique, à conserver en lieu sûr)",
+    "data": "Mes données",
+    "export": "Exporter mes données",
+    "delete": "Supprimer mon compte",
+    "deleteConfirm": "Votre compte sera supprimé définitivement après 30 jours. Cette action ne peut pas être annulée.",
+    "deleted": "Compte supprimé"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification.",
+    "markRead": "Marquer comme lu"
+  },
+  "comments": {
+    "title": "Commentaires",
+    "placeholder": "Écrire un commentaire… (@ pour mentionner)",
+    "send": "Envoyer",
+    "empty": "Aucun commentaire."
+  },
+  "job": {
+    "QUEUED": "En file d'attente…",
+    "RUNNING": "Génération en cours…",
+    "SUCCEEDED": "Terminé",
+    "FAILED": "Échec, crédits remboursés",
+    "CANCELED": "Annulé"
+  },
+  "errors": {
+    "INSUFFICIENT_CREDITS": "Crédits insuffisants. Rechargez votre espace pour continuer.",
+    "FREE_QUOTA": "Quota gratuit du jour atteint.",
+    "forbidden": "Votre rôle ne permet pas cette action.",
+    "projectNotFound": "Projet introuvable."
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "title": "Crédits et facturation",
+  "description": "Les crédits, l'offre et les paiements appartiennent à l'espace de travail.",
+  "balance": "Solde",
+  "plan": "Offre",
+  "renews": "Renouvellement le {date}",
+  "ownerOnly": "Seul le propriétaire de l'espace peut acheter des crédits et gérer l'abonnement.",
+  "plans": "Changer d'offre",
+  "checkout": {
+    "title": "Paiement — {plan}",
+    "amount": "Montant",
+    "interval": "Facturation",
+    "monthly": "Mensuelle",
+    "yearly": "Annuelle (2 mois offerts)",
+    "method": "Moyen de paiement",
+    "methods": {
+      "ORANGE_MONEY": "Orange Money",
+      "MOBILE_MONEY_AGGREGATOR": "Autre portefeuille mobile",
+      "CARD": "Carte bancaire"
+    },
+    "phone": "Numéro mobile money",
+    "phoneHint": "Format +224 6XX XX XX XX",
+    "pay": "Payer {amount}",
+    "pending": "En attente de validation sur votre téléphone…",
+    "pendingBody": "Validez le paiement sur votre téléphone. Les crédits sont ajoutés dès la confirmation de l'opérateur.",
+    "succeeded": "Paiement confirmé : crédits ajoutés.",
+    "failed": "Le paiement a échoué. Aucun montant n'a été débité.",
+    "cardUnavailable": "Le paiement par carte sera disponible prochainement.",
+    "secure": "Aucun crédit n'est accordé sans confirmation du prestataire de paiement."
+  },
+  "promo": "Code promo",
+  "promoApply": "Appliquer",
+  "promoApplied": "{credits} crédits ajoutés",
+  "association": "Tarif association",
+  "associationBody": "Envoyez votre agrément ou récépissé de déclaration (PDF ou image, 5 Mo max). Un administrateur le valide sous 48 h.",
+  "associationSend": "Envoyer le justificatif",
+  "associationSent": "Justificatif envoyé : vous serez notifié de la décision.",
+  "cancel": "Résilier à la fin de la période",
+  "cancelConfirm": "L'abonnement restera actif jusqu'à la fin de la période en cours.",
+  "canceled": "Résiliation enregistrée",
+  "ledger": "Historique des crédits",
+  "ledgerEmpty": "Aucun mouvement.",
+  "reasons": {
+    "PURCHASE": "Achat",
+    "SUBSCRIPTION_GRANT": "Abonnement",
+    "GENERATION": "Génération",
+    "REFUND": "Remboursement",
+    "ADMIN_ADJUSTMENT": "Ajustement",
+    "PROMO": "Promotion"
+  },
+  "invoices": "Factures",
+  "invoicesEmpty": "Aucune facture.",
+  "invoice": {
+    "number": "Numéro",
+    "date": "Date",
+    "amount": "Montant",
+    "tax": "Taxe",
+    "pdf": "PDF"
+  },
+  "columns": {
+    "date": "Date",
+    "reason": "Motif",
+    "note": "Détail",
+    "delta": "Crédits"
+  },
+  "currency": "Devise d'affichage"
+}

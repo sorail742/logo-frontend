@@ -1,0 +1,139 @@
+{
+  "title": "Signatures",
+  "description": "Slogan, signature e-mail, paraphe et cachet reprennent automatiquement le nom, le logo et les couleurs du projet.",
+  "tabs": {
+    "slogan": "Slogan et devise",
+    "email": "Signature e-mail",
+    "handwritten": "Paraphe",
+    "stamp": "Cachet"
+  },
+  "slogan": {
+    "tone": "Ton",
+    "tones": {
+      "INSPIRING": "Inspirant",
+      "INSTITUTIONAL": "Institutionnel",
+      "CATCHY": "Accrocheur",
+      "ENGAGED": "Engagé"
+    },
+    "kind": "Type",
+    "kinds": {
+      "SLOGAN": "Slogans",
+      "DEVISE": "Devise en trois termes",
+      "MISSION": "Phrase de mission"
+    },
+    "maxWords": "Nombre de mots maximum",
+    "language": "Langue",
+    "generate": "Générer",
+    "empty": "Aucune proposition pour l'instant.",
+    "choose": "Retenir",
+    "chosen": "Retenu",
+    "chosenToast": "Signature de marque retenue",
+    "edit": "Modifier le texte",
+    "withLogo": "Logo avec signature",
+    "withLogoBody": "Assemblage du logo favori et du slogan retenu, exportable.",
+    "downloadSvg": "Télécharger en SVG",
+    "noLogo": "Générez d'abord un logo pour l'assembler avec le slogan.",
+    "similarWarning": "Les slogans trop proches d'un slogan connu sont signalés par le serveur."
+  },
+  "email": {
+    "form": "Vos informations",
+    "fullName": "Nom complet",
+    "jobTitle": "Fonction",
+    "phones": "Téléphones",
+    "addPhone": "Ajouter un numéro",
+    "phoneHint": "Format international, ex. +224 620 00 00 00",
+    "email": "E-mail",
+    "website": "Site web",
+    "address": "Adresse",
+    "socials": "Réseaux sociaux",
+    "socialUrl": "Lien {network}",
+    "photo": "Photo (URL HTTPS)",
+    "legal": "Mention légale",
+    "legalPlaceholder": "Ex. Association agréée n° …, RCCM …, avis de confidentialité",
+    "banner": "Bannière promotionnelle (URL de l'image)",
+    "bannerLink": "Lien de la bannière",
+    "template": "Modèle",
+    "preview": "Aperçu",
+    "copy": "Copier la signature",
+    "copied": "Signature copiée : collez-la dans les réglages de votre messagerie.",
+    "copyHtml": "Copier le code HTML",
+    "plainText": "Version texte brut",
+    "copyText": "Copier le texte",
+    "save": "Enregistrer dans le projet",
+    "saved": "Signature e-mail enregistrée",
+    "imageNote": "Dans la version finale, le logo est servi en PNG par une URL HTTPS absolue, compatible avec toutes les messageries.",
+    "install": "Guide d'installation",
+    "guides": {
+      "gmail": "Gmail : Paramètres › Voir tous les paramètres › Général › Signature › Créer, puis collez.",
+      "outlook": "Outlook (bureau) : Fichier › Options › Courrier › Signatures › Nouveau, puis collez.",
+      "outlookWeb": "Outlook (web) : Paramètres › Courrier › Rédiger et répondre › Signature électronique, puis collez.",
+      "apple": "Apple Mail : Mail › Réglages › Signatures › +, décochez « Toujours utiliser ma police par défaut », puis collez.",
+      "thunderbird": "Thunderbird : Paramètres des comptes › Texte de signature › cochez « Utiliser HTML », puis collez le code HTML."
+    },
+    "batch": "Signatures de toute l'équipe (CSV)",
+    "batchBody": "Colonnes : nom, fonction, email, telephone. Une archive ZIP contient une signature HTML par membre.",
+    "batchFile": "Fichier CSV",
+    "batchDone": "{count, plural, one {# signature générée} other {# signatures générées}}",
+    "batchProOnly": "Les signatures en lot sont incluses dans les offres Pro et Agence.",
+    "poweredBy": "Signature créée avec Marka",
+    "organisation": "Organisation",
+    "color": "Couleur principale"
+  },
+  "handwritten": {
+    "text": "Texte du paraphe",
+    "mode": "Mode",
+    "modes": {
+      "font": "Polices manuscrites",
+      "draw": "Dessiner au doigt ou à la souris"
+    },
+    "ink": "Couleur d'encre",
+    "clear": "Effacer",
+    "drawHint": "Tracez votre paraphe dans le cadre. Le tracé est lissé puis vectorisé, fond transparent.",
+    "pick": "Choisir ce style",
+    "save": "Enregistrer le paraphe",
+    "saved": "Paraphe enregistré (privé)"
+  },
+  "stamp": {
+    "shape": "Forme",
+    "shapes": {
+      "round": "Ronde",
+      "oval": "Ovale",
+      "rectangle": "Rectangulaire"
+    },
+    "ringText": "Texte circulaire (nom)",
+    "bottomText": "Texte du bas (ville, pays)",
+    "center": "Centre",
+    "centerModes": {
+      "acronym": "Sigle",
+      "title": "Qualité (ex. « Le Président »)",
+      "logo": "Logo"
+    },
+    "centerText": "Texte du centre",
+    "ink": "Couleur d'encre",
+    "inkEffect": "Effet d'encre",
+    "save": "Enregistrer le cachet",
+    "saved": "Cachet enregistré",
+    "pending": "Ce cachet contient des termes officiels ({terms}) : il sera vérifié manuellement avant d'être disponible.",
+    "pendingStatus": "En validation manuelle",
+    "rejected": "Refusé par la modération",
+    "officialWarning": "Termes officiels détectés : {terms}. Le cachet passera en validation manuelle."
+  },
+  "inks": {
+    "blue": "Bleu",
+    "violet": "Violet",
+    "red": "Rouge",
+    "black": "Noir"
+  },
+  "security": {
+    "notLegal": "Paraphes et cachets sont des images : ils n'ont pas la valeur d'une signature électronique qualifiée.",
+    "attest": "Je certifie être le titulaire de ce nom ou être habilité à représenter la structure.",
+    "attestRequired": "Cochez l'attestation pour continuer.",
+    "private": "Fichier privé, servi par lien signé de courte durée."
+  },
+  "export": {
+    "svg": "SVG",
+    "png": "PNG transparent HD",
+    "requiresSave": "Enregistrez d'abord pour exporter."
+  },
+  "saved": "Enregistrés"
+}

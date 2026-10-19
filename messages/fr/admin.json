@@ -1,0 +1,111 @@
+{
+  "title": "Back-office",
+  "denied": "Accès réservé aux rôles Support, Admin et Super admin.",
+  "require2fa": "La double authentification est obligatoire pour accéder au back-office.",
+  "enable2fa": "Activer la double authentification",
+  "backToApp": "Retour à l'application",
+  "audited": "Toutes vos actions sont tracées dans le journal d'audit.",
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "users": "Utilisateurs",
+    "payments": "Paiements",
+    "moderation": "Modération",
+    "library": "Bibliothèque",
+    "ai": "IA",
+    "settings": "Paramètres",
+    "audit": "Journal d'audit"
+  },
+  "stats": {
+    "signups": "Inscriptions",
+    "active": "Utilisateurs actifs",
+    "conversion": "Passage gratuit → payant",
+    "revenue": "Revenus (14 jours)",
+    "aiCost": "Coût IA (14 jours)",
+    "margin": "Marge estimée",
+    "generations": "Générations par module",
+    "dailyRevenue": "Revenus par jour (GNF)",
+    "showTable": "Afficher le tableau",
+    "date": "Date",
+    "revenueCol": "Revenus",
+    "costCol": "Coût IA (USD)",
+    "generationsCol": "Générations"
+  },
+  "jobs": {
+    "NAMES": "Noms",
+    "LOGOS": "Logos",
+    "SLOGANS": "Slogans",
+    "SIGNATURE": "Signatures",
+    "BRAND_GUIDE": "Chartes PDF",
+    "EXPORT_ZIP": "Archives ZIP"
+  },
+  "users": {
+    "search": "Rechercher par nom ou e-mail",
+    "name": "Nom",
+    "role": "Rôle",
+    "created": "Inscription",
+    "twoFactor": "2FA",
+    "status": "Statut",
+    "active": "Actif",
+    "suspended": "Suspendu",
+    "suspend": "Suspendre",
+    "reactivate": "Réactiver",
+    "reset2fa": "Réinitialiser la 2FA",
+    "updated": "Utilisateur mis à jour",
+    "credits": "Ajuster les crédits",
+    "workspaceId": "Identifiant de l'espace",
+    "delta": "Crédits (+ ou −)",
+    "reason": "Motif (obligatoire)",
+    "adjust": "Appliquer l'ajustement",
+    "adjusted": "Crédits ajustés"
+  },
+  "payments": {
+    "empty": "Aucun paiement.",
+    "date": "Date",
+    "workspace": "Espace",
+    "provider": "Moyen",
+    "amount": "Montant",
+    "status": "Statut",
+    "refund": "Rembourser",
+    "refundConfirm": "Rembourser ce paiement et retirer les crédits accordés ?",
+    "refunded": "Paiement remboursé",
+    "exportCsv": "Export CSV comptable"
+  },
+  "moderation": {
+    "empty": "Aucun contenu en attente.",
+    "approve": "Valider",
+    "reject": "Refuser",
+    "note": "Motif",
+    "done": "Décision enregistrée"
+  },
+  "library": {
+    "fonts": "Polices",
+    "icons": "Icônes",
+    "license": "Licence",
+    "active": "Active",
+    "templates": "Modèles de signature e-mail"
+  },
+  "ai": {
+    "provider": "Fournisseur actif",
+    "providerValue": "À définir (interface AiProvider interchangeable)",
+    "prompts": "Prompts versionnés",
+    "quotas": "Quotas",
+    "quotaValue": "60 requêtes / min par utilisateur · 3 essais / jour par IP",
+    "costs": "Suivi des coûts",
+    "costsBody": "Le coût réel de chaque appel est enregistré sur la tâche de génération (costUsdMicros)."
+  },
+  "settings": {
+    "plans": "Offres et prix",
+    "maintenance": "Mode maintenance",
+    "tax": "Taxe",
+    "taxValue": "Taux à confirmer",
+    "readOnlyNote": "Modifiables uniquement par un Super admin, via l'API."
+  },
+  "audit": {
+    "empty": "Aucune entrée.",
+    "date": "Date",
+    "actor": "Auteur",
+    "action": "Action",
+    "entity": "Élément",
+    "ip": "Adresse IP"
+  }
+}

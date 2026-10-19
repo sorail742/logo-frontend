@@ -1,0 +1,33 @@
+import type { ReactNode } from "react";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+export function Field({
+  label,
+  htmlFor,
+  hint,
+  error,
+  children,
+  className,
+}: {
+  label: ReactNode;
+  htmlFor?: string;
+  hint?: ReactNode;
+  error?: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("grid gap-1.5", className)}>
+      <Label htmlFor={htmlFor}>{label}</Label>
+      {children}
+      {error ? (
+        <p className="text-xs text-destructive" role="alert">
+          {error}
+        </p>
+      ) : (
+        hint && <p className="text-xs text-muted-foreground">{hint}</p>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "brand": "Marka",
+    "title": "Marka — Name, logo and signatures for your organisation",
+    "description": "Create the name, logo, signatures and brand kit of your association, app or company in a single flow. Pay in GNF with Orange Money."
+  },
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "tools": "Free tools",
+    "nameTool": "Name generator",
+    "emailTool": "Email signature",
+    "login": "Log in",
+    "signup": "Sign up",
+    "dashboard": "My workspace",
+    "skip": "Skip to content"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "next": "Next",
+    "delete": "Delete",
+    "restore": "Restore",
+    "duplicate": "Duplicate",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "download": "Download",
+    "generate": "Generate",
+    "regenerate": "Regenerate",
+    "edit": "Edit",
+    "open": "Open",
+    "close": "Close",
+    "search": "Search",
+    "retry": "Retry",
+    "share": "Share",
+    "invite": "Invite",
+    "confirm": "Confirm"
+  },
+  "entityTypes": {
+    "ASSOCIATION": "Association",
+    "APPLICATION": "App",
+    "PLATFORM": "Platform",
+    "COMPANY": "Company",
+    "EVENT": "Event",
+    "OTHER": "Other"
+  },
+  "projectStatus": {
+    "DRAFT": "Draft",
+    "IN_PROGRESS": "In progress",
+    "FINALIZED": "Finalised",
+    "ARCHIVED": "Archived"
+  },
+  "roles": {
+    "OWNER": "Owner",
+    "EDITOR": "Editor",
+    "VIEWER": "Viewer",
+    "USER": "User",
+    "SUPPORT": "Support",
+    "ADMIN": "Admin",
+    "SUPER_ADMIN": "Super admin"
+  },
+  "free": "Free",
+  "credits": "{count, plural, =0 {0 credits} one {# credit} other {# credits}}",
+  "loading": "Loading…",
+  "error": "Something went wrong.",
+  "notFound": {
+    "title": "Page not found",
+    "body": "This page does not exist or has moved.",
+    "home": "Back to home"
+  },
+  "mockBanner": "Demo mode: the API is simulated in your browser. Test accounts: demo@exemple.gn / demo1234 — admin@exemple.gn / admin1234.",
+  "footer": {
+    "tagline": "Brand identity made accessible to every organisation, in French and in GNF.",
+    "legal": "Legal notice",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact",
+    "rights": "© {year} Marka. Working name."
+  },
+  "offline": "You are offline: projects you already opened remain available."
+}

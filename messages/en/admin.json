@@ -1,0 +1,111 @@
+{
+  "title": "Back office",
+  "denied": "Restricted to Support, Admin and Super admin roles.",
+  "require2fa": "Two-factor authentication is required to access the back office.",
+  "enable2fa": "Enable two-factor authentication",
+  "backToApp": "Back to the app",
+  "audited": "All your actions are recorded in the audit log.",
+  "nav": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "payments": "Payments",
+    "moderation": "Moderation",
+    "library": "Library",
+    "ai": "AI",
+    "settings": "Settings",
+    "audit": "Audit log"
+  },
+  "stats": {
+    "signups": "Sign-ups",
+    "active": "Active users",
+    "conversion": "Free → paid conversion",
+    "revenue": "Revenue (14 days)",
+    "aiCost": "AI cost (14 days)",
+    "margin": "Estimated margin",
+    "generations": "Generations per module",
+    "dailyRevenue": "Daily revenue (GNF)",
+    "showTable": "Show table",
+    "date": "Date",
+    "revenueCol": "Revenue",
+    "costCol": "AI cost (USD)",
+    "generationsCol": "Generations"
+  },
+  "jobs": {
+    "NAMES": "Names",
+    "LOGOS": "Logos",
+    "SLOGANS": "Taglines",
+    "SIGNATURE": "Signatures",
+    "BRAND_GUIDE": "PDF guides",
+    "EXPORT_ZIP": "ZIP archives"
+  },
+  "users": {
+    "search": "Search by name or email",
+    "name": "Name",
+    "role": "Role",
+    "created": "Signed up",
+    "twoFactor": "2FA",
+    "status": "Status",
+    "active": "Active",
+    "suspended": "Suspended",
+    "suspend": "Suspend",
+    "reactivate": "Reactivate",
+    "reset2fa": "Reset 2FA",
+    "updated": "User updated",
+    "credits": "Adjust credits",
+    "workspaceId": "Workspace ID",
+    "delta": "Credits (+ or −)",
+    "reason": "Reason (required)",
+    "adjust": "Apply adjustment",
+    "adjusted": "Credits adjusted"
+  },
+  "payments": {
+    "empty": "No payments.",
+    "date": "Date",
+    "workspace": "Workspace",
+    "provider": "Method",
+    "amount": "Amount",
+    "status": "Status",
+    "refund": "Refund",
+    "refundConfirm": "Refund this payment and remove the granted credits?",
+    "refunded": "Payment refunded",
+    "exportCsv": "Accounting CSV export"
+  },
+  "moderation": {
+    "empty": "Nothing pending.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "note": "Reason",
+    "done": "Decision recorded"
+  },
+  "library": {
+    "fonts": "Fonts",
+    "icons": "Icons",
+    "license": "Licence",
+    "active": "Active",
+    "templates": "Email signature templates"
+  },
+  "ai": {
+    "provider": "Active provider",
+    "providerValue": "To be decided (swappable AiProvider interface)",
+    "prompts": "Versioned prompts",
+    "quotas": "Quotas",
+    "quotaValue": "60 requests / min per user · 3 tries / day per IP",
+    "costs": "Cost tracking",
+    "costsBody": "The real cost of each call is stored on the generation job (costUsdMicros)."
+  },
+  "settings": {
+    "plans": "Plans and prices",
+    "maintenance": "Maintenance mode",
+    "tax": "Tax",
+    "taxValue": "Rate to be confirmed",
+    "readOnlyNote": "Editable by a Super admin only, through the API."
+  },
+  "audit": {
+    "empty": "No entries.",
+    "date": "Date",
+    "actor": "Actor",
+    "action": "Action",
+    "entity": "Entity",
+    "ip": "IP address"
+  }
+}

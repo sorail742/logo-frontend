@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Marka — front-end (Next.js)
 
-## Getting Started
+Front de la plateforme de création d'identité de marque décrite dans
+[docs/cahier-des-charges.md](docs/cahier-des-charges.md) : nom, logo, signatures et kit de marque
+pour associations, applications, plateformes et entreprises. « Marka » est un nom provisoire (§15.4).
 
-First, run the development server:
+Ce dépôt correspond à `apps/web` du monorepo prévu au §11.2. L'API NestJS et les workers sont
+développés à part ; en attendant, une **API simulée** tourne dans le navigateur.
+
+## Démarrage
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+cp .env.example .env.local   # déjà fait si le fichier existe
+pnpm dev                     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Comptes de démonstration (mode simulé) :
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| E-mail | Mot de passe | Rôle |
+| --- | --- | --- |
+| `demo@exemple.gn` | `demo1234` | Utilisateur, offre gratuite, 20 crédits |
+| `admin@exemple.gn` | `admin1234` | Super admin (accès `/admin`) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Autres valeurs utiles en mode simulé : code SMS `123456`, code promo `BIENVENUE`, un numéro
+Orange Money se terminant par `0000` simule un paiement refusé, un retour contenant `__echec__`
+simule une génération échouée (crédits remboursés).
 
-## Learn More
+## Variables d'environnement
 
-To learn more about Next.js, take a look at the following resources:
+| Variable | Rôle |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | URL de l'API NestJS, préfixe `/api/v1` compris |
+| `NEXT_PUBLIC_API_MOCK` | `true` : API simulée (localStorage). `false` + URL renseignée : API réelle |
+| `NEXT_PUBLIC_SITE_URL` | URL publique (Open Graph, sitemap, liens de partage) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Pile technique
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Next.js 16 (App Router, Turbopack, Cache Components), React 19, TypeScript strict, Tailwind CSS 4,
+shadcn/ui (Base UI), next-intl (fr par défaut, en), TanStack Query, Zustand, react-hook-form + zod.
 
-## Deploy on Vercel
+## Organisation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```text
+src/
+  app/[locale]/
+    (marketing)/   accueil, tarifs, outils gratuits, kit partagé, invitation, pages légales
+    (auth)/        connexion, inscription, mot de passe oublié / réinitialisation
+    app/           application : projets, brief, noms, logos (+ éditeur), signatures, kit,
+                   espace et membres, facturation, notifications, profil, corbeille
+    admin/         back-office (Support, Admin, Super admin, 2FA obligatoire)
+  components/      ui/ (shadcn), layout/, brand/, projects/, names/, logos/, signatures/, kit/, billing/, admin/
+  hooks/           espace courant, projet courant, suivi des tâches (SSE), erreurs d'API
+  i18n/            routage next-intl
+  lib/
+    api/           contrat du client (§13), implémentation HTTP et API simulée (mock/)
+    render/        aperçu du futur packages/render : composition SVG des logos, variantes,
+                   cachets, paraphes, signatures e-mail HTML, exports PNG/ICO/ZIP
+    types.ts       types alignés sur le schéma Prisma (§12)
+    permissions.ts matrice des rôles (§3) — indicative, l'API fait foi
+    credits.ts     coût des actions en crédits (§8.3)
+  stores/          session, éditeur de logo (historique annuler / rétablir)
+messages/{fr,en}/  traductions par espace de noms
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Couverture du cahier des charges
+
+- **Noms (§4)** : brief complet, lots de 10, relance avec retour, favoris, rejets, votes,
+  comparaison de 4 favoris, vérifications domaine/réseaux/marques/phonétique (cache 24 h),
+  nom final avec nouvelle version du kit.
+- **Logos (§5)** : moteurs A et B, 4 types, 6 styles, palette libre ou proposée, 8 propositions
+  en situation, relances, import SVG/PNG nettoyé avec extraction de palette, éditeur (texte,
+  police, graisse, espacement, couleurs avec contrôle de contraste 4,5:1, icône, cadre, disposition,
+  annuler/rétablir, versions nommées, aperçu 32 px), variantes automatiques, exports SVG/PNG/JPG,
+  pack d'icônes d'app (favicon.ico 16/32/48, 180, 192, 512, 1024), formats réseaux sociaux,
+  filigrane en offre gratuite.
+- **Signatures (§6)** : slogans, devise et mission pour les associations, logo avec signature,
+  signature e-mail (6 modèles, HTML tableaux + styles en ligne, texte brut, copie, guides, lot CSV),
+  paraphe par police ou dessiné, cachet rond/ovale/rectangulaire, encres, attestation horodatée,
+  validation manuelle des termes officiels.
+- **Kit (§7)** : page du kit, versions, charte imprimable, archive ZIP rangée avec LICENCES.txt,
+  lien de partage avec mot de passe et expiration, espaces, invitations, commentaires,
+  notifications, historique d'activité, corbeille 30 jours.
+- **Comptes et paiements (§8)** : e-mail, Google, SMS, mot de passe oublié, 2FA TOTP, profil,
+  export et suppression des données, offres, grand livre de crédits, paiement Orange Money
+  idempotent, factures, codes promo, justificatif association.
+- **Back-office (§9)** : indicateurs, utilisateurs, ajustement de crédits motivé, paiements et
+  remboursements, export CSV, modération des cachets, bibliothèque, IA, paramètres, audit.
+
+## Ce qui revient au serveur
+
+Le front ne contacte jamais directement l'IA ni le paiement (§11). Restent côté API/workers :
+génération IA réelle, conversion du texte en tracés et SVGO, PDF vectoriels, charte PDF
+(Playwright), archive ZIP finale, URL signées S3, webhooks de paiement, e-mails. Dans le
+navigateur, les exports sont des aperçus fidèles ; la charte s'enregistre en PDF via l'impression.
+
+L'éditeur de logo est piloté par une spec déclarative (`LogoSpec`) rendue en SVG ; le cahier
+prévoit Fabric.js, qui pourra s'y brancher pour la manipulation directe sur canevas.
+
+## Scripts
+
+```bash
+pnpm dev      # serveur de développement
+pnpm build    # build de production
+pnpm start    # serveur de production
+pnpm lint     # ESLint
+```

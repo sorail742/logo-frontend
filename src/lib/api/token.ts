@@ -1,0 +1,17 @@
+// Jeton d'accès conservé en mémoire uniquement (jamais dans localStorage).
+type Listener = (token: string | null) => void;
+
+let accessToken: string | null = null;
+const listeners = new Set<Listener>();
+
+export const tokenStore = {
+  get: () => accessToken,
+  set(token: string | null) {
+    accessToken = token;
+    listeners.forEach((listener) => listener(token));
+  },
+  subscribe(listener: Listener) {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+  },
+};

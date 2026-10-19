@@ -1,0 +1,148 @@
+{
+  "hero": {
+    "eyebrow": "Pour les associations, applications, startups et projets",
+    "title": "Votre nom, votre logo et vos signatures, en un seul parcours",
+    "subtitle": "Trouvez un nom disponible, créez un logo vectoriel modifiable, obtenez votre slogan, votre signature e-mail et votre cachet. Payez en GNF par Orange Money.",
+    "cta": "Commencer gratuitement",
+    "secondary": "Essayer sans compte",
+    "proof": "Sans carte bancaire · 3 lots de noms par jour offerts"
+  },
+  "problem": {
+    "title": "Une identité ne devrait pas coûter des semaines",
+    "items": {
+      "cost": "Un designer coûte cher et demande plusieurs allers-retours.",
+      "skills": "Associations et projets étudiants manquent de budget et de compétences graphiques.",
+      "tools": "Les outils existants sont en anglais, facturés en devises, sans paiement mobile.",
+      "taken": "Un nom choisi sans vérification se révèle souvent déjà pris."
+    }
+  },
+  "modules": {
+    "title": "Trois modules, un seul kit",
+    "names": {
+      "title": "Générateur de noms",
+      "body": "Des lots de 10 noms expliqués, avec sigle pour les associations, score et vérification des domaines (.com, .org, .gn, .africa…) et des réseaux sociaux."
+    },
+    "logos": {
+      "title": "Générateur et éditeur de logos",
+      "body": "8 propositions vectorielles par lot, présentées en situation, puis un éditeur pour ajuster police, couleurs, icône et disposition. Export SVG, PNG, PDF et pack d'icônes d'application."
+    },
+    "signatures": {
+      "title": "Signatures",
+      "body": "Slogan ou devise, signature e-mail compatible Gmail et Outlook, paraphe stylisé et cachet d'association prêt pour la fabrication d'un tampon."
+    },
+    "kit": {
+      "title": "Kit de marque",
+      "body": "Une page partageable, une charte graphique PDF générée automatiquement et une archive ZIP rangée."
+    }
+  },
+  "journey": {
+    "title": "Comment ça marche",
+    "steps": {
+      "1": "Créez un projet et choisissez son type",
+      "2": "Décrivez votre structure en quelques lignes",
+      "3": "Générez des noms et vérifiez leur disponibilité",
+      "4": "Générez votre logo puis ajustez-le",
+      "5": "Obtenez slogan, signature e-mail et cachet",
+      "6": "Téléchargez ou partagez votre kit"
+    },
+    "shortcuts": "Vous avez déjà un nom ou un logo ? Commencez directement à l'étape suivante."
+  },
+  "personas": {
+    "title": "Pensé pour vous",
+    "association": "Responsables d'association : nom, logo, cachet et tarif associatif.",
+    "app": "Porteurs d'application : nom avec domaine libre, icône d'app et favicon.",
+    "startup": "Startups et PME : kit complet, charte PDF, travail en équipe.",
+    "agency": "Freelances et agences : pistes rapides, exports en lot, un espace par client.",
+    "student": "Étudiants et clubs : offre gratuite, résultat rapide."
+  },
+  "payment": {
+    "title": "Payez comme vous en avez l'habitude",
+    "body": "Prix affichés en francs guinéens. Paiement par Orange Money, autres portefeuilles mobiles et carte bancaire. Factures numérotées.",
+    "cta": "Voir les tarifs"
+  },
+  "cta": {
+    "title": "Votre identité commence par un nom",
+    "body": "Essayez le générateur de noms sans créer de compte.",
+    "button": "Générer des noms"
+  },
+  "pricing": {
+    "title": "Des offres pour chaque structure",
+    "subtitle": "Commencez gratuitement. Chaque génération consomme des crédits ; les vérifications de disponibilité et la signature e-mail sont incluses.",
+    "provisional": "Prix provisoires, susceptibles d'évoluer avant le lancement.",
+    "oneOff": "paiement unique",
+    "perMonth": "/ mois",
+    "choose": "Choisir",
+    "current": "Offre actuelle",
+    "popular": "Le plus choisi",
+    "members": "{count, plural, one {# membre} other {# membres}}",
+    "costsTitle": "Coût des actions en crédits",
+    "faqTitle": "Questions fréquentes",
+    "faq": {
+      "q1": "Puis-je payer par Orange Money ?",
+      "a1": "Oui, Orange Money est le moyen de paiement prioritaire. Vous validez le paiement sur votre téléphone.",
+      "q2": "Que se passe-t-il si une génération échoue ?",
+      "a2": "Vos crédits sont remboursés automatiquement.",
+      "q3": "Le logo m'appartient-il ?",
+      "a3": "À l'achat, les droits d'usage commercial vous sont cédés et le logo devient exclusif. Nous recommandons un dépôt de marque auprès de l'OAPI.",
+      "q4": "Comment obtenir le tarif association ?",
+      "a4": "Envoyez votre justificatif d'agrément depuis la page Facturation ; un administrateur le valide."
+    }
+  },
+  "features": {
+    "free": {
+      "names": "3 lots de noms par jour",
+      "logos": "1 lot de logos par jour",
+      "png": "PNG 512 px avec filigrane",
+      "email": "Signature e-mail avec mention de la plateforme"
+    },
+    "pack": {
+      "project": "1 projet complet",
+      "noWatermark": "Exports sans filigrane",
+      "guide": "Charte graphique PDF",
+      "stamp": "Cachet et paraphe",
+      "credits": "100 crédits"
+    },
+    "association": {
+      "pack": "Pack Identité à tarif réduit",
+      "proof": "Après validation d'un justificatif d'agrément"
+    },
+    "pro": {
+      "projects": "Projets illimités",
+      "credits": "500 crédits par mois",
+      "members": "5 membres",
+      "batch": "Signatures e-mail en lot"
+    },
+    "agency": {
+      "credits": "2 000 crédits par mois",
+      "spaces": "Espaces clients illimités",
+      "members": "15 membres"
+    }
+  },
+  "costs": {
+    "NAMES_BATCH": "Lot de 10 noms",
+    "AVAILABILITY_CHECK": "Vérification de disponibilité",
+    "LOGOS_SVG_COMPOSER": "Lot de 8 logos (composition vectorielle)",
+    "LOGOS_IMAGE_VECTORIZE": "Lot de logos (image IA + vectorisation)",
+    "SLOGANS_BATCH": "Lot de 10 slogans",
+    "EMAIL_SIGNATURE": "Signature e-mail",
+    "HANDWRITTEN_OR_STAMP": "Paraphe ou cachet",
+    "BRAND_GUIDE_PDF": "Charte graphique PDF"
+  },
+  "nameTool": {
+    "title": "Générateur de noms gratuit",
+    "subtitle": "Décrivez votre projet en quelques mots et obtenez 10 idées de noms. 3 essais par jour sans compte.",
+    "type": "Type de structure",
+    "sector": "Secteur d'activité",
+    "sectorPlaceholder": "Ex. éducation, agriculture, fintech",
+    "keywords": "Mots-clés",
+    "keywordsPlaceholder": "Ex. jeunesse, avenir (Entrée pour valider)",
+    "submit": "Générer 10 noms",
+    "remaining": "{count, plural, =0 {Plus d'essai aujourd'hui} one {# essai restant aujourd'hui} other {# essais restants aujourd'hui}}",
+    "signupCta": "Créez un compte gratuit pour vérifier la disponibilité et garder vos favoris.",
+    "empty": "Vos idées de noms apparaîtront ici."
+  },
+  "emailTool": {
+    "title": "Générateur de signature e-mail gratuit",
+    "subtitle": "Créez une signature professionnelle compatible Gmail, Outlook et Apple Mail, sans compte."
+  }
+}
