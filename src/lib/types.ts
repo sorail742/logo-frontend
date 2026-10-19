@@ -14,7 +14,7 @@ export type LogoEngine = "SVG_COMPOSER" | "IMAGE_VECTORIZE" | "UPLOAD";
 export type LogoStyle = "MINIMAL" | "MODERN" | "CLASSIC" | "INSTITUTIONAL" | "PLAYFUL" | "AFRICAN";
 export type SignatureKind = "EMAIL" | "HANDWRITTEN" | "STAMP";
 export type SignatureStatus = "ACTIVE" | "PENDING_REVIEW" | "REJECTED";
-export type JobKind = "NAMES" | "LOGOS" | "SLOGANS" | "SIGNATURE" | "BRAND_GUIDE" | "EXPORT_ZIP";
+export type JobKind = "NAMES" | "LOGOS" | "LOGO_EXPORT" | "SLOGANS" | "SIGNATURE" | "BRAND_GUIDE" | "EXPORT_ZIP";
 export type JobStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELED";
 export type LedgerReason = "PURCHASE" | "SUBSCRIPTION_GRANT" | "GENERATION" | "REFUND" | "ADMIN_ADJUSTMENT" | "PROMO";
 export type PaymentProvider = "ORANGE_MONEY" | "MOBILE_MONEY_AGGREGATOR" | "CARD";
@@ -64,9 +64,11 @@ export interface Member {
 
 export interface Invitation {
   id: string;
+  /** Vide pour une invitation par lien. */
   email: string;
   role: WorkspaceRole;
   expiresAt: string;
+  /** Donné à la création seulement (le jeton n'est pas conservé en clair). */
   link?: string;
 }
 
@@ -155,6 +157,8 @@ export interface LogoVersion {
   number: number;
   label: string | null;
   spec: LogoSpec;
+  /** SVG produit par le serveur ; dans les listes, seulement pour un logo importé non retravaillé. */
+  svg?: string;
   createdAt: string;
 }
 
@@ -266,6 +270,8 @@ export interface GenerationJob {
   progress: number;
   costCredits: number;
   error: string | null;
+  /** Sortie d'une tâche d'export : lien signé de l'archive tant qu'elle est conservée. */
+  result?: { downloadUrl?: string; fileName?: string; files?: number; restricted?: boolean; expired?: boolean } | null;
   createdAt: string;
   finishedAt: string | null;
 }

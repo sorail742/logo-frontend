@@ -5,7 +5,8 @@ Front de la plateforme de création d'identité de marque décrite dans
 pour associations, applications, plateformes et entreprises. « Marka » est un nom provisoire (§15.4).
 
 Ce dépôt correspond à `apps/web` du monorepo prévu au §11.2. L'API NestJS et les workers sont
-développés à part ; en attendant, une **API simulée** tourne dans le navigateur.
+développés à part ([logo-backend](https://github.com/sorail742/logo-backend)). Le front fonctionne
+avec l'API réelle ou avec une **API simulée** qui tourne dans le navigateur.
 
 ## Démarrage
 
@@ -33,6 +34,31 @@ simule une génération échouée (crédits remboursés).
 | `NEXT_PUBLIC_API_URL` | URL de l'API NestJS, préfixe `/api/v1` compris |
 | `NEXT_PUBLIC_API_MOCK` | `true` : API simulée (localStorage). `false` + URL renseignée : API réelle |
 | `NEXT_PUBLIC_SITE_URL` | URL publique (Open Graph, sitemap, liens de partage) |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Facultatif : affiche « Continuer avec Google » (même identifiant que `GOOGLE_CLIENT_ID` de l'API) |
+
+## Brancher l'API réelle
+
+```bash
+# Dans logo-backend : docker compose up -d, migrations, seed, puis npm run dev et npm run dev:worker
+printf 'NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1\nNEXT_PUBLIC_API_MOCK=false\n' > .env.local
+pnpm dev
+```
+
+L'API renvoie directement les types de `src/lib/types.ts` ; `src/lib/api/http.ts` ne gère que
+le transport (jeton en mémoire et cookie de rafraîchissement, pagination par curseur, flux SSE,
+noms de paramètres). En mode API réelle :
+
+- **Disponible** : inscription et connexion (2FA TOTP avec codes de secours, Google si configuré),
+  vérification de l'adresse e-mail, profil et export des données, espaces, membres et invitations,
+  projets et brief, noms et vérifications, logos (génération, import, éditeur, versions),
+  export serveur (archive ZIP : SVG et PDF vectoriels, PNG, JPG, icônes d'app, réseaux sociaux),
+  historique d'activité, crédits et grand livre, notifications, back-office (indicateurs,
+  utilisateurs, crédits, journal d'audit).
+- **Bientôt disponible** (phases 4 à 6 de l'API) : slogans et signatures, kit de marque et partage,
+  commentaires, paiements et factures, modération des cachets, connexion par SMS. Ces écrans
+  affichent « Bientôt disponible » ; `api.isAvailable(feature)` indique ce que l'API sert.
+- L'offre gratuite exporte le PNG 512 px filigrané depuis le navigateur ; les offres payantes
+  téléchargent l'archive produite par le serveur (dernière version enregistrée du logo).
 
 ## Pile technique
 
@@ -89,9 +115,9 @@ messages/{fr,en}/  traductions par espace de noms
 
 ## Ce qui revient au serveur
 
-Le front ne contacte jamais directement l'IA ni le paiement (§11). Restent côté API/workers :
-génération IA réelle, conversion du texte en tracés et SVGO, PDF vectoriels, charte PDF
-(Playwright), archive ZIP finale, URL signées S3, webhooks de paiement, e-mails. Dans le
+Le front ne contacte jamais directement l'IA ni le paiement (§11). Côté API/workers : génération
+IA, conversion du texte en tracés et SVGO, PDF vectoriels et archive ZIP des logos (déjà en
+place), charte PDF (Playwright), URL signées S3, webhooks de paiement, e-mails. Dans le
 navigateur, les exports sont des aperçus fidèles ; la charte s'enregistre en PDF via l'impression.
 
 L'éditeur de logo est piloté par une spec déclarative (`LogoSpec`) rendue en SVG ; le cahier

@@ -34,12 +34,12 @@
   "generate": "Générer 8 logos",
   "import": "Importer mon logo",
   "importTitle": "Importer un logo existant",
-  "importBody": "SVG ou PNG, 5 Mo maximum. Nous en extrayons la palette pour vos signatures et votre kit.",
+  "importBody": "SVG (1 Mo maximum) ou PNG (2 Mo maximum). Nous en extrayons la palette pour vos signatures et votre kit.",
   "importFile": "Fichier",
   "extracted": "Couleurs extraites",
   "importConfirm": "Utiliser ce logo",
   "imported": "Logo importé",
-  "invalidFile": "Fichier non pris en charge ou trop lourd (5 Mo maximum).",
+  "invalidFile": "Fichier non pris en charge ou trop lourd (SVG 1 Mo, PNG 2 Mo maximum).",
   "empty": "Aucun logo pour l'instant",
   "emptyBody": "Lancez un premier lot de 8 propositions.",
   "batchReady": "Nouvelles propositions de logos",
@@ -130,6 +130,11 @@
     "watermark": "Offre gratuite : PNG 512 px avec filigrane uniquement.",
     "upgrade": "Passer à une offre payante",
     "done": "Fichier téléchargé",
-    "previewNote": "Aperçu navigateur : le fichier final (texte en tracés, optimisé SVGO) est produit par le serveur."
+    "previewNote": "Aperçu navigateur : le fichier final (texte en tracés, optimisé SVGO) est produit par le serveur.",
+    "zipAll": "Archive complète",
+    "zipAllBody": "Produite par le serveur : SVG et PDF vectoriels (texte en tracés), PNG 512/1024/2048, JPG, icônes d'application, réseaux sociaux et licences.",
+    "zipAllButton": "Télécharger l'archive ZIP",
+    "saveFirst": "Enregistrez d'abord la version : l'export serveur porte sur la dernière version enregistrée.",
+    "serverFailed": "L'export n'a pas abouti, réessayez."
   }
 }

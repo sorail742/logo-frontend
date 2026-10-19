@@ -48,6 +48,20 @@ export interface Session {
   user: User;
 }
 
+/**
+ * Modules susceptibles de ne pas être servis par l'API : en mode http, ceux des phases 4 à 6
+ * (signatures, kit, collaboration, paiements) arrivent progressivement.
+ */
+export type ApiFeature =
+  | "slogans"
+  | "signatures"
+  | "brandKits"
+  | "comments"
+  | "payments"
+  | "moderation"
+  | "smsLogin"
+  | "googleLogin";
+
 export interface JobAccepted {
   jobId: string;
 }
@@ -104,13 +118,18 @@ export interface CheckoutResult {
 
 export interface ApiClient {
   readonly mode: "http" | "mock";
+  /** Vrai si le module est disponible avec cette implémentation. */
+  isAvailable(feature: ApiFeature): boolean;
 
   auth: {
     register(input: { fullName: string; email: string; password: string }): Promise<Session>;
-    login(input: { email: string; password: string }): Promise<Session>;
+    /** `totpCode` : code TOTP ou code de secours, exigé si la double authentification est active. */
+    login(input: { email: string; password: string; totpCode?: string }): Promise<Session>;
     refresh(): Promise<Session | null>;
     logout(): Promise<void>;
-    googleUrl(): string;
+    /** Connexion avec l'ID token de Google Identity Services. */
+    google(idToken: string, totpCode?: string): Promise<Session>;
+    verifyEmail(token: string): Promise<void>;
     requestOtp(phone: string): Promise<void>;
     verifyOtp(phone: string, code: string): Promise<Session>;
     forgotPassword(email: string): Promise<void>;
@@ -168,7 +187,11 @@ export interface ApiClient {
     update(lid: string, patch: { isFavorite?: boolean }): Promise<Logo>;
     versions(lid: string): Promise<LogoVersion[]>;
     saveVersion(lid: string, input: { spec: LogoSpec; label?: string }): Promise<LogoVersion>;
-    requestExport(lid: string, input: { formats: string[]; sizes: number[]; iconPack: boolean }): Promise<JobAccepted>;
+    /** Export serveur de la dernière version enregistrée (ZIP), suivi comme une tâche. */
+    requestExport(
+      lid: string,
+      input: { formats: ("svg" | "pdf" | "png" | "jpg")[]; sizes?: number[]; iconPack: boolean; social?: boolean },
+    ): Promise<JobAccepted & { restricted?: boolean }>;
   };
 
   slogans: {

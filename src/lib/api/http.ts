@@ -1,12 +1,35 @@
-import type { ApiClient, Session } from "./contract";
-import { ApiError, type ProblemDetails } from "./errors";
+import type { ApiClient, ApiFeature, Session } from "./contract";
+import { ApiError, problem, type ProblemDetails } from "./errors";
 import { tokenStore } from "./token";
-import type { JobEvent } from "@/lib/types";
+import { PLANS } from "@/lib/plans";
+import type { GenerationJob, JobEvent, JobStatus, Plan } from "@/lib/types";
 
 // Client de l'API NestJS (/api/v1). Le jeton d'accès vit en mémoire ;
 // le jeton de rafraîchissement est un cookie httpOnly posé par l'API (§14.1).
+// L'API renvoie les types de src/lib/types.ts : ce client ne gère que le transport
+// (pagination, noms de paramètres) et les modules pas encore livrés.
 
 const BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1").replace(/\/$/, "");
+
+/** Modules servis par l'API ; les phases 4 à 6 du planning ne sont pas encore livrées. */
+const FEATURES: Record<ApiFeature, boolean> = {
+  slogans: false,
+  signatures: false,
+  brandKits: false,
+  comments: false,
+  payments: false,
+  moderation: false,
+  smsLogin: false,
+  googleLogin: Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID),
+};
+
+/** Action d'un module pas encore servi par l'API. */
+function unavailable(): never {
+  throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Cette fonction arrive avec une prochaine version de la plateforme.");
+}
+
+/** Lecture d'un module pas encore servi : liste vide plutôt qu'une erreur à l'écran. */
+const none = async <T>(): Promise<T[]> => [];
 
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -70,11 +93,55 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 }
 
 const get = <T>(path: string) => request<T>(path);
+/** Liste paginée par curseur (§13.1) : première page de 100 éléments. */
+const items = async <T>(path: string) => (await request<{ items: T[] }>(`${path}${path.includes("?") ? "&" : "?"}limit=100`)).items;
 const post = <T>(path: string, body?: unknown, idempotencyKey?: string) =>
   request<T>(path, { method: "POST", body: body ?? {}, idempotencyKey });
 const patch = <T>(path: string, body: unknown) => request<T>(path, { method: "PATCH", body });
 const put = <T>(path: string, body: unknown) => request<T>(path, { method: "PUT", body });
 const del = <T>(path: string) => request<T>(path, { method: "DELETE" });
+/** Route publique : ni jeton d'accès ni tentative de rafraîchissement. */
+const publicPost = <T>(path: string, body: unknown) => request<T>(path, { method: "POST", body, auth: false });
+
+/** Session ouverte : le jeton d'accès reste en mémoire. */
+function keep(session: Session) {
+  tokenStore.set(session.accessToken);
+  return session;
+}
+
+/** Progression affichée : l'API publie des états, pas de pourcentage. */
+function progressOf(status: JobStatus) {
+  return status === "SUCCEEDED" || status === "FAILED" || status === "CANCELED" ? 100 : status === "RUNNING" ? 50 : 5;
+}
+
+/** Offre telle que l'API la renvoie (montants en chaîne, droits en objet). */
+interface ApiPlan {
+  code: string;
+  name: string;
+  priceGnf: string;
+  interval: Plan["interval"];
+  monthlyCredits: number;
+  maxMembers: number;
+  features: { oneTimeCredits?: number };
+}
+
+/**
+ * Prix et quotas viennent de l'API, argumentaire du catalogue du front. Un prix à 0 hors
+ * offre gratuite n'est pas encore fixé (§15.4) ; les offres textiles n'ont pas encore d'écran.
+ */
+function toPlan(plan: ApiPlan): Plan | null {
+  const catalog = PLANS.find((p) => p.code === plan.code);
+  if (!catalog) return null;
+  return {
+    ...catalog,
+    name: plan.name,
+    priceGnf: plan.code === "FREE" ? 0 : Number(plan.priceGnf) || null,
+    interval: plan.interval,
+    monthlyCredits: plan.monthlyCredits,
+    includedCredits: plan.features.oneTimeCredits ?? catalog.includedCredits,
+    maxMembers: plan.maxMembers,
+  };
+}
 
 function qs(params: Record<string, string | boolean | undefined>) {
   const search = new URLSearchParams();
@@ -110,7 +177,10 @@ function subscribeSse(path: string, onEvent: (event: JobEvent) => void) {
             .filter((line) => line.startsWith("data:"))
             .map((line) => line.slice(5).trim())
             .join("");
-          if (data) onEvent(JSON.parse(data) as JobEvent);
+          if (data) {
+            const event = JSON.parse(data) as Omit<JobEvent, "progress">;
+            onEvent({ ...event, progress: progressOf(event.status) });
+          }
         }
       }
     } catch {
@@ -122,41 +192,40 @@ function subscribeSse(path: string, onEvent: (event: JobEvent) => void) {
 
 export const httpClient: ApiClient = {
   mode: "http",
+  isAvailable: (feature) => FEATURES[feature],
 
   auth: {
-    register: async (input) => {
-      const session = await request<Session>("/auth/register", { method: "POST", body: input, auth: false });
-      tokenStore.set(session.accessToken);
-      return session;
-    },
-    login: async (input) => {
-      const session = await request<Session>("/auth/login", { method: "POST", body: input, auth: false });
-      tokenStore.set(session.accessToken);
-      return session;
-    },
+    register: async (input) => keep(await publicPost<Session>("/auth/register", input)),
+    login: async (input) => keep(await publicPost<Session>("/auth/login", input)),
     refresh: refreshSession,
     logout: async () => {
       await post("/auth/logout").catch(() => undefined);
       tokenStore.set(null);
     },
-    googleUrl: () => `${BASE_URL}/auth/google`,
-    requestOtp: (phone) => post("/auth/otp/request", { phone }),
-    verifyOtp: async (phone, code) => {
-      const session = await post<Session>("/auth/otp/verify", { phone, code });
-      tokenStore.set(session.accessToken);
-      return session;
-    },
-    forgotPassword: (email) => post("/auth/password/forgot", { email }),
-    resetPassword: (token, password) => post("/auth/password/reset", { token, password }),
+    google: async (idToken, totpCode) => keep(await publicPost<Session>("/auth/google", { idToken, totpCode })),
+    verifyEmail: (token) => publicPost("/auth/email/verify", { token }),
+    requestOtp: (phone) => publicPost("/auth/otp/request", { phone }),
+    verifyOtp: async (phone, code) => keep(await publicPost<Session>("/auth/otp/verify", { phone, code })),
+    forgotPassword: (email) => publicPost("/auth/password/forgot", { email }),
+    resetPassword: (token, password) => publicPost("/auth/password/reset", { token, password }),
     setup2fa: () => post("/auth/2fa/setup"),
-    verify2fa: (code) => post("/auth/2fa/verify", { code }),
+    // L'activation ouvre une session marquée 2FA : le nouveau jeton remplace l'ancien.
+    verify2fa: async (code) => {
+      const { backupCodes, ...session } = await post<Session & { backupCodes: string[] }>("/auth/2fa/verify", { code });
+      keep(session);
+      return { backupCodes };
+    },
   },
 
   me: {
     get: () => get("/me"),
     update: (body) => patch("/me", body),
     remove: () => del("/me"),
-    exportData: () => get("/me/export"),
+    // L'API renvoie les données en JSON : elles sont proposées au téléchargement telles quelles.
+    exportData: async () => {
+      const data = await get<unknown>("/me/export");
+      return { url: URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })) };
+    },
   },
 
   workspaces: {
@@ -173,7 +242,7 @@ export const httpClient: ApiClient = {
 
   projects: {
     list: (wid, filters = {}) =>
-      get(`/workspaces/${wid}/projects${qs({ q: filters.q, entityType: filters.entityType, status: filters.status, trash: filters.trash })}`),
+      items(`/workspaces/${wid}/projects${qs({ q: filters.q, type: filters.entityType, status: filters.status, trash: filters.trash })}`),
     create: (wid, input) => post(`/workspaces/${wid}/projects`, input),
     get: (pid) => get(`/projects/${pid}`),
     update: (pid, body) => patch(`/projects/${pid}`, body),
@@ -188,10 +257,10 @@ export const httpClient: ApiClient = {
     generate: (pid, input, key) => post(`/projects/${pid}/names/generate`, input, key),
     list: (pid) => get(`/projects/${pid}/names`),
     update: (nid, body) => patch(`/names/${nid}`, body),
-    check: (nid) => post(`/names/${nid}/checks`),
+    check: async (nid) => (await post<{ checks: Awaited<ReturnType<ApiClient["names"]["check"]>> }>(`/names/${nid}/checks`)).checks,
     vote: (nid, value) => post(`/names/${nid}/votes`, { value }),
     choose: (pid, nameId) => post(`/projects/${pid}/chosen-name`, { nameId }),
-    tryPublic: (input) => request("/public/names/try", { method: "POST", body: input, auth: false }),
+    tryPublic: (input) => publicPost("/public/names/try", input),
   },
 
   logos: {
@@ -205,60 +274,46 @@ export const httpClient: ApiClient = {
     requestExport: (lid, input) => post(`/logos/${lid}/export`, input),
   },
 
-  slogans: {
-    generate: (pid, input, key) => post(`/projects/${pid}/slogans/generate`, input, key),
-    list: (pid) => get(`/projects/${pid}/slogans`),
-    update: (sid, body) => patch(`/slogans/${sid}`, body),
-  },
+  // Phases 4 et 5 (slogans, signatures, kit, commentaires) : routes pas encore servies.
+  slogans: { generate: unavailable, list: none, update: unavailable },
 
-  signatures: {
-    list: (pid) => get(`/projects/${pid}/signatures`),
-    create: (pid, input) => post(`/projects/${pid}/signatures`, input),
-    update: (sid, body) => patch(`/signatures/${sid}`, body),
-    html: (sid) => get(`/signatures/${sid}/html`),
-    fileUrl: (sid) => get(`/signatures/${sid}/file`),
-    batch: (pid, csv, templateId) => post(`/projects/${pid}/signatures/batch`, { csv, templateId }),
-  },
+  signatures: { list: none, create: unavailable, update: unavailable, html: unavailable, fileUrl: unavailable, batch: unavailable },
 
   brandKits: {
-    list: (pid) => get(`/projects/${pid}/brand-kits`),
-    create: (pid) => post(`/projects/${pid}/brand-kits`),
-    generateGuide: (kid) => post(`/brand-kits/${kid}/guide`),
-    generateZip: (kid) => post(`/brand-kits/${kid}/zip`),
-    share: (kid, input) => post(`/brand-kits/${kid}/share`, input),
-    publicKit: (token, password) =>
-      request(`/public/kits/${token}${qs({ password })}`, { auth: false }),
+    list: none,
+    create: unavailable,
+    generateGuide: unavailable,
+    generateZip: unavailable,
+    share: unavailable,
+    publicKit: unavailable,
   },
 
   jobs: {
-    get: (jid) => get(`/jobs/${jid}`),
+    get: async (jid) => {
+      const job = await get<Omit<GenerationJob, "progress">>(`/jobs/${jid}`);
+      return { ...job, progress: progressOf(job.status) };
+    },
     subscribe: (jid, onEvent) => subscribeSse(`/jobs/${jid}/events`, onEvent),
   },
 
-  comments: {
-    list: (pid) => get(`/projects/${pid}/comments`),
-    create: (pid, input) => post(`/projects/${pid}/comments`, input),
-  },
+  comments: { list: none, create: unavailable },
 
   notifications: {
-    list: () => get("/notifications"),
+    list: () => items("/notifications"),
     markRead: (id) => patch(`/notifications/${id}/read`, {}),
   },
 
   billing: {
-    plans: () => request("/plans", { auth: false }),
+    plans: async () => (await request<ApiPlan[]>("/plans", { auth: false })).map(toPlan).filter((plan): plan is Plan => plan !== null),
     credits: (wid) => get(`/workspaces/${wid}/credits`),
-    ledger: (wid) => get(`/workspaces/${wid}/ledger`),
-    checkout: (wid, input, key) => post(`/workspaces/${wid}/checkout`, input, key),
-    payment: (id) => get(`/payments/${id}`),
-    applyPromo: (wid, code) => post(`/workspaces/${wid}/promo`, { code }),
-    sendAssociationProof: (wid, file) => {
-      const form = new FormData();
-      form.append("file", file);
-      return request(`/workspaces/${wid}/association-proof`, { method: "POST", body: form });
-    },
-    cancelSubscription: (wid) => post(`/workspaces/${wid}/subscription/cancel`),
-    invoices: (wid) => get(`/workspaces/${wid}/invoices`),
+    ledger: (wid) => items(`/workspaces/${wid}/ledger`),
+    // Phase 6 : paiements, codes promo, justificatifs et factures.
+    checkout: unavailable,
+    payment: unavailable,
+    applyPromo: unavailable,
+    sendAssociationProof: unavailable,
+    cancelSubscription: unavailable,
+    invoices: none,
   },
 
   library: {
@@ -267,13 +322,13 @@ export const httpClient: ApiClient = {
 
   admin: {
     stats: () => get("/admin/stats"),
-    users: (q) => get(`/admin/users${qs({ q })}`),
-    updateUser: (uid, body) => patch(`/admin/users/${uid}`, body),
+    users: (q) => items(`/admin/users${qs({ q })}`),
+    updateUser: (uid, { suspended, reset2fa }) => patch(`/admin/users/${uid}`, { suspended, resetTwoFactor: reset2fa }),
     adjustCredits: (input) => post("/admin/credits/adjust", input),
-    payments: () => get("/admin/payments"),
-    refund: (id) => post(`/admin/payments/${id}/refund`),
-    moderation: () => get("/admin/moderation"),
-    review: (id, decision, note) => patch(`/admin/moderation/${id}`, { decision, note }),
-    auditLogs: () => get("/admin/audit-logs"),
+    payments: none,
+    refund: unavailable,
+    moderation: none,
+    review: unavailable,
+    auditLogs: () => items("/admin/audit-logs"),
   },
 };

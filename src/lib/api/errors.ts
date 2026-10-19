@@ -5,7 +5,8 @@ export interface ProblemDetails {
   status: number;
   detail?: string;
   code?: string;
-  errors?: Record<string, string[]>;
+  /** Détail des champs refusés : liste de messages (API NestJS) ou messages par champ. */
+  errors?: string[] | Record<string, string[]>;
 }
 
 export class ApiError extends Error {
@@ -14,12 +15,18 @@ export class ApiError extends Error {
   readonly problem: ProblemDetails;
 
   constructor(problem: ProblemDetails) {
-    super(problem.detail ?? problem.title);
+    super(problemMessage(problem));
     this.name = "ApiError";
     this.status = problem.status;
     this.code = problem.code;
     this.problem = problem;
   }
+}
+
+function problemMessage(problem: ProblemDetails) {
+  const message = problem.detail ?? problem.title;
+  const first = Array.isArray(problem.errors) ? problem.errors[0] : Object.values(problem.errors ?? {})[0]?.[0];
+  return first ? `${message} : ${first}` : message;
 }
 
 export function errorMessage(error: unknown, fallback = "Une erreur est survenue.") {

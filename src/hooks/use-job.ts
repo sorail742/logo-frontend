@@ -53,3 +53,14 @@ export function useJob(
   const running = Boolean(jobId) && (!current || current.status === "QUEUED" || current.status === "RUNNING");
   return { event: current, running, progress: current?.progress ?? 0 };
 }
+
+/** Attend la fin d'une tâche par interrogation (export lancé depuis un bouton). */
+export async function waitForJob(jobId: string, timeoutMs = 120_000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const job = await api.jobs.get(jobId);
+    if (job.status === "SUCCEEDED" || job.status === "FAILED" || job.status === "CANCELED") return job;
+    if (Date.now() > deadline) throw new Error("La tâche n'a pas abouti dans le délai prévu.");
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}

@@ -16,6 +16,7 @@ import { cssFontFamily } from "@/lib/render/fonts";
 import { renderLogoSvg } from "@/lib/render/logo";
 import { renderStampSvg } from "@/lib/render/stamp";
 import type { StampData } from "@/lib/types";
+import { ComingSoon } from "@/components/common/coming-soon";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -156,6 +157,7 @@ function CharterContent() {
 }
 
 export default function CharterPage() {
+  if (!api.isAvailable("brandKits")) return <ComingSoon feature="brandKits" />;
   return (
     <Suspense>
       <CharterContent />

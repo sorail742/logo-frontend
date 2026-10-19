@@ -9,7 +9,8 @@ import { SvgView } from "@/components/brand/svg-view";
 import { extractPalette } from "@/lib/render/color";
 import { sanitizeSvg } from "@/lib/render/svg";
 
-const MAX_BYTES = 5 * 1024 * 1024;
+// Limites de l'API (§14.1) : SVG nettoyé côté serveur, PNG transmis en data URL.
+const MAX_BYTES = { svg: 1_000_000, png: 2_000_000 } as const;
 
 /** Vérifie le type réel par signature binaire (pas seulement l'extension, §14.1). */
 async function sniffType(file: File): Promise<"png" | "svg" | null> {
@@ -54,7 +55,7 @@ export function ImportLogoDialog({
     setPreview(null);
     if (!file) return;
     const type = await sniffType(file);
-    if (!type || file.size > MAX_BYTES) return setError(t("invalidFile"));
+    if (!type || file.size > MAX_BYTES[type]) return setError(t("invalidFile"));
     if (type === "svg") {
       const clean = sanitizeSvg(await file.text());
       if (!clean) return setError(t("invalidFile"));

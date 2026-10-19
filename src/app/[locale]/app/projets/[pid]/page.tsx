@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ButtonLink } from "@/components/common/button-link";
@@ -18,6 +18,8 @@ import { PROJECT_STATUSES, type ProjectStatus } from "@/lib/types";
 export default function ProjectOverviewPage() {
   const t = useTranslations();
   const format = useFormatter();
+  // Heure de référence des durées relatives (« il y a 3 minutes »), rafraîchie chaque minute.
+  const now = useNow({ updateInterval: 60_000 });
   const { project, pid, can } = useProject();
   const queryClient = useQueryClient();
   const onError = useApiErrorToast();
@@ -120,7 +122,7 @@ export default function ProjectOverviewPage() {
                 {activity.map((item) => (
                   <li key={item.id}>
                     <span className="font-medium">{item.actor}</span> {item.action}
-                    <span className="block text-xs text-muted-foreground">{format.relativeTime(new Date(item.createdAt))}</span>
+                    <span className="block text-xs text-muted-foreground">{format.relativeTime(new Date(item.createdAt), now)}</span>
                   </li>
                 ))}
               </ol>

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ButtonLink } from "@/components/common/button-link";
 import { useApiErrorToast } from "@/hooks/use-api-error";
-import { api } from "@/lib/api";
+import { waitForJob } from "@/hooks/use-job";
+import { api, type ApiClient } from "@/lib/api";
 import { downloadBlob, downloadSvg, svgToPngBlob } from "@/lib/render/export";
 import { iconPackEntries, socialSvg, SOCIAL_FORMATS, type SocialFormatId } from "@/lib/render/logo-assets";
 import { renderLogoSvg } from "@/lib/render/logo";
@@ -27,7 +28,23 @@ function ExportItem({ id, label, onClick, busy }: { id: string; label: string; o
   );
 }
 
-export function ExportPanel({ spec, logoId, isFree }: { spec: LogoSpec; logoId: string; isFree: boolean }) {
+type ExportInput = Parameters<ApiClient["logos"]["requestExport"]>[1];
+
+/** Ouvre le lien signé de l'archive : l'API le sert en pièce jointe. */
+function openDownload(url: string) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+/**
+ * `saved` : la spec affichée est la dernière version enregistrée. L'export serveur porte sur
+ * cette version ; une modification en cours doit d'abord être enregistrée.
+ */
+export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: LogoSpec; logoId: string; isFree: boolean; saved?: boolean }) {
   const t = useTranslations("logos.export");
   const onError = useApiErrorToast();
   const [busy, setBusy] = useState<string | null>(null);
@@ -59,14 +76,19 @@ export function ExportPanel({ spec, logoId, isFree }: { spec: LogoSpec; logoId: 
       downloadBlob(blob, `${base}-${id}.png`);
     });
 
-  const pdf = () =>
-    run("pdf", async () => {
-      if (api.mode === "mock") {
-        toast.info(t("pdfServer"));
-        return;
-      }
-      await api.logos.requestExport(logoId, { formats: ["pdf"], sizes: [], iconPack: false });
+  const server = (id: string, input: ExportInput) =>
+    run(id, async () => {
+      const { jobId } = await api.logos.requestExport(logoId, input);
+      const job = await waitForJob(jobId);
+      if (job.status !== "SUCCEEDED" || !job.result?.downloadUrl) throw new Error(job.error ?? t("serverFailed"));
+      openDownload(job.result.downloadUrl);
     });
+
+  const pdf = () => {
+    if (api.mode === "mock") return void toast.info(t("pdfServer"));
+    if (!saved) return void toast.info(t("saveFirst"));
+    server("pdf", { formats: ["pdf"], iconPack: false, social: false });
+  };
 
   return (
     <Card>
@@ -93,6 +115,22 @@ export function ExportPanel({ spec, logoId, isFree }: { spec: LogoSpec; logoId: 
               <ExportItem busy={busy} id="image/jpeg-1024" label={t("jpg")} onClick={() => png(1024, "image/jpeg")} />
               <ExportItem busy={busy} id="pdf" label={t("pdf")} onClick={pdf} />
             </div>
+            {api.mode === "http" && (
+              <div className="grid gap-2 border-t pt-4">
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  <Package className="size-4" aria-hidden="true" />
+                  {t("zipAll")}
+                </p>
+                <p className="text-xs text-muted-foreground">{saved ? t("zipAllBody") : t("saveFirst")}</p>
+                <Button
+                  onClick={() => server("zip", { formats: ["svg", "pdf", "png", "jpg"], sizes: [512, 1024, 2048], iconPack: true, social: true })}
+                  disabled={Boolean(busy) || !saved}
+                >
+                  {busy === "zip" ? <Loader2 className="animate-spin" /> : <Download />}
+                  {t("zipAllButton")}
+                </Button>
+              </div>
+            )}
             <div className="grid gap-2 border-t pt-4">
               <p className="flex items-center gap-2 text-sm font-medium">
                 <Package className="size-4" aria-hidden="true" />

@@ -326,6 +326,7 @@ export function audit(action: string, entityType: string, entityId: string) {
 export const JOB_DURATIONS: Record<JobKind, number> = {
   NAMES: 2200,
   LOGOS: 3200,
+  LOGO_EXPORT: 1500,
   SLOGANS: 1800,
   SIGNATURE: 1200,
   BRAND_GUIDE: 2500,

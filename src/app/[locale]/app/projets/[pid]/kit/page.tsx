@@ -28,8 +28,18 @@ import { downloadBlob } from "@/lib/render/export";
 import { buildKitZip } from "@/lib/render/kit-zip";
 import type { BrandKit } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { ComingSoon } from "@/components/common/coming-soon";
 
 export default function KitPage() {
+  return api.isAvailable("brandKits") ? <KitContent /> : <KitComingSoon />;
+}
+
+function KitComingSoon() {
+  const t = useTranslations("kit");
+  return <ComingSoon feature="brandKits" title={t("title")} />;
+}
+
+function KitContent() {
   const t = useTranslations("kit");
   const format = useFormatter();
   const locale = useLocale();

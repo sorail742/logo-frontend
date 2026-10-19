@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +13,18 @@ import { qk } from "@/lib/query-keys";
 import type { Comment } from "@/lib/types";
 
 /** Commentaires sur un élément du projet, avec mentions @ (COL-02). */
-export function CommentsPanel({ pid, targetType, targetId }: { pid: string; targetType: Comment["targetType"]; targetId: string }) {
+type CommentsPanelProps = { pid: string; targetType: Comment["targetType"]; targetId: string };
+
+/** Commentaires (COL-02), masqués tant que l'API ne les sert pas. */
+export function CommentsPanel(props: CommentsPanelProps) {
+  return api.isAvailable("comments") ? <CommentsPanelContent {...props} /> : null;
+}
+
+function CommentsPanelContent({ pid, targetType, targetId }: CommentsPanelProps) {
   const t = useTranslations("app.comments");
   const format = useFormatter();
+  // Heure de référence des durées relatives (« il y a 3 minutes »), rafraîchie chaque minute.
+  const now = useNow({ updateInterval: 60_000 });
   const queryClient = useQueryClient();
   const onError = useApiErrorToast();
   const [body, setBody] = useState("");
@@ -41,7 +50,7 @@ export function CommentsPanel({ pid, targetType, targetId }: { pid: string; targ
           {comments.map((comment) => (
             <li key={comment.id} className="rounded-lg bg-muted/50 p-3 text-sm">
               <p className="text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">{comment.authorName}</span> · {format.relativeTime(new Date(comment.createdAt))}
+                <span className="font-medium text-foreground">{comment.authorName}</span> · {format.relativeTime(new Date(comment.createdAt), now)}
               </p>
               <p className="mt-1 whitespace-pre-wrap">
                 {comment.body.split(/(@[\p{L}\d_-]+)/u).map((part, i) =>

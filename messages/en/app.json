@@ -140,7 +140,8 @@
     "createTitle": "Create an organisation workspace",
     "createBody": "One workspace per organisation or per client (agencies). Credits and subscription belong to each workspace.",
     "create": "Create workspace",
-    "created": "Workspace created"
+    "created": "Workspace created",
+    "linkInvitation": "Invitation link"
   },
   "profile": {
     "title": "Profile",

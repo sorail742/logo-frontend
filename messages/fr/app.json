@@ -140,7 +140,8 @@
     "createTitle": "Créer un espace d'organisation",
     "createBody": "Un espace par organisation ou par client (agences). Les crédits et l'abonnement sont propres à chaque espace.",
     "create": "Créer l'espace",
-    "created": "Espace créé"
+    "created": "Espace créé",
+    "linkInvitation": "Lien d'invitation"
   },
   "profile": {
     "title": "Profil",

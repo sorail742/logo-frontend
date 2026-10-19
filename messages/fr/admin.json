@@ -33,10 +33,15 @@
   "jobs": {
     "NAMES": "Noms",
     "LOGOS": "Logos",
+    "LOGO_EXPORT": "Exports de logos",
     "SLOGANS": "Slogans",
     "SIGNATURE": "Signatures",
     "BRAND_GUIDE": "Chartes PDF",
-    "EXPORT_ZIP": "Archives ZIP"
+    "EXPORT_ZIP": "Archives ZIP",
+    "APPAREL_PROPOSALS": "Tenues : propositions",
+    "APPAREL_MOCKUP": "Tenues : maquettes",
+    "PRODUCTION_PACK": "Tenues : packs atelier",
+    "NUMBER_FONT": "Tenues : polices de numéros"
   },
   "users": {
     "search": "Rechercher par nom ou e-mail",

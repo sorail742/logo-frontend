@@ -13,6 +13,7 @@ import { api, newIdempotencyKey } from "@/lib/api";
 import { formatGnf } from "@/lib/format";
 import type { PaymentProvider, Plan } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { ComingSoon } from "@/components/common/coming-soon";
 
 type Phase = "form" | "pending" | "succeeded" | "failed";
 
@@ -76,7 +77,9 @@ export function CheckoutDialog({ plan, workspaceId, onClose }: { plan: Plan | nu
           </DialogDescription>
         </DialogHeader>
 
-        {phase === "form" && (
+        {!api.isAvailable("payments") && <ComingSoon feature="payments" />}
+
+        {phase === "form" && api.isAvailable("payments") && (
           <div className="grid gap-4">
             {plan.interval && (
               <fieldset className="grid gap-2">

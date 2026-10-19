@@ -12,8 +12,13 @@ import { EmptyState } from "@/components/common/empty-state";
 import { useApiErrorToast } from "@/hooks/use-api-error";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/query-keys";
+import { ComingSoon } from "@/components/common/coming-soon";
 
 export default function AdminModerationPage() {
+  return api.isAvailable("moderation") ? <AdminModerationContent /> : <ComingSoon feature="moderation" />;
+}
+
+function AdminModerationContent() {
   const t = useTranslations("admin.moderation");
   const format = useFormatter();
   const queryClient = useQueryClient();
