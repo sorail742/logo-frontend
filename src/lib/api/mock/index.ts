@@ -20,7 +20,8 @@ import { PLANS } from "@/lib/plans";
 import { paletteFromColors } from "@/lib/render/color";
 import { FONTS } from "@/lib/render/fonts";
 import { findOfficialTerms, renderStampSvg } from "@/lib/render/stamp";
-import { DEFAULT_SPEC } from "@/lib/render/logo";
+import { DEFAULT_SPEC, LOGO_VARIANTS, renderLogoSvg } from "@/lib/render/logo";
+import type { StudioDesign } from "@/lib/studio/types";
 import type {
   BrandKit,
   JobEvent,
@@ -75,6 +76,36 @@ function latestVersion(logoId: string) {
   return db()
     .logoVersions.filter((v) => v.logoId === logoId)
     .sort((a, b) => b.number - a.number)[0]!;
+}
+
+// Créations du Studio : rangées à part (images intégrées), sous une clé dédiée du navigateur.
+const STUDIO_KEY = "identite:mock-studio:v1";
+let studioCache: StudioDesign[] | null = null;
+
+function studioDesigns(): StudioDesign[] {
+  if (studioCache) return studioCache;
+  try {
+    studioCache = JSON.parse(window.localStorage.getItem(STUDIO_KEY) ?? "[]") as StudioDesign[];
+  } catch {
+    studioCache = [];
+  }
+  return studioCache;
+}
+
+function saveStudioDesigns(designs: StudioDesign[]) {
+  try {
+    window.localStorage.setItem(STUDIO_KEY, JSON.stringify(designs));
+    studioCache = designs;
+  } catch {
+    studioCache = null;
+    throw problem(413, "Création trop lourde", "PAYLOAD_TOO_LARGE", "Le stockage du navigateur est plein : réduisez le nombre ou la taille des images.");
+  }
+}
+
+function studioDesign(sdid: string) {
+  const design = studioDesigns().find((d) => d.id === sdid);
+  if (!design) throw problem(404, "Création introuvable", "NOT_FOUND");
+  return design;
 }
 
 function toLogo(logo: ReturnType<typeof db>["logos"][number]): Logo {
@@ -331,7 +362,7 @@ function kitToDto(kit: ReturnType<typeof db>["brandKits"][number]): BrandKit {
 
 export const mockClient: ApiClient = {
   mode: "mock",
-  isAvailable: (feature) => feature !== "googleLogin",
+  isAvailable: (feature) => feature !== "googleLogin" && feature !== "studioExport",
 
   auth: {
     async register({ fullName, email, password }) {
@@ -740,6 +771,82 @@ export const mockClient: ApiClient = {
       const logo = db().logos.find((l) => l.id === lid)!;
       requireRole(projectOr404(logo.projectId).workspaceId, "EDITOR");
       return { jobId: "client-export" };
+    },
+    async variants(lid) {
+      const logo = db().logos.find((l) => l.id === lid);
+      if (!logo) throw problem(404, "Logo introuvable", "NOT_FOUND");
+      requireRole(projectOr404(logo.projectId).workspaceId, "VIEWER");
+      const version = latestVersion(lid);
+      return {
+        versionId: version.id,
+        variants: LOGO_VARIANTS.map((def) => ({
+          id: def.id,
+          file: `logo-${def.id}.svg`,
+          dark: def.dark,
+          svg: renderLogoSvg(version.spec, { variant: def.variant, layout: def.layout, withBackground: false }).svg,
+        })),
+      };
+    },
+  },
+
+  studio: {
+    async list(pid) {
+      requireRole(projectOr404(pid).workspaceId, "VIEWER");
+      return studioDesigns()
+        .filter((d) => d.projectId === pid)
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+        .map(({ doc: _doc, ...summary }) => summary);
+    },
+    async create(pid, input) {
+      await wait();
+      const project = projectOr404(pid);
+      requireRole(project.workspaceId, "EDITOR");
+      const design: StudioDesign = {
+        id: id("sd"),
+        projectId: pid,
+        name: input.name.trim(),
+        format: input.format,
+        width: Math.round(input.doc.width),
+        height: Math.round(input.doc.height),
+        doc: input.doc,
+        thumbnail: input.thumbnail ?? null,
+        createdAt: now(),
+        updatedAt: now(),
+      };
+      saveStudioDesigns([design, ...studioDesigns()]);
+      logActivity(pid, `a créé « ${design.name} » dans le Studio`);
+      return structuredClone(design);
+    },
+    async get(sdid) {
+      const design = studioDesign(sdid);
+      requireRole(projectOr404(design.projectId).workspaceId, "VIEWER");
+      return structuredClone(design);
+    },
+    async save(sdid, patch) {
+      const design = studioDesign(sdid);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      if (patch.name) design.name = patch.name.trim();
+      if (patch.doc) Object.assign(design, { doc: patch.doc, width: Math.round(patch.doc.width), height: Math.round(patch.doc.height) });
+      if (patch.thumbnail) design.thumbnail = patch.thumbnail;
+      design.updatedAt = now();
+      saveStudioDesigns(studioDesigns());
+      const { doc: _doc, ...summary } = design;
+      return structuredClone(summary);
+    },
+    async duplicate(sdid) {
+      const source = studioDesign(sdid);
+      requireRole(projectOr404(source.projectId).workspaceId, "EDITOR");
+      const copy: StudioDesign = { ...structuredClone(source), id: id("sd"), name: `${source.name} (copie)`.slice(0, 120), createdAt: now(), updatedAt: now() };
+      saveStudioDesigns([copy, ...studioDesigns()]);
+      return structuredClone(copy);
+    },
+    async remove(sdid) {
+      const design = studioDesign(sdid);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      saveStudioDesigns(studioDesigns().filter((d) => d.id !== sdid));
+    },
+    async requestExport() {
+      throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Le PDF d'impression est produit par le serveur de la plateforme.");
     },
   },
 

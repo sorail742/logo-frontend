@@ -21,6 +21,7 @@ const FEATURES: Record<ApiFeature, boolean> = {
   moderation: true,
   smsLogin: false,
   googleLogin: Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID),
+  studioExport: true,
 };
 
 /** Action d'un module pas encore servi par l'API. */
@@ -273,6 +274,7 @@ export const httpClient: ApiClient = {
     versions: (lid) => get(`/logos/${lid}/versions`),
     saveVersion: (lid, input) => post(`/logos/${lid}/versions`, input),
     requestExport: (lid, input) => post(`/logos/${lid}/export`, input),
+    variants: (lid) => post(`/logos/${lid}/variants`, {}),
   },
 
   slogans: {
@@ -300,6 +302,16 @@ export const httpClient: ApiClient = {
     // Mot de passe en en-tête : il n'apparaît ni dans l'URL ni dans les journaux.
     publicKit: (token, password) =>
       request(`/public/kits/${encodeURIComponent(token)}`, { auth: false, headers: password ? { "X-Kit-Password": password } : {} }),
+  },
+
+  studio: {
+    list: (pid) => get(`/projects/${pid}/studio-designs`),
+    create: (pid, input) => post(`/projects/${pid}/studio-designs`, input),
+    get: (sdid) => get(`/studio-designs/${sdid}`),
+    save: (sdid, patch) => put(`/studio-designs/${sdid}`, patch),
+    duplicate: (sdid) => post(`/studio-designs/${sdid}/duplicate`),
+    remove: (sdid) => del(`/studio-designs/${sdid}`),
+    requestExport: (sdid, input, key) => post(`/studio-designs/${sdid}/export`, input, key),
   },
 
   jobs: {
