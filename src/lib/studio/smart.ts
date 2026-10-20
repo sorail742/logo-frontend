@@ -3,7 +3,7 @@ import { FONT_PAIRINGS, type StudioBrand } from "./brand";
 import { harmony, paintColor } from "./color";
 import { createImage, newId, scaleElement } from "./doc";
 import { aabb, union, type Box } from "./geometry";
-import { relayout } from "./text";
+import { naturalWidth, relayout } from "./text";
 import type { DesignDoc, DesignElement, DesignPage, ImageElement, Paint, PrintSpec, ShapeElement, TextElement } from "./types";
 
 // Fonctions « intelligentes » du Studio : redimensionnement magique vers un autre format,
@@ -263,6 +263,18 @@ function keepReadable(page: DesignPage): DesignPage {
   };
 }
 
+/** Change la police d'un texte ; un texte court qui épousait sa boîte est réduit pour y tenir. */
+function withFont(el: TextElement, fontId: string, fontWeight: number): TextElement {
+  const before = naturalWidth(el);
+  const hugging = !el.curve && el.width <= before * 1.15 + el.fontSize;
+  const next = { ...el, fontId, fontWeight };
+  if (hugging) {
+    const after = naturalWidth(next);
+    if (after > el.width) next.fontSize = el.fontSize * (el.width / after);
+  }
+  return relayout(next);
+}
+
 function swapFonts(page: DesignPage, pairing: (typeof FONT_PAIRINGS)[number]): DesignPage {
   const texts = page.elements.filter((el): el is TextElement => el.type === "text");
   const largest = Math.max(0, ...texts.map((t) => t.fontSize));
@@ -272,7 +284,7 @@ function swapFonts(page: DesignPage, pairing: (typeof FONT_PAIRINGS)[number]): D
       if (el.type !== "text" || el.role === "logo") return el;
       const heading = el.role === "title" || (!el.role && el.fontSize >= largest * 0.6);
       const font = heading ? pairing[0] : pairing[1];
-      return relayout({ ...el, fontId: font.fontId, fontWeight: heading ? font.fontWeight : el.fontWeight >= 600 ? 700 : 400 });
+      return withFont(el, font.fontId, heading ? font.fontWeight : el.fontWeight >= 600 ? 700 : 400);
     }),
   };
 }
@@ -307,7 +319,7 @@ export interface Variation {
  * couleurs, associations de polices, mise en page en miroir. Les textes restent lisibles.
  */
 export function variations(page: DesignPage, doc: Pick<DesignDoc, "width" | "height">, brand: StudioBrand): Variation[] {
-  const { primary, secondary, text, background } = brand.colors;
+  const { primary, secondary, background } = brand.colors;
   const lower = (c: string) => c.toLowerCase();
   const swap = (pairs: [string, string][]): ColorMap => {
     const table = new Map<string, string>();
@@ -316,7 +328,9 @@ export function variations(page: DesignPage, doc: Pick<DesignDoc, "width" | "hei
     }
     return (c) => table.get(c) ?? c;
   };
-  const dark = luminance(background) > 0.5 ? mix(primary, "#000000", 0.7) : mix(primary, "#ffffff", 0.9);
+  // Fond inversé : un fond clair devient sombre (teinte de la marque), un fond sombre ou saturé devient clair.
+  const pageBg = paintColor(page.background) ?? background;
+  const inverted = luminance(pageBg) > 0.45 ? mix(primary, "#000000", 0.72) : luminance(background) > 0.6 ? background : mix(primary, "#ffffff", 0.9);
   const analog = harmony(primary, "analogous");
   const currentFont = page.elements.find((el): el is TextElement => el.type === "text" && el.role === "title")?.fontId;
   const pairings = FONT_PAIRINGS.filter(([h]) => h.fontId !== currentFont);
@@ -324,7 +338,7 @@ export function variations(page: DesignPage, doc: Pick<DesignDoc, "width" | "hei
 
   const out: Variation[] = [
     { id: "swap", kind: "palette", page: keepReadable(recolor(page, swap([[primary, secondary], [secondary, primary]]))) },
-    { id: "dark", kind: "dark", page: keepReadable(recolor(page, swap([[background, dark], [text, background], ["#ffffff", dark]]))) },
+    { id: "dark", kind: "dark", page: keepReadable(recolor(page, swap([[pageBg, inverted], [inverted, pageBg]]))) },
     { id: "fonts-a", kind: "fonts", page: swapFonts(page, pick(0)) },
     { id: "mirror", kind: "mirror", page: reshape(mirror(page, doc.width), 7) },
     { id: "harmony", kind: "harmony", page: keepReadable(recolor(page, swap([[primary, analog[0]!], [secondary, analog[2]!]]))) },

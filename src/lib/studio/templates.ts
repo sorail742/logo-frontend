@@ -232,8 +232,6 @@ function column(
   return out;
 }
 
-const textAlign = (align: "start" | "center" | "end"): TextElement["align"] => (align === "start" ? "left" : align === "end" ? "right" : "center");
-
 function page(background: Paint, elements: DesignElement[]): DesignPage {
   return { ...createPage(background), elements };
 }

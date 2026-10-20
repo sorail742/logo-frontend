@@ -219,8 +219,14 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
           params: { bleed: `${doc.print.bleedMm} mm` },
           fix: fixElement(pageIndex, el.id, (e) => {
             let { x, y, width, height } = e;
-            if (touches.left) (x -= bleed), (width += bleed);
-            if (touches.top) (y -= bleed), (height += bleed);
+            if (touches.left) {
+              x -= bleed;
+              width += bleed;
+            }
+            if (touches.top) {
+              y -= bleed;
+              height += bleed;
+            }
             if (touches.right) width += bleed;
             if (touches.bottom) height += bleed;
             return { ...e, x, y, width, height };

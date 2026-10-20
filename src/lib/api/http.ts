@@ -274,7 +274,7 @@ export const httpClient: ApiClient = {
     versions: (lid) => get(`/logos/${lid}/versions`),
     saveVersion: (lid, input) => post(`/logos/${lid}/versions`, input),
     requestExport: (lid, input) => post(`/logos/${lid}/export`, input),
-    variants: (lid) => post(`/logos/${lid}/variants`, {}),
+    variants: (lid, options) => post(`/logos/${lid}/variants`, { transparent: options?.transparent }),
   },
 
   slogans: {

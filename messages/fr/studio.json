@@ -1,0 +1,733 @@
+{
+  "canvas": {
+    "label": "Zone de travail",
+    "duplicate": "Dupliquer",
+    "lock": "Verrouiller",
+    "unlock": "Déverrouiller",
+    "delete": "Supprimer",
+    "cropHint": "Glissez pour cadrer la photo · Entrée ou Échap pour terminer"
+  },
+  "paint": {
+    "saturation": "Saturation et luminosité",
+    "hue": "Teinte",
+    "hex": "Code hexadécimal",
+    "eyedropper": "Pipette : prélever une couleur à l'écran",
+    "none": "Aucun",
+    "solid": "Uni",
+    "linear": "Linéaire",
+    "radial": "Radial",
+    "stop": "Arrêt {index}",
+    "position": "Position",
+    "addStop": "Ajouter un arrêt",
+    "removeStop": "Supprimer l'arrêt",
+    "angle": "Angle",
+    "preset": "Dégradé de la marque {index}",
+    "brand": "Couleurs de la marque",
+    "document": "Couleurs du document",
+    "harmonies": "Harmonies",
+    "harmony": {
+      "complementary": "Complémentaire",
+      "analogous": "Analogue",
+      "triadic": "Triadique",
+      "split": "Complémentaires adjacentes",
+      "tints": "Teintes claires",
+      "shades": "Teintes sombres"
+    },
+    "classics": "Classiques"
+  },
+  "text": {
+    "font": "Police",
+    "searchFont": "Rechercher une police",
+    "brandFonts": "Polices de la marque"
+  },
+  "roles": {
+    "background": "Fond",
+    "title": "Titre",
+    "subtitle": "Sous-titre",
+    "body": "Texte",
+    "logo": "Logo",
+    "cta": "Bouton",
+    "photo": "Cadre photo",
+    "decor": "Décor",
+    "info": "Information"
+  },
+  "inspector": {
+    "types": {
+      "text": "Texte",
+      "shape": "Forme",
+      "icon": "Icône",
+      "image": "Photo",
+      "svg": "Logo ou illustration"
+    },
+    "multiple": "{count} éléments",
+    "lock": "Verrouiller",
+    "unlock": "Déverrouiller",
+    "icon": "Icône",
+    "color": "Couleur",
+    "strokeWidth": "Épaisseur",
+    "layout": "Disposition",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "rotation": "Rotation",
+    "flipX": "Retourner horizontalement",
+    "flipY": "Retourner verticalement",
+    "alignPage": "Aligner sur la page",
+    "alignSelection": "Aligner la sélection",
+    "align": {
+      "left": "Aligner à gauche",
+      "hcenter": "Centrer horizontalement",
+      "right": "Aligner à droite",
+      "top": "Aligner en haut",
+      "vcenter": "Centrer verticalement",
+      "bottom": "Aligner en bas"
+    },
+    "distributeX": "Répartir ↔",
+    "distributeY": "Répartir ↕",
+    "order": "Plan",
+    "front": "Premier plan",
+    "forward": "Avancer",
+    "backward": "Reculer",
+    "back": "Arrière-plan",
+    "effects": "Effets",
+    "opacity": "Opacité",
+    "blend": "Fusion",
+    "blends": {
+      "normal": "Normal",
+      "multiply": "Produit",
+      "screen": "Superposition claire",
+      "overlay": "Incrustation",
+      "darken": "Obscurcir",
+      "lighten": "Éclaircir",
+      "soft-light": "Lumière tamisée"
+    },
+    "shadow": "Ombre",
+    "shadows": {
+      "soft": "Douce",
+      "hard": "Décalée",
+      "glow": "Halo"
+    },
+    "blur": "Flou",
+    "shadowColor": "Couleur de l'ombre",
+    "shadowOpacity": "Intensité",
+    "text": "Texte",
+    "weight": "Graisse",
+    "weights": {
+      "400": "Normal",
+      "600": "Demi-gras",
+      "700": "Gras",
+      "800": "Extra-gras",
+      "900": "Noir"
+    },
+    "size": "Corps",
+    "letterSpacing": "Interlettrage",
+    "lineHeight": "Interligne",
+    "textAlign": "Alignement du texte",
+    "alignText": {
+      "left": "À gauche",
+      "center": "Centré",
+      "right": "À droite"
+    },
+    "uppercase": "Majuscules",
+    "fill": "Couleur",
+    "textEffects": "Effets de texte",
+    "outline": "Contour",
+    "outlineColor": "Couleur du contour",
+    "curve": "Courbure",
+    "highlight": "Surlignage",
+    "highlightColor": "Couleur du surlignage",
+    "padding": "Marge",
+    "radius": "Arrondi",
+    "shape": "Forme",
+    "line": "Trait",
+    "border": "Bordure",
+    "borderColor": "Couleur de la bordure",
+    "dash": "Style",
+    "dashes": {
+      "solid": "Continu",
+      "dashed": "Tirets",
+      "dotted": "Pointillés"
+    },
+    "points": "Branches",
+    "sides": "Côtés",
+    "innerRatio": "Creux",
+    "reshape": "Nouvelle forme",
+    "photo": "Photo",
+    "crop": "Cadrer",
+    "replace": "Remplacer",
+    "fit": "Ajustement",
+    "fits": {
+      "cover": "Remplir",
+      "contain": "Entière"
+    },
+    "mask": "Masque",
+    "masks": {
+      "none": "Aucun",
+      "rounded": "Coins arrondis",
+      "circle": "Cercle",
+      "arch": "Arche",
+      "blob": "Forme libre"
+    },
+    "filters": "Retouches",
+    "filterPresets": {
+      "original": "Originale",
+      "mono": "Noir & blanc",
+      "vivid": "Éclatante",
+      "soft": "Douce",
+      "dramatic": "Dramatique",
+      "dreamy": "Rêveuse"
+    },
+    "brightness": "Luminosité",
+    "contrast": "Contraste",
+    "saturation": "Saturation",
+    "logoVariant": "Version du logo",
+    "logoVariants": {
+      "color": "Couleur",
+      "white": "Blanc (fonds sombres)",
+      "black": "Noir",
+      "icon": "Symbole seul",
+      "horizontal": "Horizontal",
+      "vertical": "Vertical"
+    },
+    "page": "Page {number}",
+    "printSize": "Impression {width} × {height} mm · fond perdu {bleed} mm",
+    "screenSize": "{width} × {height} px",
+    "background": "Fond",
+    "useAsBackground": "Fond {color}",
+    "pageName": "Nom",
+    "print": "Impression",
+    "printGuides": "Repères d'impression",
+    "printHelp": "Le trait rouge marque le fond perdu ({bleed} mm, coupé à l'impression) : prolongez-y vos fonds et photos. Le trait bleu marque la zone de sécurité : gardez-y textes et logos.",
+    "tips": "Astuces",
+    "tipDrag": "Glissez une photo depuis votre ordinateur, ou collez-la (Ctrl V).",
+    "tipAlt": "Alt + glisser crée une copie de l'élément.",
+    "tipShift": "Maj contraint les déplacements et les proportions ; Ctrl désactive l'aimantation.",
+    "tipSpace": "Espace + glisser déplace la vue ; Ctrl + molette zoome.",
+    "tipDouble": "Double-cliquez sur un texte pour l'écrire, sur une photo pour la cadrer."
+  },
+  "templates": {
+    "intro": "Des compositions à vos couleurs, avec votre logo et vos polices, adaptées au format de cette création.",
+    "categories": {
+      "all": "Tous",
+      "announce": "Annonce",
+      "promo": "Promotion",
+      "event": "Événement",
+      "quote": "Citation",
+      "hiring": "Recrutement",
+      "info": "Présentation",
+      "minimal": "Épuré",
+      "card": "Carte",
+      "carousel": "Carrousel"
+    },
+    "names": {
+      "bold-announce": "Annonce audacieuse",
+      "split-promo": "Promotion en arche",
+      "event-gradient": "Événement en dégradé",
+      "quote-serif": "Citation encadrée",
+      "hiring-list": "Offre d'emploi",
+      "photo-frame": "Photo et texte",
+      "key-figures": "Chiffres clés",
+      "minimal-logo": "Logo épuré",
+      "carousel-tips": "Carrousel de conseils",
+      "business-card": "Carte de visite recto-verso"
+    },
+    "pages": "{count} pages",
+    "applied": "Modèle appliqué",
+    "appliedPages": "{count} pages ajoutées",
+    "copy": {
+      "kicker": "Nouveau",
+      "announceTitle": "Grande ouverture",
+      "announceBody": "Venez découvrir nos nouveautés dès ce samedi, de 9 h à 18 h.",
+      "cta": "En savoir plus",
+      "promoKicker": "Offre spéciale",
+      "promoValue": "-30 %",
+      "promoTitle": "Sur toute la collection",
+      "promoBody": "Jusqu'au 30 novembre, en boutique et en ligne.",
+      "eventKicker": "Événement",
+      "eventTitle": "Journée portes ouvertes",
+      "eventDate": "Samedi 14 décembre · 10 h",
+      "eventPlace": "Kaloum, Conakry",
+      "quote": "La qualité n'est jamais un accident ; c'est toujours le résultat d'un effort intelligent.",
+      "quoteAuthor": "John Ruskin",
+      "hiringKicker": "Rejoignez-nous",
+      "hiringTitle": "Nous recrutons",
+      "hiringRole": "Chargé·e de communication",
+      "hiringPoints": [
+        "CDI basé à Conakry",
+        "Équipe jeune et engagée",
+        "Formation continue"
+      ],
+      "hiringCta": "Candidatures avant le 15 janvier",
+      "photoTitle": "Notre savoir-faire, à votre service",
+      "photoBody": "Présentez votre activité en une phrase claire : ce que vous faites, pour qui, et ce qui vous distingue.",
+      "statsTitle": "Nos chiffres clés",
+      "stats": [
+        {
+          "value": "12 ans",
+          "label": "d'expérience au service de nos clients"
+        },
+        {
+          "value": "3 500",
+          "label": "clients accompagnés en Guinée"
+        },
+        {
+          "value": "98 %",
+          "label": "de clients satisfaits"
+        }
+      ],
+      "carouselCover": "3 conseils pour réussir votre lancement",
+      "carouselSwipe": "Faites défiler",
+      "carouselTips": [
+        {
+          "title": "Connaissez votre public",
+          "body": "Décrivez précisément les personnes que vous voulez toucher : leurs besoins, leurs habitudes, les canaux qu'elles utilisent."
+        },
+        {
+          "title": "Soignez votre identité",
+          "body": "Un logo, des couleurs et des polices cohérents rendent votre marque reconnaissable partout, du flyer à la publication."
+        },
+        {
+          "title": "Racontez votre histoire",
+          "body": "Expliquez pourquoi vous existez : une mission sincère, dite simplement, crée la confiance."
+        }
+      ],
+      "carouselEnd": "Suivez-nous pour d'autres conseils",
+      "person": "Aïssatou Diallo",
+      "role": "Directrice",
+      "phone": "+224 620 00 00 00",
+      "email": "contact@exemple.gn",
+      "website": "www.exemple.gn",
+      "address": "Kaloum, Conakry"
+    }
+  },
+  "elements": {
+    "shapes": "Formes",
+    "frames": "Cadres photo",
+    "framesHelp": "Déposez une photo sur un cadre, ou double-cliquez dessus : elle prend sa forme.",
+    "icons": "Icônes",
+    "iconCount": "{count} icônes",
+    "searchIcons": "Rechercher : maison, téléphone, heart…",
+    "noIcon": "Aucune icône ne correspond.",
+    "more": "Afficher plus ({count})",
+    "shape": {
+      "rect": "Rectangle",
+      "rounded": "Rectangle arrondi",
+      "ellipse": "Cercle",
+      "triangle": "Triangle",
+      "hexagon": "Hexagone",
+      "star": "Étoile",
+      "burst": "Pastille",
+      "blob": "Forme organique",
+      "arch": "Arche",
+      "ring": "Anneau",
+      "line": "Trait",
+      "arrow": "Flèche",
+      "frameCircle": "Cadre rond",
+      "frameArch": "Cadre en arche",
+      "frameRounded": "Cadre arrondi",
+      "frameBlob": "Cadre organique"
+    }
+  },
+  "textPanel": {
+    "addTitle": "Ajouter un titre",
+    "addSubtitle": "Ajouter un sous-titre",
+    "addBody": "Ajouter un paragraphe",
+    "effects": "Styles de texte",
+    "pairings": "Associations de polices",
+    "pairWith": "avec {font}",
+    "samples": {
+      "title": "Votre titre",
+      "subtitle": "Un sous-titre accrocheur",
+      "body": "Écrivez ici votre texte : une ou deux phrases suffisent souvent.",
+      "pairTitle": "Un titre qui marque",
+      "pairBody": "Un texte courant lisible et élégant, assorti au titre."
+    },
+    "styles": {
+      "outline": "Contour",
+      "gradient": "Dégradé",
+      "highlight": "Surligné",
+      "retro": "Rétro",
+      "neon": "Néon",
+      "arc": "Texte en arc",
+      "script": "Élégance",
+      "label": "Étiquette"
+    },
+    "styleNames": {
+      "outline": "Contour",
+      "gradient": "Dégradé",
+      "highlight": "Surligné",
+      "retro": "Rétro",
+      "neon": "Néon",
+      "arc": "En arc",
+      "script": "Manuscrit",
+      "label": "Étiquette"
+    }
+  },
+  "brand": {
+    "none": "L'identité du projet se charge…",
+    "apply": "Appliquer ma marque à la page",
+    "applyHelp": "Couleurs ramenées à votre palette, titres et textes dans vos polices.",
+    "applied": "La page suit maintenant votre charte",
+    "logos": "Logo",
+    "variants": {
+      "color": "Couleur",
+      "white": "Blanc",
+      "black": "Noir",
+      "icon": "Symbole",
+      "horizontal": "Horizontal",
+      "vertical": "Vertical"
+    },
+    "colors": "Couleurs",
+    "roles": {
+      "primary": "Principale",
+      "secondary": "Secondaire",
+      "text": "Texte",
+      "background": "Fond"
+    },
+    "useColor": "Appliquer à la sélection, ou au fond de la page",
+    "colorHelp": "Un clic colore la sélection ; sans sélection, le fond de la page.",
+    "fonts": "Polices et textes",
+    "headingFont": "Titres : {font}",
+    "bodyFont": "Textes : {font}",
+    "symbol": "Symbole",
+    "addSymbol": "Ajouter le symbole du logo"
+  },
+  "uploads": {
+    "import": "Importer des photos",
+    "help": "Glissez-déposez vos images ici ou sur la page, ou collez-les (Ctrl V). PNG, JPEG, WebP.",
+    "browse": "Parcourir…",
+    "used": "Dans cette création",
+    "reuse": "Ajouter à nouveau",
+    "rights": "N'importez que des images que vous avez le droit d'utiliser.",
+    "processing": "{count, plural, one {Préparation de la photo…} other {Préparation de # photos…}}",
+    "added": "{count, plural, one {Photo ajoutée} other {# photos ajoutées}}",
+    "failed": "Cette image n'a pas pu être importée."
+  },
+  "layers": {
+    "label": "Calques de la page",
+    "empty": "La page est vide.",
+    "rename": "Nom du calque",
+    "renameHint": "Double-cliquez pour renommer",
+    "lock": "Verrouiller",
+    "unlock": "Déverrouiller",
+    "show": "Afficher",
+    "hide": "Masquer"
+  },
+  "check": {
+    "great": "Prêt à publier",
+    "good": "Quelques retouches conseillées",
+    "needsWork": "À corriger avant l'export",
+    "summary": "{errors, plural, =0 {Aucune erreur} one {# erreur} other {# erreurs}} · {warnings, plural, =0 {aucun avertissement} one {# avertissement} other {# avertissements}}",
+    "fixAll": "Tout corriger ({count})",
+    "fixedAll": "{count} corrections appliquées",
+    "fixed": "Corrigé",
+    "perfect": "Rien à signaler",
+    "perfectBody": "Lisibilité, impression et cohérence de marque sont au rendez-vous.",
+    "page": "Page {number}",
+    "show": "Voir",
+    "fix": "Corriger",
+    "codes": {
+      "contrast": {
+        "title": "Texte peu lisible (contraste {ratio}:1)",
+        "body": "Le contraste avec le fond doit atteindre {minimum}:1 (WCAG). La correction ajuste la couleur du texte."
+      },
+      "textOverPhoto": {
+        "title": "Texte posé sur une photo",
+        "body": "Sa lisibilité dépend de l'image. La correction ajoute une ombre discrète derrière les lettres."
+      },
+      "tinyText": {
+        "title": "Texte trop petit ({size})",
+        "body": "Visez au moins {minimum} pour qu'il reste lisible."
+      },
+      "safeMargin": {
+        "title": "Trop près du bord de coupe",
+        "body": "Gardez textes et logos à {margin} du bord : la coupe peut varier légèrement."
+      },
+      "offPage": {
+        "title": "Élément coupé par le bord de la page",
+        "body": "Une partie n'apparaîtra pas à l'export. La correction le ramène dans la page."
+      },
+      "bleed": {
+        "title": "Fond perdu manquant",
+        "body": "Cet aplat touche le bord : prolongez-le de {bleed} pour éviter un filet blanc à la coupe."
+      },
+      "lowResolution": {
+        "title": "Photo en basse résolution ({dpi} dpi)",
+        "body": "Pour l'impression, visez 300 dpi (150 au minimum) : réduisez la photo ou importez une version plus grande."
+      },
+      "upscaled": {
+        "title": "Photo agrandie ×{factor}",
+        "body": "Elle risque d'apparaître floue. Importez une image plus grande ou réduisez-la."
+      },
+      "offBrand": {
+        "title": "Couleur hors charte ({color})",
+        "body": "La correction la remplace par la couleur la plus proche de votre palette."
+      },
+      "tooManyFonts": {
+        "title": "{count} polices différentes",
+        "body": "Deux ou trois polices suffisent pour une création cohérente."
+      },
+      "emptyText": {
+        "title": "Texte vide",
+        "body": "Ce bloc ne contient aucun texte."
+      },
+      "hidden": {
+        "title": "Élément masqué",
+        "body": "Il n'apparaîtra pas à l'export."
+      },
+      "textOverlap": {
+        "title": "Textes qui se chevauchent",
+        "body": "Écartez-les pour qu'ils restent lisibles."
+      }
+    }
+  },
+  "panels": {
+    "label": "Outils",
+    "close": "Replier le panneau",
+    "open": "Ouvrir le panneau",
+    "templates": "Modèles",
+    "elements": "Éléments",
+    "text": "Texte",
+    "brand": "Marque",
+    "uploads": "Importer",
+    "layers": "Calques",
+    "check": "Vérifier"
+  },
+  "pages": {
+    "label": "Pages",
+    "page": "Page {number}",
+    "moveLeft": "Déplacer avant",
+    "moveRight": "Déplacer après",
+    "add": "Ajouter une page",
+    "duplicate": "Dupliquer la page",
+    "remove": "Supprimer la page",
+    "zoomOut": "Dézoomer",
+    "zoomIn": "Zoomer",
+    "zoom": "Niveau de zoom",
+    "fit": "Ajuster à l'écran"
+  },
+  "export": {
+    "title": "Exporter",
+    "description": "Format de la création : {size}.",
+    "printDescription": "Format d'impression : {width} × {height} mm.",
+    "format": "Format",
+    "serverOnly": "Produit par le serveur de la plateforme",
+    "help": {
+      "png": "Image sans perte, idéale pour les réseaux sociaux ; fond transparent possible.",
+      "jpg": "Image légère pour le web et les messageries.",
+      "pdf": "{print, select, yes {PDF d'impression à taille réelle : fond perdu, zone de coupe et traits de coupe, textes vectorisés.} other {PDF vectoriel, textes vectorisés, prêt à partager.}}",
+      "svg": "Fichier vectoriel à agrandir sans perte ; textes convertis en tracés."
+    },
+    "pages": "Pages à exporter",
+    "allPages": "Toutes les pages ({count})",
+    "currentPage": "Page {number}",
+    "transparent": "Fond transparent",
+    "quality": "Qualité",
+    "cropMarks": "Traits de coupe",
+    "working": "Préparation…",
+    "download": "Télécharger",
+    "done": "Export prêt",
+    "failed": "L'export n'a pas abouti."
+  },
+  "resize": {
+    "title": "Redimensionnement magique",
+    "description": "Votre création est recomposée pour chaque format : fonds étirés, décors ancrés aux coins, textes et logos réorganisés pour garder l'équilibre.",
+    "customName": "{width} × {height}",
+    "groups": {
+      "social": "Réseaux sociaux",
+      "print": "Impression",
+      "screen": "Écran",
+      "brand": "Marque"
+    },
+    "custom": "Taille personnalisée",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "preview": "Aperçu",
+    "previewEmpty": "Choisissez un ou plusieurs formats.",
+    "resizeHere": "Redimensionner cette création",
+    "createCopies": "{count, plural, =0 {Créer les copies} one {Créer 1 copie} other {Créer # copies}}",
+    "created": "{count, plural, one {Copie créée} other {# copies créées}}",
+    "resized": "Création passée au format {format}"
+  },
+  "formats": {
+    "post-square": {
+      "name": "Publication carrée"
+    },
+    "post-portrait": {
+      "name": "Publication portrait"
+    },
+    "story": {
+      "name": "Story / Statut"
+    },
+    "facebook-cover": {
+      "name": "Couverture Facebook"
+    },
+    "linkedin-banner": {
+      "name": "Bannière LinkedIn"
+    },
+    "youtube-thumbnail": {
+      "name": "Miniature YouTube"
+    },
+    "flyer-a5": {
+      "name": "Flyer A5"
+    },
+    "flyer-a4": {
+      "name": "Flyer A4"
+    },
+    "poster-a3": {
+      "name": "Affiche A3"
+    },
+    "business-card": {
+      "name": "Carte de visite"
+    },
+    "invitation": {
+      "name": "Invitation"
+    },
+    "certificate": {
+      "name": "Diplôme / Attestation"
+    },
+    "rollup": {
+      "name": "Kakémono (roll-up)"
+    },
+    "slide": {
+      "name": "Présentation 16:9"
+    },
+    "email-banner": {
+      "name": "Bannière d'e-mail"
+    },
+    "logo-canvas": {
+      "name": "Planche de logo"
+    }
+  },
+  "variations": {
+    "title": "Variations",
+    "description": "Huit déclinaisons de la page à vos couleurs et dans vos polices. Survolez une proposition pour l'utiliser.",
+    "noBrand": "Les variations s'appuient sur l'identité du projet, en cours de chargement.",
+    "replace": "Remplacer",
+    "add": "Ajouter",
+    "replaced": "Page remplacée",
+    "added": "Variation ajoutée en nouvelle page",
+    "kinds": {
+      "palette": "Palette inversée",
+      "fonts": "Autres polices",
+      "mirror": "En miroir",
+      "dark": "Fond inversé",
+      "harmony": "Harmonie de couleurs",
+      "mix": "Remix"
+    }
+  },
+  "editor": {
+    "notFound": "Cette création est introuvable.",
+    "back": "Retour aux créations",
+    "loading": "Chargement de la création",
+    "home": "Accueil",
+    "name": "Nom de la création",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "shortcuts": "Raccourcis clavier",
+    "variations": "Variations",
+    "resize": "Redimensionner",
+    "export": "Exporter",
+    "properties": "Propriétés",
+    "readOnly": "Lecture seule",
+    "saved": "Enregistré",
+    "pending": "Modifications non enregistrées",
+    "saving": "Enregistrement…",
+    "saveError": "Échec de l'enregistrement"
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "keys": {
+      "undo": "Ctrl Z",
+      "redo": "Ctrl Maj Z",
+      "clipboard": "Ctrl C / V / X",
+      "duplicate": "Ctrl D",
+      "selectAll": "Ctrl A",
+      "delete": "Suppr",
+      "nudge": "← ↑ → ↓",
+      "nudgeMore": "Maj + flèches",
+      "order": "Ctrl ] / [",
+      "lock": "Ctrl L",
+      "hide": "Ctrl Maj H",
+      "edit": "Entrée",
+      "deselect": "Échap",
+      "altDrag": "Alt + glisser",
+      "shiftDrag": "Maj + glisser",
+      "pan": "Espace + glisser",
+      "zoom": "Ctrl + molette",
+      "fit": "Ctrl 0 / 1",
+      "export": "Ctrl E",
+      "pages": "Pg préc. / Pg suiv."
+    },
+    "actions": {
+      "undo": "Annuler",
+      "redo": "Rétablir",
+      "clipboard": "Copier, coller, couper",
+      "duplicate": "Dupliquer",
+      "selectAll": "Tout sélectionner",
+      "delete": "Supprimer",
+      "nudge": "Déplacer de 1 px",
+      "nudgeMore": "Déplacer de 10 px",
+      "order": "Avancer / reculer (Maj : premier plan / arrière-plan)",
+      "lock": "Verrouiller",
+      "hide": "Masquer",
+      "edit": "Écrire dans le texte / cadrer la photo",
+      "deselect": "Désélectionner",
+      "altDrag": "Dupliquer en glissant",
+      "shiftDrag": "Déplacer sur un axe, garder les proportions",
+      "pan": "Déplacer la vue",
+      "zoom": "Zoomer",
+      "fit": "Ajuster à l'écran / taille réelle",
+      "export": "Exporter",
+      "pages": "Page précédente / suivante"
+    }
+  },
+  "list": {
+    "title": "Studio de création",
+    "description": "Publications, stories, flyers, affiches, cartes de visite, présentations : créez tous vos supports à partir de votre identité.",
+    "new": "Nouvelle création",
+    "quick": "Démarrer vite",
+    "mine": "Créations du projet",
+    "emptyTitle": "Votre première création",
+    "emptyBody": "Choisissez un format : des modèles à vos couleurs, avec votre logo et vos polices, vous attendent dans l'éditeur.",
+    "features": {
+      "templates": {
+        "title": "Modèles à la marque",
+        "body": "Composés pour votre format, avec votre logo."
+      },
+      "resize": {
+        "title": "Redimensionnement magique",
+        "body": "Une création déclinée en story, flyer ou bannière."
+      },
+      "brand": {
+        "title": "Charte respectée",
+        "body": "Couleurs, polices et contrastes vérifiés."
+      },
+      "print": {
+        "title": "Prêt pour l'imprimeur",
+        "body": "PDF à taille réelle, fond perdu, traits de coupe."
+      }
+    },
+    "newTitle": "Nouvelle création",
+    "newDescription": "Choisissez un format. Vous pourrez le décliner ensuite en un clic.",
+    "groups": {
+      "social": "Réseaux sociaux",
+      "print": "Impression",
+      "screen": "Écran",
+      "brand": "Marque"
+    },
+    "custom": "Taille personnalisée",
+    "customUse": "Utiliser",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "name": "Nom",
+    "create": "Créer",
+    "actions": "Actions",
+    "duplicate": "Dupliquer",
+    "duplicated": "Création dupliquée",
+    "delete": "Supprimer",
+    "deleted": "Création supprimée",
+    "deleteTitle": "Supprimer cette création ?",
+    "deleteBody": "« {name} » sera supprimée définitivement.",
+    "cancel": "Annuler"
+  }
+}

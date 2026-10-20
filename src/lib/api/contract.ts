@@ -220,8 +220,11 @@ export interface ApiClient {
       lid: string,
       input: { formats: ("svg" | "pdf" | "png" | "jpg")[]; sizes?: number[]; iconPack: boolean; social?: boolean },
     ): Promise<JobAccepted & { restricted?: boolean }>;
-    /** Déclinaisons (couleur, noir, blanc, icône, dispositions) de la dernière version. */
-    variants(lid: string): Promise<{ versionId: string; variants: LogoVariantFile[] }>;
+    /**
+     * Déclinaisons (couleur, noir, blanc, icône, dispositions) de la dernière version ;
+     * `transparent` : version blanche sans fond, pour la poser sur une création.
+     */
+    variants(lid: string, options?: { transparent?: boolean }): Promise<{ versionId: string; variants: LogoVariantFile[] }>;
   };
 
   slogans: {

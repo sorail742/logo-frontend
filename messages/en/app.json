@@ -44,7 +44,8 @@
     "names": "Name",
     "logos": "Logo",
     "signatures": "Signatures",
-    "kit": "Brand kit"
+    "kit": "Brand kit",
+    "studio": "Studio"
   },
   "newProject": {
     "title": "New project",

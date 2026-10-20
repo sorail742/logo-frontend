@@ -36,6 +36,14 @@ interface StudioState {
   revision: number;
   guides: Guide[];
   clipboard: DesignElement[];
+  /** Taille de la zone de travail (px écran). */
+  viewport: { width: number; height: number };
+  /** Photo en cours de recadrage (déplacement dans son masque). */
+  cropId: string | null;
+  /** Repères d'impression (fond perdu, zone de sécurité). */
+  printGuides: boolean;
+  /** Vue ajustée automatiquement à la page tant que l'utilisateur ne zoome ni ne la déplace. */
+  autoFit: boolean;
 
   load(meta: StudioMeta, doc: DesignDoc): void;
   rename(name: string): void;
@@ -61,7 +69,18 @@ interface StudioState {
   setView(view: Partial<Pick<StudioState, "zoom" | "panX" | "panY">>): void;
   setGuides(guides: Guide[]): void;
   setEditing(id: string | null): void;
+  setViewport(viewport: { width: number; height: number }): void;
+  /** Ajuste le zoom pour voir toute la page. */
+  fit(): void;
+  /** Zoom autour d'un point de l'écran (centre de la zone par défaut). */
+  zoomAt(zoom: number, anchor?: { x: number; y: number }): void;
+  setCrop(id: string | null): void;
+  togglePrintGuides(): void;
 }
+
+export const MIN_ZOOM = 0.05;
+export const MAX_ZOOM = 8;
+const FIT_PADDING = 48;
 
 let gestureBase: DesignDoc | null = null;
 let lastMerge: { key: string; at: number } | null = null;
@@ -106,11 +125,16 @@ export const useStudio = create<StudioState>((set, get) => {
     revision: 0,
     guides: [],
     clipboard: [],
+    viewport: { width: 0, height: 0 },
+    cropId: null,
+    printGuides: true,
+    autoFit: true,
 
     load: (meta, doc) => {
       gestureBase = null;
       lastMerge = null;
-      set({ meta, doc, pageIndex: 0, selection: [], editingId: null, past: [], future: [], revision: 0, guides: [] });
+      set({ meta, doc, pageIndex: 0, selection: [], editingId: null, cropId: null, past: [], future: [], revision: 0, guides: [] });
+      get().fit();
     },
     rename: (name) => set((s) => (s.meta ? { meta: { ...s.meta, name }, revision: s.revision + 1 } : s)),
     change: (fn, history = "push") => {
@@ -150,8 +174,8 @@ export const useStudio = create<StudioState>((set, get) => {
       lastMerge = null;
       set((s) => ({ doc: next, past: [...past, doc], future: future.slice(1), revision: s.revision + 1, pageIndex: Math.min(s.pageIndex, next.pages.length - 1) }));
     },
-    setPage: (index) => set({ pageIndex: index, selection: [], editingId: null }),
-    select: (ids) => set({ selection: ids, editingId: null }),
+    setPage: (index) => set({ pageIndex: index, selection: [], editingId: null, cropId: null }),
+    select: (ids) => set((s) => ({ selection: ids, editingId: null, cropId: ids.length === 1 && ids[0] === s.cropId ? s.cropId : null })),
     toggle: (id) => set((s) => ({ selection: s.selection.includes(id) ? s.selection.filter((x) => x !== id) : [...s.selection, id] })),
     updateElements: (ids, fn, history = "push") => {
       const { doc, pageIndex } = get();
@@ -244,9 +268,30 @@ export const useStudio = create<StudioState>((set, get) => {
       commit({ ...doc, pages });
       set({ pageIndex: to });
     },
-    setView: (view) => set(view),
+    setView: (view) => set({ ...view, autoFit: false }),
     setGuides: (guides) => set({ guides }),
-    setEditing: (id) => set({ editingId: id, selection: id ? [id] : get().selection }),
+    setEditing: (id) => set({ editingId: id, cropId: null, selection: id ? [id] : get().selection }),
+    setViewport: (viewport) => {
+      const { viewport: previous, autoFit, panX, panY } = get();
+      set({ viewport });
+      // La zone change (panneaux ouverts ou fermés, fenêtre) : la page reste ajustée, ou centrée.
+      if (autoFit || !previous.width) get().fit();
+      else set({ panX: panX + (viewport.width - previous.width) / 2, panY: panY + (viewport.height - previous.height) / 2 });
+    },
+    fit: () => {
+      const { doc, viewport } = get();
+      if (!doc || !viewport.width || !viewport.height) return;
+      const zoom = Math.max(MIN_ZOOM, Math.min((viewport.width - FIT_PADDING * 2) / doc.width, (viewport.height - FIT_PADDING * 2) / doc.height, 4));
+      set({ zoom, panX: (viewport.width - doc.width * zoom) / 2, panY: (viewport.height - doc.height * zoom) / 2, autoFit: true });
+    },
+    zoomAt: (value, anchor) => {
+      const { zoom, panX, panY, viewport } = get();
+      const next = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value));
+      const point = anchor ?? { x: viewport.width / 2, y: viewport.height / 2 };
+      set({ zoom: next, panX: point.x - ((point.x - panX) * next) / zoom, panY: point.y - ((point.y - panY) * next) / zoom, autoFit: false });
+    },
+    setCrop: (id) => set({ cropId: id, editingId: null, selection: id ? [id] : get().selection }),
+    togglePrintGuides: () => set((s) => ({ printGuides: !s.printGuides })),
   };
 });
 

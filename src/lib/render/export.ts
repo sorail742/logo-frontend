@@ -92,6 +92,8 @@ export interface PngOptions {
   square?: boolean;
   padding?: number; // proportion (0 – 0.4)
   type?: "image/png" | "image/jpeg";
+  /** Qualité JPEG (0 à 1). */
+  quality?: number;
 }
 
 export async function svgToPngBlob(svg: string, options: PngOptions): Promise<Blob> {
@@ -136,7 +138,7 @@ export async function svgToPngBlob(svg: string, options: PngOptions): Promise<Bl
     const dh = vh * scale;
     ctx.drawImage(img, (width - dw) / 2, (height - dh) / 2, dw, dh);
     return await new Promise<Blob>((resolve, reject) =>
-      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Export impossible"))), options.type ?? "image/png", 0.92),
+      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Export impossible"))), options.type ?? "image/png", options.quality ?? 0.92),
     );
   } finally {
     URL.revokeObjectURL(url);
