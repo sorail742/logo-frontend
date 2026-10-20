@@ -250,15 +250,32 @@ export function backdropColor(page: DesignPage, el: DesignElement): string | nul
   return paintColor(page.background) ?? "#ffffff";
 }
 
-/** Rétablit la lisibilité des textes après un changement de couleurs. */
-function keepReadable(page: DesignPage): DesignPage {
+/**
+ * Rétablit la lisibilité après un changement de couleurs : textes (4,5:1), icônes (3:1) et
+ * logo, remplacé par sa version blanche sur fond sombre ou couleur sur fond clair.
+ */
+function keepReadable(page: DesignPage, brand?: StudioBrand): DesignPage {
   return {
     ...page,
     elements: page.elements.map((el) => {
-      if (el.type !== "text" || el.fill.type !== "solid" || el.highlight) return el;
-      const backdrop = backdropColor(page, el);
-      if (!backdrop || contrastRatio(el.fill.color, backdrop) >= 3) return el;
-      return { ...el, fill: { type: "solid", color: ensureContrast(el.fill.color, backdrop, 4.5) } };
+      if (el.type === "text" && el.fill.type === "solid" && !el.highlight) {
+        const backdrop = backdropColor(page, el);
+        if (!backdrop || contrastRatio(el.fill.color, backdrop) >= 3) return el;
+        return { ...el, fill: { type: "solid", color: ensureContrast(el.fill.color, backdrop, 4.5) } };
+      }
+      if (el.type === "icon") {
+        const backdrop = backdropColor(page, el);
+        if (!backdrop || contrastRatio(el.color, backdrop) >= 3) return el;
+        return { ...el, color: ensureContrast(el.color, backdrop, 3) };
+      }
+      if (el.type === "svg" && el.source === "logo" && brand) {
+        const backdrop = backdropColor(page, el);
+        const { white, color } = brand.logos;
+        if (!backdrop || !white || !color) return el;
+        const wanted = luminance(backdrop) < 0.35 ? white : color;
+        return el.svg === white || el.svg === color ? { ...el, svg: wanted } : el;
+      }
+      return el;
     }),
   };
 }
@@ -266,7 +283,8 @@ function keepReadable(page: DesignPage): DesignPage {
 /** Change la police d'un texte ; un texte court qui épousait sa boîte est réduit pour y tenir. */
 function withFont(el: TextElement, fontId: string, fontWeight: number): TextElement {
   const before = naturalWidth(el);
-  const hugging = !el.curve && el.width <= before * 1.15 + el.fontSize;
+  // Une seule ligne qui remplit sa boîte (étiquette, bouton) ; un paragraphe se remet en page.
+  const hugging = !el.curve && el.width >= before - 2 && el.width <= before * 1.15 + el.fontSize;
   const next = { ...el, fontId, fontWeight };
   if (hugging) {
     const after = naturalWidth(next);
@@ -337,14 +355,14 @@ export function variations(page: DesignPage, doc: Pick<DesignDoc, "width" | "hei
   const pick = (i: number) => pairings[(i * 5 + 3) % pairings.length]!;
 
   const out: Variation[] = [
-    { id: "swap", kind: "palette", page: keepReadable(recolor(page, swap([[primary, secondary], [secondary, primary]]))) },
-    { id: "dark", kind: "dark", page: keepReadable(recolor(page, swap([[pageBg, inverted], [inverted, pageBg]]))) },
+    { id: "swap", kind: "palette", page: keepReadable(recolor(page, swap([[primary, secondary], [secondary, primary]])), brand) },
+    { id: "dark", kind: "dark", page: keepReadable({ ...recolor(page, swap([[pageBg, inverted], [inverted, pageBg]])), background: { type: "solid", color: inverted } }, brand) },
     { id: "fonts-a", kind: "fonts", page: swapFonts(page, pick(0)) },
     { id: "mirror", kind: "mirror", page: reshape(mirror(page, doc.width), 7) },
-    { id: "harmony", kind: "harmony", page: keepReadable(recolor(page, swap([[primary, analog[0]!], [secondary, analog[2]!]]))) },
+    { id: "harmony", kind: "harmony", page: keepReadable(recolor(page, swap([[primary, analog[0]!], [secondary, analog[2]!]])), brand) },
     { id: "fonts-b", kind: "fonts", page: swapFonts(reshape(page, 13), pick(1)) },
-    { id: "mix", kind: "mix", page: swapFonts(keepReadable(recolor(mirror(page, doc.width), swap([[primary, secondary], [secondary, primary]]))), pick(2)) },
-    { id: "light", kind: "palette", page: keepReadable(recolor(page, swap([[primary, mix(primary, "#ffffff", 0.82)], [background, primary]]))) },
+    { id: "mix", kind: "mix", page: swapFonts(keepReadable(recolor(mirror(page, doc.width), swap([[primary, secondary], [secondary, primary]])), brand), pick(2)) },
+    { id: "light", kind: "palette", page: keepReadable(recolor(page, swap([[primary, mix(primary, "#ffffff", 0.82)], [background, primary]])), brand) },
   ];
   return out.map((v) => ({ ...v, page: { ...v.page, id: newId(), elements: v.page.elements.map((el) => ({ ...el, id: newId() })) } }));
 }

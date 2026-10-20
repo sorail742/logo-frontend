@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Check, CloudOff, Download, Keyboard, Loader2, Redo2, Sparkles, Undo2, Wand2 } from "lucide-react";
+import { ArrowLeft, Check, CloudOff, Download, Keyboard, Loader2, Redo2, SlidersHorizontal, Sparkles, Undo2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlatformLogo } from "@/components/brand/platform-logo";
 import { Link } from "@/i18n/navigation";
@@ -78,7 +79,9 @@ export function StudioEditor({ sdid }: { sdid: string }) {
   const canUndo = useStudio((s) => s.past.length > 0);
   const canRedo = useStudio((s) => s.future.length > 0);
 
-  const [panel, setPanel] = useState<PanelId | null>("templates");
+  // Petits écrans : le panneau d'outils s'ouvre en surimpression, fermé au départ.
+  const [panel, setPanel] = useState<PanelId | null>(() => (typeof window !== "undefined" && window.innerWidth < 768 ? null : "templates"));
+  const [propertiesOpen, setPropertiesOpen] = useState(false);
   const [dialog, setDialog] = useState<"export" | "resize" | "variations" | "help" | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [nameDraft, setNameDraft] = useState<string | null>(null);
@@ -275,9 +278,14 @@ export function StudioEditor({ sdid }: { sdid: string }) {
               <Wand2 />
               {t("editor.resize")}
             </Button>
-            <Button onClick={() => setDialog("export")}>
+            {canEdit && (
+              <Button variant="outline" size="icon" className="lg:hidden" onClick={() => setPropertiesOpen(true)} aria-label={t("editor.properties")} title={t("editor.properties")}>
+                <SlidersHorizontal />
+              </Button>
+            )}
+            <Button onClick={() => setDialog("export")} aria-label={t("editor.export")}>
               <Download />
-              {t("editor.export")}
+              <span className="max-sm:hidden">{t("editor.export")}</span>
             </Button>
           </div>
         </header>
@@ -312,6 +320,18 @@ export function StudioEditor({ sdid }: { sdid: string }) {
         <ResizeDialog open={dialog === "resize"} onOpenChange={(open) => setDialog(open ? "resize" : null)} />
         <VariationsDialog open={dialog === "variations"} onOpenChange={(open) => setDialog(open ? "variations" : null)} />
         <ShortcutsDialog open={dialog === "help"} onOpenChange={(open) => setDialog(open ? "help" : null)} />
+        {canEdit && (
+          <Sheet open={propertiesOpen} onOpenChange={setPropertiesOpen}>
+            <SheetContent side="right" className="w-[300px] gap-0 p-0 lg:hidden">
+              <SheetHeader className="border-b">
+                <SheetTitle>{t("editor.properties")}</SheetTitle>
+              </SheetHeader>
+              <div className="min-h-0 flex-1">
+                <Inspector />
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
       </div>
     </StudioContext.Provider>
   );

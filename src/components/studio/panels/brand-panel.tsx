@@ -12,7 +12,7 @@ import { ensureFonts, naturalWidth, relayout } from "@/lib/studio/text";
 import type { DesignElement, Paint, TextElement } from "@/lib/studio/types";
 import { useStudio } from "@/stores/studio";
 import { useStudioContext } from "../context";
-import { addCentered, centered, pageUnit, useInkColors } from "../placement";
+import { addCentered, centered, pageUnit, releaseFocus, useInkColors } from "../placement";
 
 // Identité du projet : logos, couleurs, polices, nom et slogan, et application de la marque
 // à toute une page (couleurs ramenées à la palette, polices de la marque).
@@ -158,6 +158,7 @@ export function BrandPanel() {
           <Button
             variant="outline"
             onClick={() => {
+              releaseFocus();
               const size = pageUnit() * 0.2;
               useStudio.getState().add([centered(createIcon(brand.icon!.id, brand.icon!.node, { width: size, height: size, color: colors.accent }))]);
             }}

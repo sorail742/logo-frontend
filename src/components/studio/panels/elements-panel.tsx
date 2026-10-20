@@ -11,7 +11,7 @@ import { renderElement } from "@/lib/studio/render";
 import type { ShapeElement } from "@/lib/studio/types";
 import { useStudio } from "@/stores/studio";
 import { useStudioContext } from "../context";
-import { addCentered, centered, pageUnit, useInkColors } from "../placement";
+import { addCentered, centered, pageUnit, releaseFocus, useInkColors } from "../placement";
 
 // Formes, cadres photo et icônes (bibliothèque lucide complète, recherche en français et en anglais).
 
@@ -185,6 +185,7 @@ export function ElementsPanel() {
   }, [icons, query]);
 
   const addIcon = (id: string, node: IconNode) => {
+    releaseFocus();
     const state = useStudio.getState();
     const page = state.doc!.pages[state.pageIndex]!;
     const selected = page.elements.filter((el) => state.selection.includes(el.id));

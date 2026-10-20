@@ -54,6 +54,7 @@ export function NewDesignDialog({ open, onOpenChange, initialFormat }: { open: b
     mutationFn: () => api.studio.create(pid, { name: (name.trim() || formatName).slice(0, 120), format: format.id, doc: createDoc(format) }),
     onSuccess: (design) => {
       queryClient.invalidateQueries({ queryKey: qk.studio(pid) });
+      onOpenChange(false);
       router.push(`/studio/${design.id}`);
     },
     onError,

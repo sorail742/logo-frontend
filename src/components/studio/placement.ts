@@ -25,7 +25,13 @@ export function centered<T extends DesignElement>(el: T, at?: { x: number; y: nu
   return { ...el, x: cx - el.width / 2, y: cy - el.height / 2 };
 }
 
+/** Après un ajout depuis un panneau, le clavier revient à la création (Entrée, Suppr, flèches). */
+export function releaseFocus() {
+  if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) document.activeElement.blur();
+}
+
 export function addCentered(elements: DesignElement[], at?: { x: number; y: number }) {
+  releaseFocus();
   const state = useStudio.getState();
   if (!state.doc || !elements.length) return;
   // Le groupe garde sa composition ; il est centré comme un tout.
@@ -45,6 +51,7 @@ export function addCentered(elements: DesignElement[], at?: { x: number; y: numb
  * les suivantes sont posées au centre, à une taille raisonnable.
  */
 export function placeImages(images: PreparedImage[], at?: { x: number; y: number }, frameId?: string | null) {
+  releaseFocus();
   const state = useStudio.getState();
   const doc = state.doc;
   if (!doc || !images.length) return;

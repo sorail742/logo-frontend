@@ -40,7 +40,7 @@ export function SidePanel({ panel, onPanel }: { panel: PanelId | null; onPanel(p
   const active = TABS.find((tab) => tab.id === panel);
 
   return (
-    <div className="flex h-full shrink-0 border-r bg-background">
+    <div className="relative z-20 flex h-full shrink-0 border-r bg-background">
       <nav className="flex w-[68px] flex-col items-stretch gap-0.5 border-r py-2" aria-label={t("label")}>
         {TABS.map((tab) => {
           const Icon = tab.icon;
@@ -67,7 +67,7 @@ export function SidePanel({ panel, onPanel }: { panel: PanelId | null; onPanel(p
         })}
       </nav>
       {active ? (
-        <div className="flex w-[300px] flex-col">
+        <div className="flex w-[300px] flex-col bg-background max-md:absolute max-md:inset-y-0 max-md:left-full max-md:w-[min(300px,calc(100vw-68px))] max-md:border-r max-md:shadow-xl">
           <div className="flex items-center justify-between border-b px-4 py-2.5">
             <h2 className="text-sm font-semibold">{t(active.id)}</h2>
             <Button variant="ghost" size="icon-sm" onClick={() => onPanel(null)} aria-label={t("close")} title={t("close")}>

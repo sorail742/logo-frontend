@@ -13,7 +13,8 @@ function typing(target: EventTarget | null) {
 export function useStudioShortcuts(handlers: { onExport(): void; onHelp(): void }) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (typing(event.target) || document.querySelector("[role=dialog]")) return;
+      // Saisie dans un champ, ou focus dans une fenêtre ou un menu ouvert : pas de raccourci.
+      if (typing(event.target) || (event.target instanceof Element && event.target.closest("[role=dialog], [role=menu], [role=listbox]"))) return;
       const state = useStudio.getState();
       if (!state.doc) return;
       const mod = event.metaKey || event.ctrlKey;
