@@ -105,8 +105,10 @@ messages/{fr,en}/  traductions par espace de noms
   signature e-mail (6 modèles, HTML tableaux + styles en ligne, texte brut, copie, guides, lot CSV),
   paraphe par police ou dessiné, cachet rond/ovale/rectangulaire, encres, attestation horodatée,
   validation manuelle des termes officiels.
-- **Kit (§7)** : page du kit, versions, charte imprimable, archive ZIP rangée avec LICENCES.txt,
-  lien de partage avec mot de passe et expiration, espaces, invitations, commentaires,
+- **Kit (§7)** : page du kit (contenu figé de chaque version), versions consultables et
+  restaurables, charte graphique PDF et archive ZIP produites par l'API (liens signés relus avant
+  expiration), lien de partage avec mot de passe et expiration, page publique avec
+  téléchargements, espaces, invitations, commentaires avec mentions @ (projet, logo, kit),
   notifications, historique d'activité, corbeille 30 jours.
 - **Comptes et paiements (§8)** : e-mail, Google, SMS, mot de passe oublié, 2FA TOTP, profil,
   export et suppression des données, offres, grand livre de crédits, paiement Orange Money
@@ -117,9 +119,10 @@ messages/{fr,en}/  traductions par espace de noms
 ## Ce qui revient au serveur
 
 Le front ne contacte jamais directement l'IA ni le paiement (§11). Côté API/workers : génération
-IA, conversion du texte en tracés et SVGO, PDF vectoriels et archive ZIP des logos (déjà en
-place), charte PDF (Playwright), URL signées S3, webhooks de paiement, e-mails. Dans le
-navigateur, les exports sont des aperçus fidèles ; la charte s'enregistre en PDF via l'impression.
+IA, conversion du texte en tracés et SVGO, exports des logos, charte graphique PDF, archive du kit
+avec supports imprimables, URL signées, e-mails (déjà en place) ; webhooks de paiement (phase 6).
+En mode simulé, les exports sont des aperçus fidèles assemblés dans le navigateur et la charte
+s'enregistre en PDF via l'impression.
 
 L'éditeur de logo est piloté par une spec déclarative (`LogoSpec`) rendue en SVG ; le cahier
 prévoit Fabric.js, qui pourra s'y brancher pour la manipulation directe sur canevas.

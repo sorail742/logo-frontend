@@ -297,11 +297,22 @@ function session(userId: string): Session {
 
 function kitToDto(kit: ReturnType<typeof db>["brandKits"][number]): BrandKit {
   const spec = kit.logoSpec;
+  // Simulation : sigle et origine du nom retenu actuel (l'API les fige dans la version).
+  const project = db().projects.find((p) => p.id === kit.projectId);
+  const chosen = db().names.find((n) => n.id === project?.chosenNameId);
   const fontIds = spec ? [spec.fontId, "montserrat"] : ["montserrat"];
   return {
     id: kit.id,
     projectId: kit.projectId,
     version: kit.version,
+    name: kit.name ?? null,
+    acronym: chosen?.acronym ?? null,
+    meaning: chosen?.meaning ?? null,
+    devise: null,
+    mission: null,
+    logoSvg: null,
+    guideCost: kit.guideReady ? 0 : CREDIT_COSTS.BRAND_GUIDE_PDF,
+    restoredFrom: kit.restoredFrom ?? null,
     palette: spec ? paletteFromColors(spec.colors) : [],
     fonts: [...new Set(fontIds)].map((fid) => {
       const font = FONTS.find((f) => f.id === fid)!;
@@ -636,7 +647,7 @@ export const mockClient: ApiClient = {
       // Changer de nom final crée une nouvelle version du kit (NOM-33)
       if (hadName && data.brandKits.some((k) => k.projectId === pid)) {
         const last = data.brandKits.filter((k) => k.projectId === pid).sort((a, b) => b.version - a.version)[0]!;
-        data.brandKits.push({ ...last, id: id("kit"), version: last.version + 1, shareToken: null, guideReady: false, zipReady: false, createdAt: now() });
+        data.brandKits.push({ ...last, id: id("kit"), version: last.version + 1, name: name.value, restoredFrom: null, shareToken: null, guideReady: false, zipReady: false, createdAt: now() });
       }
       logActivity(pid, `a retenu le nom « ${name.value} »`);
       save();
@@ -835,6 +846,8 @@ export const mockClient: ApiClient = {
         id: id("kit"),
         projectId: pid,
         version,
+        name: projectName(project),
+        restoredFrom: null,
         logoSpec: logo ? latestVersion(logo.id).spec : null,
         slogan: data.slogans.find((s) => s.projectId === pid && s.isChosen)?.text ?? null,
         shareToken: null,
@@ -850,11 +863,23 @@ export const mockClient: ApiClient = {
       save();
       return kitToDto(kit);
     },
-    async generateGuide(kid) {
+    async restore(kid) {
+      await wait();
+      const data = db();
+      const source = data.brandKits.find((k) => k.id === kid)!;
+      requireRole(projectOr404(source.projectId).workspaceId, "EDITOR");
+      const version = Math.max(...data.brandKits.filter((k) => k.projectId === source.projectId).map((k) => k.version)) + 1;
+      const kit = { ...source, id: id("kit"), version, restoredFrom: source.version, shareToken: null, sharePassword: null, shareExpiresAt: null, zipReady: false, createdAt: now() };
+      data.brandKits.push(kit);
+      logActivity(source.projectId, `a restauré le kit v${source.version} (nouvelle version v${version})`);
+      save();
+      return kitToDto(kit);
+    },
+    async generateGuide(kid, idempotencyKey) {
       const kit = db().brandKits.find((k) => k.id === kid)!;
       const project = projectOr404(kit.projectId);
       requireRole(project.workspaceId, "EDITOR");
-      return { jobId: startJob(project, "BRAND_GUIDE", CREDIT_COSTS.BRAND_GUIDE_PDF, { kitId: kid }, `guide-${kid}-${Date.now()}`).id };
+      return { jobId: startJob(project, "BRAND_GUIDE", kit.guideReady ? 0 : CREDIT_COSTS.BRAND_GUIDE_PDF, { kitId: kid }, idempotencyKey).id };
     },
     async generateZip(kid) {
       const kit = db().brandKits.find((k) => k.id === kid)!;
@@ -912,10 +937,19 @@ export const mockClient: ApiClient = {
     async create(pid, input) {
       const user = currentUser();
       requireRole(projectOr404(pid).workspaceId, "VIEWER");
-      const comment = { id: id("c"), projectId: pid, authorName: user.fullName, ...input, createdAt: now() };
+      const comment = { id: id("c"), projectId: pid, authorId: user.id, authorName: user.fullName, mentions: [], ...input, createdAt: now() };
       db().comments.unshift(comment);
       save();
       return comment;
+    },
+    async remove(cid) {
+      const user = currentUser();
+      const data = db();
+      const comment = data.comments.find((c) => c.id === cid);
+      if (!comment) throw problem(404, "Commentaire introuvable");
+      if (comment.authorId !== user.id) requireRole(projectOr404(comment.projectId).workspaceId, "OWNER");
+      data.comments = data.comments.filter((c) => c.id !== cid);
+      save();
     },
   },
 

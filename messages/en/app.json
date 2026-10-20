@@ -176,7 +176,10 @@
     "title": "Comments",
     "placeholder": "Write a comment… (@ to mention)",
     "send": "Send",
-    "empty": "No comments."
+    "empty": "No comments.",
+    "delete": "Delete comment",
+    "mention": "Mention:",
+    "mentioned": "Mentioned: {names}"
   },
   "job": {
     "QUEUED": "Queued…",

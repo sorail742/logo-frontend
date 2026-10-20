@@ -11,12 +11,12 @@ import type { GenerationJob, JobEvent, JobStatus, Plan } from "@/lib/types";
 
 const BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1").replace(/\/$/, "");
 
-/** Modules servis par l'API ; les phases 5 et 6 du planning ne sont pas encore livrées. */
+/** Modules servis par l'API ; la phase 6 du planning (paiements) n'est pas encore livrée. */
 const FEATURES: Record<ApiFeature, boolean> = {
   slogans: true,
   signatures: true,
-  brandKits: false,
-  comments: false,
+  brandKits: true,
+  comments: true,
   payments: false,
   moderation: true,
   smsLogin: false,
@@ -35,6 +35,7 @@ interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   idempotencyKey?: string;
+  headers?: Record<string, string>;
   auth?: boolean;
   retry?: boolean;
 }
@@ -59,7 +60,7 @@ async function refreshSession(): Promise<Session | null> {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = { Accept: "application/json", ...options.headers };
   const isForm = typeof FormData !== "undefined" && options.body instanceof FormData;
   if (options.body !== undefined && !isForm) headers["Content-Type"] = "application/json";
   if (options.idempotencyKey) headers["Idempotency-Key"] = options.idempotencyKey;
@@ -289,15 +290,16 @@ export const httpClient: ApiClient = {
     batch: (pid, csv, templateId) => post(`/projects/${pid}/signatures/batch`, { csv, templateId }),
   },
 
-  // Phase 5 (kit de marque) : routes pas encore servies.
-
   brandKits: {
-    list: none,
-    create: unavailable,
-    generateGuide: unavailable,
-    generateZip: unavailable,
-    share: unavailable,
-    publicKit: unavailable,
+    list: (pid) => get(`/projects/${pid}/brand-kits`),
+    create: (pid) => post(`/projects/${pid}/brand-kits`),
+    restore: (kid) => post(`/brand-kits/${kid}/restore`),
+    generateGuide: (kid, key) => post(`/brand-kits/${kid}/guide`, {}, key),
+    generateZip: (kid) => post(`/brand-kits/${kid}/zip`),
+    share: (kid, input) => post(`/brand-kits/${kid}/share`, input),
+    // Mot de passe en en-tête : il n'apparaît ni dans l'URL ni dans les journaux.
+    publicKit: (token, password) =>
+      request(`/public/kits/${encodeURIComponent(token)}`, { auth: false, headers: password ? { "X-Kit-Password": password } : {} }),
   },
 
   jobs: {
@@ -308,7 +310,11 @@ export const httpClient: ApiClient = {
     subscribe: (jid, onEvent) => subscribeSse(`/jobs/${jid}/events`, onEvent),
   },
 
-  comments: { list: none, create: unavailable },
+  comments: {
+    list: (pid) => get(`/projects/${pid}/comments`),
+    create: (pid, input) => post(`/projects/${pid}/comments`, input),
+    remove: (cid) => del(`/comments/${cid}`),
+  },
 
   notifications: {
     list: () => items("/notifications"),

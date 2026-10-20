@@ -109,6 +109,9 @@ export interface DbBrandKit {
   id: string;
   projectId: string;
   version: number;
+  /** Nom figé à la création de la version (absent des kits simulés plus anciens). */
+  name?: string | null;
+  restoredFrom?: number | null;
   logoSpec: LogoSpec | null;
   slogan: string | null;
   shareToken: string | null;

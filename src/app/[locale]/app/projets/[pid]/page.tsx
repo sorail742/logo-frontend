@@ -95,7 +95,7 @@ export default function ProjectOverviewPage() {
             </CardContent>
           </Card>
         </div>
-        <CommentsPanel pid={pid} targetType="NAME" targetId={pid} />
+        <CommentsPanel pid={pid} targetType="PROJECT" targetId={pid} />
       </div>
       <div className="grid content-start gap-6">
         <Card>

@@ -25,7 +25,7 @@
   "generateGuide": "Generate guide",
   "openGuide": "Open guide",
   "zip": "ZIP archive",
-  "zipBody": "logo/svg, logo/png, app icons, social media, signatures, guide, LICENCES.txt",
+  "zipBody": "logo (svg, png, pdf), app icons, social media, signatures, business card and letterhead, brand guide, licences",
   "generateZip": "Prepare archive",
   "downloadZip": "Download ZIP",
   "preparing": "Preparing…",
@@ -52,7 +52,9 @@
     "password": "This kit is password protected.",
     "unlock": "Open",
     "notFound": "This share link does not exist or has expired.",
-    "madeWith": "Kit made with Marka"
+    "madeWith": "Kit made with Marka",
+    "passwordInvalid": "Wrong password.",
+    "downloads": "Downloads"
   },
   "charter": {
     "title": "Brand guide",
@@ -78,5 +80,14 @@
     "examples": "9. Examples",
     "notReady": "Generate the guide from the kit page first."
   },
-  "upgrade": "Unlock with the Identity Pack"
+  "upgrade": "Unlock with the Identity Pack",
+  "devise": "Motto",
+  "mission": "Mission",
+  "restore": "Restore",
+  "restored": "Version {version} restored as v{newVersion}",
+  "restoredFrom": "Restored from v{version}",
+  "regenerate": "Update",
+  "zipFree": "Free plan: the archive contains watermarked 512 px PNG logos. Vector formats, the brand guide and print templates come with paid plans.",
+  "guideFree": "The brand guide is included in the Identity Pack and paid plans.",
+  "jobQueued": "Started: you will be notified when the file is ready."
 }

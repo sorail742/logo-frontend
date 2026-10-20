@@ -176,7 +176,10 @@
     "title": "Commentaires",
     "placeholder": "Écrire un commentaire… (@ pour mentionner)",
     "send": "Envoyer",
-    "empty": "Aucun commentaire."
+    "empty": "Aucun commentaire.",
+    "delete": "Supprimer le commentaire",
+    "mention": "Mentionner :",
+    "mentioned": "Mentionné : {names}"
   },
   "job": {
     "QUEUED": "En file d'attente…",

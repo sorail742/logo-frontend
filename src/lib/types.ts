@@ -243,15 +243,28 @@ export interface BrandKit {
   id: string;
   projectId: string;
   version: number;
+  /** Contenu figé de la version (null : reprendre celui du projet). */
+  name: string | null;
+  acronym: string | null;
+  meaning: string | null;
+  devise: string | null;
+  mission: string | null;
   palette: PaletteColor[];
   fonts: { id: string; name: string; license: string }[];
   logoSpec: LogoSpec | null;
+  /** SVG d'origine d'un logo importé non retravaillé (la spec n'en est qu'une approximation). */
+  logoSvg: string | null;
   slogan: string | null;
   shareToken: string | null;
   shareExpiresAt: string | null;
   hasPassword: boolean;
+  /** Liens de téléchargement signés, valables 15 min (null : à générer ou non autorisé). */
   guidePdfUrl: string | null;
   zipUrl: string | null;
+  /** Coût de la charte : 0 si elle a déjà été produite pour cette version. */
+  guideCost: number;
+  /** Version restaurée (KIT-06). */
+  restoredFrom: number | null;
   createdAt: string;
 }
 
@@ -332,12 +345,17 @@ export interface AppNotification {
   createdAt: string;
 }
 
+export type CommentTarget = "PROJECT" | "NAME" | "LOGO" | "SIGNATURE" | "SLOGAN" | "KIT";
+
 export interface Comment {
   id: string;
+  authorId: string;
   authorName: string;
-  targetType: "NAME" | "LOGO" | "SIGNATURE" | "SLOGAN";
+  targetType: CommentTarget;
   targetId: string;
   body: string;
+  /** Membres mentionnés avec @ (COL-02). */
+  mentions: { userId: string; fullName: string }[];
   createdAt: string;
 }
 

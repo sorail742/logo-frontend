@@ -17,6 +17,7 @@ import { Field } from "@/components/common/field";
 import { EditorControls } from "@/components/logos/editor-controls";
 import { ExportPanel, VariantsGrid } from "@/components/logos/export-panel";
 import { LogoMockups } from "@/components/logos/logo-mockups";
+import { CommentsPanel } from "@/components/projects/comments-panel";
 import { useApiErrorToast } from "@/hooks/use-api-error";
 import { useProject } from "@/hooks/use-project";
 import { useCredits } from "@/hooks/use-workspace";
@@ -169,6 +170,8 @@ export default function LogoEditorPage() {
               </CardContent>
             </Card>
           </div>
+
+          <CommentsPanel pid={pid} targetType="LOGO" targetId={lid} />
         </div>
       </div>
 

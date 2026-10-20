@@ -212,8 +212,11 @@ export interface ApiClient {
   brandKits: {
     list(pid: string): Promise<BrandKit[]>;
     create(pid: string): Promise<BrandKit>;
-    generateGuide(kid: string): Promise<JobAccepted>;
-    generateZip(kid: string): Promise<JobAccepted>;
+    /** Recopie une version sous un nouveau numéro, qui devient la version courante (KIT-06). */
+    restore(kid: string): Promise<BrandKit>;
+    generateGuide(kid: string, idempotencyKey: string): Promise<JobAccepted>;
+    /** `restricted` : offre gratuite, archive réduite à des PNG 512 px filigranés. */
+    generateZip(kid: string): Promise<JobAccepted & { restricted?: boolean }>;
     share(kid: string, input: { enabled: boolean; password?: string; expiresAt?: string | null }): Promise<BrandKit>;
     publicKit(token: string, password?: string): Promise<PublicKit>;
   };
@@ -227,6 +230,8 @@ export interface ApiClient {
   comments: {
     list(pid: string): Promise<Comment[]>;
     create(pid: string, input: { targetType: Comment["targetType"]; targetId: string; body: string }): Promise<Comment>;
+    /** Par son auteur ou un propriétaire de l'espace. */
+    remove(cid: string): Promise<void>;
   };
 
   notifications: {
