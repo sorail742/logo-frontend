@@ -267,12 +267,12 @@ function paletteFromInput(palette: string[] | undefined, style: LogoStyle, rando
 }
 
 const STYLE_FONTS: Record<LogoStyle, string[]> = {
-  MINIMAL: ["space-grotesk", "montserrat", "raleway"],
-  MODERN: ["poppins", "montserrat", "space-grotesk", "nunito"],
-  CLASSIC: ["playfair", "lora", "merriweather"],
-  INSTITUTIONAL: ["merriweather", "montserrat", "lora", "raleway"],
-  PLAYFUL: ["nunito", "poppins", "bebas-neue"],
-  AFRICAN: ["oswald", "bebas-neue", "montserrat", "playfair"],
+  MINIMAL: ["space-grotesk", "inter", "manrope", "dm-sans", "outfit", "raleway", "work-sans"],
+  MODERN: ["poppins", "plus-jakarta-sans", "outfit", "syne", "unbounded", "bricolage-grotesque", "montserrat", "rubik"],
+  CLASSIC: ["playfair", "fraunces", "dm-serif-display", "cormorant-garamond", "libre-baskerville", "lora", "merriweather"],
+  INSTITUTIONAL: ["merriweather", "roboto-slab", "libre-baskerville", "montserrat", "archivo", "work-sans", "lora"],
+  PLAYFUL: ["nunito", "righteous", "comfortaa", "quicksand", "lobster", "rubik", "bebas-neue"],
+  AFRICAN: ["oswald", "anton", "bebas-neue", "alfa-slab-one", "abril-fatface", "teko", "barlow-condensed", "archivo-black"],
 };
 
 export function generateLogoSpecs(options: {

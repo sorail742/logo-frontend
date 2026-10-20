@@ -37,6 +37,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function EditorControls({ spec }: { spec: LogoSpec }) {
   const t = useTranslations("logos");
+  const tc = useTranslations("common");
   const update = useLogoEditor((s) => s.update);
   const updateColors = useLogoEditor((s) => s.updateColors);
   const [iconQuery, setIconQuery] = useState("");
@@ -56,10 +57,14 @@ export function EditorControls({ spec }: { spec: LogoSpec }) {
         <div className="grid grid-cols-2 gap-3">
           <Field label={t("editor.font")} htmlFor="logo-font">
             <NativeSelect id="logo-font" value={spec.fontId} onChange={(e) => update({ fontId: e.target.value })}>
-              {LOGO_FONTS.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
+              {(["sans", "serif", "display"] as const).map((category) => (
+                <optgroup key={category} label={tc(`fontCategories.${category}`)}>
+                  {LOGO_FONTS.filter((f) => f.category === category).map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </NativeSelect>
           </Field>
