@@ -15,7 +15,9 @@
   "shell": {
     "credits": "{count, plural, one {# credit} other {# credits}}",
     "buyCredits": "Buy credits",
-    "readOnly": "You are a Viewer in this workspace: generation and editing are disabled."
+    "readOnly": "You are a Viewer in this workspace: generation and editing are disabled.",
+    "creditsCard": "Available credits",
+    "topUp": "Top up"
   },
   "dashboard": {
     "title": "My projects",
@@ -29,7 +31,30 @@
     "updated": "Updated {date}",
     "deleteConfirm": "The project will be kept in the trash for 30 days.",
     "deleted": "Project moved to trash",
-    "duplicated": "Project duplicated"
+    "duplicated": "Project duplicated",
+    "hello": "Hello {name}",
+    "helloBody": "What are we creating today?",
+    "recent": "Recent projects",
+    "quick": {
+      "newProject": {
+        "title": "New project",
+        "body": "Name, logo, signatures and kit"
+      },
+      "studio": {
+        "title": "Create a visual",
+        "body": "Post, flyer, business card…"
+      },
+      "names": {
+        "title": "Find a name",
+        "body": "10 checked ideas in seconds"
+      },
+      "signature": {
+        "title": "Email signature",
+        "body": "Free, works with Gmail and Outlook"
+      }
+    },
+    "openStudio": "Open the Studio",
+    "steps": "{done}/{total} steps"
   },
   "trash": {
     "title": "Trash",
@@ -78,7 +103,18 @@
     "noActivity": "No activity yet.",
     "status": "Status",
     "rename": "Working title",
-    "stepsDone": "{done} of {total} steps"
+    "stepsDone": "{done} of {total} steps",
+    "studioTitle": "Studio designs",
+    "studioEmpty": "Turn your brand into posts, stories, flyers and business cards.",
+    "openStudio": "Open the Studio",
+    "newDesign": "New design",
+    "palette": "Colors",
+    "fonts": "Fonts",
+    "kitLink": "Brand kit",
+    "seeAll": "See all",
+    "brand": "Your brand",
+    "headingFont": "Headings",
+    "bodyFont": "Body"
   },
   "brief": {
     "title": "Brief",

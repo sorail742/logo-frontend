@@ -105,11 +105,13 @@ export function LoginForm() {
           {t("login.phone")}
         </Button>
       )}
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <span className="h-px flex-1 bg-border" />
-        {t("login.or")}
-        <span className="h-px flex-1 bg-border" />
-      </div>
+      {(api.isAvailable("googleLogin") || api.mode === "mock" || api.isAvailable("smsLogin")) && (
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          {t("login.or")}
+          <span className="h-px flex-1 bg-border" />
+        </div>
+      )}
       <form onSubmit={onSubmit} className="grid gap-4" noValidate>
         <Field label={t("login.email")} htmlFor="email" error={form.formState.errors.email?.message}>
           <Input id="email" type="email" autoComplete="email" {...form.register("email")} />

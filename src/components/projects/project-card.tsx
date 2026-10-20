@@ -1,12 +1,13 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { Copy, MoreHorizontal, Trash2 } from "lucide-react";
+import { Copy, MoreHorizontal, Sparkles, Trash2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LogoPreview } from "@/components/brand/logo-preview";
+import { mix } from "@/lib/render/color";
 import type { Project } from "@/lib/types";
 
 export function ProjectProgress({ project }: { project: Project }) {
@@ -33,16 +34,35 @@ export function ProjectCard({
   const t = useTranslations();
   const format = useFormatter();
   const name = project.chosenName?.value ?? project.title;
+  const colors = project.previewSpec?.colors;
+  const steps = Object.values(project.progress);
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-xs transition hover:-translate-y-0.5 hover:shadow-lg">
       <Link href={`/app/projets/${project.id}`} className="absolute inset-0 z-0" aria-label={name} />
-      <div className="flex aspect-[16/9] items-center justify-center border-b bg-muted/40">
+      <div
+        className="relative flex aspect-[16/9] items-center justify-center border-b"
+        style={{ background: colors ? `radial-gradient(circle at 30% 20%, #ffffff, ${mix(colors.primary, "#ffffff", 0.9)})` : undefined }}
+      >
         {project.previewSpec ? (
-          <LogoPreview spec={project.previewSpec} className="h-full w-full bg-transparent p-6" />
+          <LogoPreview spec={project.previewSpec} className="h-full w-full bg-transparent p-7" />
         ) : (
-          <span className="text-3xl font-semibold text-muted-foreground/60">{name.slice(0, 2).toUpperCase()}</span>
+          <span className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-2xl font-semibold text-primary">{name.slice(0, 2).toUpperCase()}</span>
         )}
+        {colors && (
+          <span className="absolute bottom-3 left-3 flex -space-x-1.5" aria-hidden="true">
+            {[colors.primary, colors.secondary, colors.text].map((c, i) => (
+              <span key={i} className="size-4 rounded-full ring-2 ring-white" style={{ background: c }} />
+            ))}
+          </span>
+        )}
+        <Link
+          href={`/app/projets/${project.id}/studio`}
+          className="absolute right-3 bottom-3 z-10 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-slate-800 opacity-0 shadow-sm ring-1 ring-black/5 transition group-hover:opacity-100 focus-visible:opacity-100"
+        >
+          <Sparkles className="size-3" aria-hidden="true" />
+          {t("app.dashboard.openStudio")}
+        </Link>
       </div>
       <div className="grid gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
@@ -79,6 +99,7 @@ export function ProjectCard({
           <div className="flex-1">
             <ProjectProgress project={project} />
           </div>
+          <span className="text-[11px] text-muted-foreground tabular-nums">{t("app.dashboard.steps", { done: steps.filter(Boolean).length, total: steps.length })}</span>
         </div>
       </div>
     </article>

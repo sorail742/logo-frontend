@@ -82,10 +82,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
-              active ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              active ? "bg-background font-medium text-foreground shadow-xs ring-1 ring-border" : "text-muted-foreground hover:bg-background/70 hover:text-foreground",
             )}
           >
-            <Icon className="size-4" aria-hidden="true" />
+            <Icon className={cn("size-4", active && "text-primary")} aria-hidden="true" />
             {label}
           </Link>
         );
@@ -152,6 +152,24 @@ function CreditsBadge() {
       <Coins className="size-4 text-brand-accent" aria-hidden="true" />
       {data ? t("credits", { count: data.balance }) : "…"}
     </Link>
+  );
+}
+
+/** Solde de crédits en pied de barre latérale, avec accès à la recharge. */
+function SidebarCredits({ onNavigate }: { onNavigate?: () => void }) {
+  const t = useTranslations("app.shell");
+  const { data } = useCredits();
+  return (
+    <div className="mt-auto rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-amber-400/10 p-4 ring-1 ring-primary/10">
+      <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        <Coins className="size-3.5 text-brand-accent" aria-hidden="true" />
+        {t("creditsCard")}
+      </p>
+      <p className="mt-1 text-2xl font-semibold tabular-nums">{data ? data.balance : "…"}</p>
+      <Link href="/app/facturation" onClick={onNavigate} className="mt-2 inline-flex text-xs font-medium text-primary hover:underline">
+        {t("topUp")} →
+      </Link>
+    </div>
   );
 }
 
@@ -260,6 +278,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {t("nav.newProject")}
       </Button>
       <NavLinks onNavigate={onNavigate} />
+      <SidebarCredits onNavigate={onNavigate} />
     </div>
   );
 

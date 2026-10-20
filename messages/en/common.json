@@ -13,7 +13,8 @@
     "login": "Log in",
     "signup": "Sign up",
     "dashboard": "My workspace",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "studio": "Studio"
   },
   "actions": {
     "save": "Save",

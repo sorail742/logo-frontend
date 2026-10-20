@@ -1,11 +1,17 @@
 {
   "hero": {
-    "eyebrow": "Pour les associations, applications, startups et projets",
-    "title": "Votre nom, votre logo et vos signatures, en un seul parcours",
-    "subtitle": "Trouvez un nom disponible, créez un logo vectoriel modifiable, obtenez votre slogan, votre signature e-mail et votre cachet. Payez en GNF par Orange Money.",
+    "eyebrow": "Nouveau : le Studio de création à votre marque",
+    "title": "Votre identité de marque,",
+    "subtitle": "Trouvez un nom disponible, créez votre logo, puis déclinez-le en publications, stories, flyers, cartes de visite et présentations avec un studio qui connaît votre marque. Payez en GNF par Orange Money.",
     "cta": "Commencer gratuitement",
     "secondary": "Essayer sans compte",
-    "proof": "Sans carte bancaire · 3 lots de noms par jour offerts"
+    "proof": "Sans carte bancaire · 3 lots de noms par jour offerts",
+    "titleAccent": "du nom à l'affiche.",
+    "proofItems": [
+      "Sans carte bancaire",
+      "3 lots de noms offerts chaque jour",
+      "En français, prix en francs guinéens"
+    ]
   },
   "problem": {
     "title": "Une identité ne devrait pas coûter des semaines",
@@ -14,7 +20,8 @@
       "skills": "Associations et projets étudiants manquent de budget et de compétences graphiques.",
       "tools": "Les outils existants sont en anglais, facturés en devises, sans paiement mobile.",
       "taken": "Un nom choisi sans vérification se révèle souvent déjà pris."
-    }
+    },
+    "kicker": "Le constat"
   },
   "modules": {
     "title": "Trois modules, un seul kit",
@@ -36,16 +43,18 @@
     }
   },
   "journey": {
-    "title": "Comment ça marche",
+    "title": "De l'idée au premier visuel, en une après-midi",
     "steps": {
       "1": "Créez un projet et choisissez son type",
       "2": "Décrivez votre structure en quelques lignes",
       "3": "Générez des noms et vérifiez leur disponibilité",
       "4": "Générez votre logo puis ajustez-le",
       "5": "Obtenez slogan, signature e-mail et cachet",
-      "6": "Téléchargez ou partagez votre kit"
+      "6": "Téléchargez ou partagez votre kit",
+      "7": "Créez vos visuels dans le Studio"
     },
-    "shortcuts": "Vous avez déjà un nom ou un logo ? Commencez directement à l'étape suivante."
+    "shortcuts": "Vous avez déjà un nom ou un logo ? Commencez directement à l'étape suivante.",
+    "kicker": "Comment ça marche"
   },
   "personas": {
     "title": "Pensé pour vous",
@@ -53,7 +62,8 @@
     "app": "Porteurs d'application : nom avec domaine libre, icône d'app et favicon.",
     "startup": "Startups et PME : kit complet, charte PDF, travail en équipe.",
     "agency": "Freelances et agences : pistes rapides, exports en lot, un espace par client.",
-    "student": "Étudiants et clubs : offre gratuite, résultat rapide."
+    "student": "Étudiants et clubs : offre gratuite, résultat rapide.",
+    "kicker": "Pour qui ?"
   },
   "payment": {
     "title": "Payez comme vous en avez l'habitude",
@@ -62,8 +72,9 @@
   },
   "cta": {
     "title": "Votre identité commence par un nom",
-    "body": "Essayez le générateur de noms sans créer de compte.",
-    "button": "Générer des noms"
+    "body": "Essayez le générateur de noms sans créer de compte, puis donnez vie à votre marque dans le Studio.",
+    "button": "Générer des noms",
+    "secondary": "Créer un compte"
   },
   "pricing": {
     "title": "Des offres pour chaque structure",
@@ -86,7 +97,10 @@
       "a3": "À l'achat, les droits d'usage commercial vous sont cédés et le logo devient exclusif. Nous recommandons un dépôt de marque auprès de l'OAPI.",
       "q4": "Comment obtenir le tarif association ?",
       "a4": "Envoyez votre justificatif d'agrément depuis la page Facturation ; un administrateur le valide."
-    }
+    },
+    "studioIncluded": "Le Studio de création est inclus dans toutes les offres",
+    "studioIncludedBody": "Modèles à votre marque, redimensionnement magique, contrôle qualité et exports PNG, JPG, SVG et PDF d'impression, sans crédit.",
+    "kicker": "Tarifs"
   },
   "features": {
     "free": {
@@ -144,5 +158,95 @@
   "emailTool": {
     "title": "Générateur de signature e-mail gratuit",
     "subtitle": "Créez une signature professionnelle compatible Gmail, Outlook et Apple Mail, sans compte."
+  },
+  "showcase": {
+    "chipResize": "Redimensionnement magique",
+    "chipCheck": "Lisibilité vérifiée",
+    "chipPrint": "PDF prêt pour l'imprimeur",
+    "brands": "Marques d'exemple"
+  },
+  "audience": {
+    "title": "Pour toutes les structures",
+    "items": [
+      "Associations",
+      "ONG",
+      "Startups",
+      "Applications",
+      "PME et commerces",
+      "Clubs étudiants",
+      "Événements",
+      "Freelances et agences"
+    ]
+  },
+  "bento": {
+    "kicker": "Tout votre univers de marque",
+    "title": "Cinq outils qui travaillent ensemble",
+    "subtitle": "Chaque étape reprend la précédente : le nom nourrit le logo, le logo nourrit la charte, la charte nourrit chaque visuel.",
+    "names": {
+      "title": "Un nom disponible",
+      "body": "Des lots de 10 noms expliqués, avec sigle, score et vérification des domaines et des réseaux sociaux.",
+      "free": "libre"
+    },
+    "logos": {
+      "title": "Un logo vectoriel",
+      "body": "8 propositions par lot, un éditeur pour tout ajuster, et toutes les déclinaisons : couleur, blanc, noir, icône d'app."
+    },
+    "studio": {
+      "title": "Le Studio de création",
+      "body": "Publications, stories, flyers, affiches, cartes de visite et présentations, composés à vos couleurs avec votre logo.",
+      "points": [
+        "Modèles à votre marque",
+        "Redimensionnement magique",
+        "Contrôle qualité avant export",
+        "PDF d'impression"
+      ]
+    },
+    "signatures": {
+      "title": "Signatures et cachet",
+      "body": "Slogan, signature e-mail compatible Gmail et Outlook, paraphe et cachet prêt pour le tampon."
+    },
+    "kit": {
+      "title": "Un kit de marque",
+      "body": "Charte graphique PDF, archive rangée et page partageable protégée par mot de passe."
+    }
+  },
+  "studio": {
+    "kicker": "Studio de création",
+    "title": "Un studio qui connaît votre marque",
+    "body": "Pas une page blanche : vos couleurs, votre logo et vos polices sont déjà là. Chaque modèle se compose pour le format choisi, et chaque création est vérifiée avant de partir chez l'imprimeur ou sur les réseaux.",
+    "cta": "Créer mon premier visuel",
+    "features": {
+      "templates": {
+        "title": "Modèles à votre marque",
+        "body": "Annonces, promotions, événements, carrousels, cartes de visite : composés avec votre logo, vos couleurs et vos polices."
+      },
+      "resize": {
+        "title": "Redimensionnement magique",
+        "body": "Une publication devient story, flyer A5 ou bannière LinkedIn : la mise en page se recompose, elle ne se déforme pas."
+      },
+      "check": {
+        "title": "Contrôle qualité",
+        "body": "Contraste des textes, corps minimal, zone de sécurité, fond perdu, résolution des photos, couleurs hors charte — corrigés en un clic."
+      },
+      "print": {
+        "title": "Prêt pour l'imprimeur",
+        "body": "PDF à taille réelle avec fond perdu, zone de coupe et traits de coupe ; textes vectorisés."
+      },
+      "variations": {
+        "title": "Variations en un clic",
+        "body": "Palette inversée, fond sombre, harmonies de couleurs, autres polices, miroir : huit pistes à votre marque."
+      },
+      "library": {
+        "title": "Une vraie boîte à outils",
+        "body": "1 890 icônes, 47 polices, dégradés, ombres, texte en arc, masques photo, calques, pipette et raccourcis clavier."
+      }
+    },
+    "score": "Score qualité",
+    "scoreItems": [
+      "Contraste des textes",
+      "Zone de sécurité",
+      "Résolution des photos",
+      "Couleurs de la charte"
+    ]
   }
 }

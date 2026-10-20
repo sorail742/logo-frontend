@@ -13,7 +13,8 @@
     "login": "Connexion",
     "signup": "Créer un compte",
     "dashboard": "Mon espace",
-    "skip": "Aller au contenu"
+    "skip": "Aller au contenu",
+    "studio": "Studio"
   },
   "actions": {
     "save": "Enregistrer",
