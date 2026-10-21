@@ -138,7 +138,7 @@ export default function LogoEditorPage() {
           <VariantsGrid spec={spec} />
 
           <div className="grid gap-6 xl:grid-cols-2">
-            {can("export.download") && <ExportPanel spec={spec} logoId={lid} isFree={credits.data?.planCode === "FREE"} />}
+            {can("export.download") && <ExportPanel spec={spec} logoId={lid} isFree={credits.data?.planCode === "FREE"} saved={!dirty} />}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-sm">

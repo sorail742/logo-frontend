@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import { Bell, Check } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 export default function NotificationsPage() {
   const t = useTranslations("app.notifications");
   const format = useFormatter();
+  // Heure de référence des durées relatives (« il y a 3 minutes »), rafraîchie chaque minute.
+  const now = useNow({ updateInterval: 60_000 });
   const queryClient = useQueryClient();
   const { data = [] } = useQuery({ queryKey: qk.notifications, queryFn: api.notifications.list });
   const markRead = useMutation({
@@ -42,7 +44,7 @@ export default function NotificationsPage() {
                   )}
                 </p>
                 <p className="text-sm text-muted-foreground">{notification.body}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{format.relativeTime(new Date(notification.createdAt))}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{format.relativeTime(new Date(notification.createdAt), now)}</p>
               </div>
               {!notification.readAt && (
                 <Button variant="ghost" size="icon-sm" onClick={() => markRead.mutate(notification.id)} aria-label={t("markRead")}>

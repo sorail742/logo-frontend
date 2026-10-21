@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LogoPreview } from "@/components/brand/logo-preview";
+import { SvgView } from "@/components/brand/svg-view";
+import { sanitizeSvg } from "@/lib/render/svg";
 import type { Logo } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { LogoMockups } from "./logo-mockups";
@@ -29,10 +31,16 @@ export function LogoCard({
   const t = useTranslations("logos");
   const tc = useTranslations("common.actions");
   const spec = logo.current.spec;
+  // Logo importé : son SVG d'origine (nettoyé par l'API, puis ici) plutôt que la recomposition.
+  const original = logo.engine === "UPLOAD" && logo.current.svg ? sanitizeSvg(logo.current.svg) : null;
   return (
     <article className={cn("grid gap-3 rounded-xl border bg-card p-3", logo.isFavorite && "border-primary/60")}>
       <div className="relative">
-        <LogoPreview spec={spec} className="aspect-[16/9] rounded-lg" />
+        {original ? (
+          <SvgView svg={original} label={spec.text} className="bg-checker aspect-[16/9] rounded-lg p-3" />
+        ) : (
+          <LogoPreview spec={spec} className="aspect-[16/9] rounded-lg" />
+        )}
         <div className="absolute top-2 left-2 flex gap-1">
           <Badge variant="secondary">{t(`types.${logo.type}`)}</Badge>
           {logo.isExclusive && (

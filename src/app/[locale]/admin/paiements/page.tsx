@@ -15,6 +15,7 @@ import { qk } from "@/lib/query-keys";
 import { downloadBlob } from "@/lib/render/export";
 import type { Payment } from "@/lib/types";
 import { useSessionStore } from "@/stores/session";
+import { ComingSoon } from "@/components/common/coming-soon";
 
 function toCsv(payments: Payment[]) {
   const header = ["id", "date", "espace", "moyen", "montant_gnf", "statut", "offre"];
@@ -24,6 +25,10 @@ function toCsv(payments: Payment[]) {
 }
 
 export default function AdminPaymentsPage() {
+  return api.isAvailable("payments") ? <AdminPaymentsContent /> : <ComingSoon feature="payments" />;
+}
+
+function AdminPaymentsContent() {
   const t = useTranslations("admin.payments");
   const tb = useTranslations("billing.checkout.methods");
   const format = useFormatter();

@@ -11,8 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/empty-state";
 import { ApiError, api } from "@/lib/api";
 import { KitView } from "./kit-view";
+import { ComingSoon } from "@/components/common/coming-soon";
 
 export function PublicKit() {
+  return api.isAvailable("brandKits") ? <PublicKitContent /> : <ComingSoon feature="brandKits" />;
+}
+
+function PublicKitContent() {
   const t = useTranslations("kit.public");
   const { token } = useParams<{ token: string }>();
   const [password, setPassword] = useState<string | undefined>();

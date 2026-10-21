@@ -22,6 +22,7 @@ import { svgToPngDataUrl } from "@/lib/render/export";
 import { renderLogoSvg } from "@/lib/render/logo";
 import type { EmailSignatureData, HandwrittenData, Signature, SignatureKind, StampData } from "@/lib/types";
 import type { EmailTemplateId } from "@/lib/render/email-signature";
+import { ComingSoon } from "@/components/common/coming-soon";
 
 const TABS = ["slogan", "email", "handwritten", "stamp"] as const;
 type Tab = (typeof TABS)[number];
@@ -188,9 +189,15 @@ function SignaturesContent() {
 }
 
 export default function SignaturesPage() {
+  if (!api.isAvailable("signatures")) return <SignaturesComingSoon />;
   return (
     <Suspense>
       <SignaturesContent />
     </Suspense>
   );
+}
+
+function SignaturesComingSoon() {
+  const t = useTranslations("signatures");
+  return <ComingSoon feature="signatures" title={t("title")} />;
 }

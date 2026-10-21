@@ -33,10 +33,15 @@
   "jobs": {
     "NAMES": "Names",
     "LOGOS": "Logos",
+    "LOGO_EXPORT": "Logo exports",
     "SLOGANS": "Taglines",
     "SIGNATURE": "Signatures",
     "BRAND_GUIDE": "PDF guides",
-    "EXPORT_ZIP": "ZIP archives"
+    "EXPORT_ZIP": "ZIP archives",
+    "APPAREL_PROPOSALS": "Apparel: proposals",
+    "APPAREL_MOCKUP": "Apparel: mockups",
+    "PRODUCTION_PACK": "Apparel: print packs",
+    "NUMBER_FONT": "Apparel: number fonts"
   },
   "users": {
     "search": "Search by name or email",

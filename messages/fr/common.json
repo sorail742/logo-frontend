@@ -79,5 +79,16 @@
     "contact": "Contact",
     "rights": "© {year} Marka. Nom provisoire."
   },
-  "offline": "Vous êtes hors ligne : les projets déjà ouverts restent consultables."
+  "offline": "Vous êtes hors ligne : les projets déjà ouverts restent consultables.",
+  "comingSoon": {
+    "title": "Bientôt disponible",
+    "slogans": "Les slogans arrivent avec le module Signatures.",
+    "signatures": "Slogans, signature e-mail, paraphe et cachet arrivent avec la prochaine version de la plateforme.",
+    "brandKits": "Le kit de marque (charte PDF, archive, partage) arrive avec une prochaine version. Vous pouvez déjà exporter votre logo depuis sa page.",
+    "comments": "Les commentaires arrivent avec une prochaine version.",
+    "payments": "Le paiement en ligne (Orange Money) ouvre prochainement.",
+    "moderation": "La file de modération des cachets arrive avec le module Signatures.",
+    "smsLogin": "La connexion par SMS arrive prochainement.",
+    "googleLogin": "La connexion Google n'est pas configurée."
+  }
 }

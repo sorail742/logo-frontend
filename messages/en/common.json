@@ -79,5 +79,16 @@
     "contact": "Contact",
     "rights": "© {year} Marka. Working name."
   },
-  "offline": "You are offline: projects you already opened remain available."
+  "offline": "You are offline: projects you already opened remain available.",
+  "comingSoon": {
+    "title": "Coming soon",
+    "slogans": "Taglines come with the Signatures module.",
+    "signatures": "Taglines, email signature, initials and stamp come with the next version of the platform.",
+    "brandKits": "The brand kit (PDF guide, archive, sharing) comes with an upcoming version. You can already export your logo from its page.",
+    "comments": "Comments come with an upcoming version.",
+    "payments": "Online payment (Orange Money) opens soon.",
+    "moderation": "The stamp moderation queue comes with the Signatures module.",
+    "smsLogin": "SMS sign-in is coming soon.",
+    "googleLogin": "Google sign-in is not configured."
+  }
 }

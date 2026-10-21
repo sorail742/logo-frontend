@@ -17,7 +17,8 @@ const GNF_PER_USD = 8600;
 function RevenueChart({ daily }: { daily: AdminStats["daily"] }) {
   const locale = useLocale();
   const format = useFormatter();
-  const max = Math.max(...daily.map((d) => d.revenueGnf), 1);
+  // Échelle minimale de 1 000 GNF : graduations lisibles tant que les revenus sont nuls.
+  const max = Math.max(...daily.map((d) => d.revenueGnf), 1000);
   return (
     <div className="grid grid-cols-[auto_1fr] gap-2">
       <div className="flex h-48 flex-col justify-between text-right text-[11px] text-muted-foreground tabular-nums" aria-hidden="true">
@@ -114,8 +115,8 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <ul className="grid gap-3 text-sm">
-              {(Object.entries(data.generations) as [JobKind, number][]).map(([kind, count]) => {
-                const max = Math.max(...Object.values(data.generations));
+              {(Object.entries(data.generations) as [JobKind, number][]).filter(([kind]) => t.has(`jobs.${kind}`)).map(([kind, count]) => {
+                const max = Math.max(1, ...Object.values(data.generations));
                 return (
                   <li key={kind} className="grid gap-1">
                     <div className="flex justify-between">

@@ -320,6 +320,7 @@ function kitToDto(kit: ReturnType<typeof db>["brandKits"][number]): BrandKit {
 
 export const mockClient: ApiClient = {
   mode: "mock",
+  isAvailable: (feature) => feature !== "googleLogin",
 
   auth: {
     async register({ fullName, email, password }) {
@@ -353,7 +354,12 @@ export const mockClient: ApiClient = {
       tokenStore.set(null);
       save();
     },
-    googleUrl: () => "#google-indisponible-en-mode-simule",
+    async google() {
+      throw problem(501, "Connexion Google indisponible en mode simulé", "NOT_AVAILABLE");
+    },
+    async verifyEmail() {
+      await wait();
+    },
     async requestOtp() {
       await wait();
     },
@@ -1040,7 +1046,7 @@ export const mockClient: ApiClient = {
       return {
         signups: data.users.length + 312,
         activeUsers: 187,
-        generations: { NAMES: count("NAMES") + 820, LOGOS: count("LOGOS") + 410, SLOGANS: count("SLOGANS") + 260, SIGNATURE: 140, BRAND_GUIDE: 52, EXPORT_ZIP: 61 },
+        generations: { NAMES: count("NAMES") + 820, LOGOS: count("LOGOS") + 410, LOGO_EXPORT: count("LOGO_EXPORT") + 95, SLOGANS: count("SLOGANS") + 260, SIGNATURE: 140, BRAND_GUIDE: 52, EXPORT_ZIP: 61 },
         conversionRate: 0.064,
         revenueGnf: days.reduce((s, d) => s + d.revenueGnf, 0),
         aiCostUsd: days.reduce((s, d) => s + d.aiCostUsd, 0),

@@ -144,7 +144,7 @@ function WorkspaceContent() {
                 <ul className="grid gap-2 text-sm">
                   {invitations.map((invitation) => (
                     <li key={invitation.id} className="flex items-center justify-between gap-2">
-                      <span className="truncate">{invitation.email}</span>
+                      <span className="truncate">{invitation.email || t("linkInvitation")}</span>
                       <span className="text-xs text-muted-foreground">
                         {tr(invitation.role)} · {t("expires", { date: format.dateTime(new Date(invitation.expiresAt), { dateStyle: "medium" }) })}
                       </span>

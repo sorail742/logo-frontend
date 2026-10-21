@@ -34,12 +34,12 @@
   "generate": "Generate 8 logos",
   "import": "Upload my logo",
   "importTitle": "Upload an existing logo",
-  "importBody": "SVG or PNG, 5 MB max. We extract its palette for your signatures and kit.",
+  "importBody": "SVG (1 MB max) or PNG (2 MB max). We extract its palette for your signatures and kit.",
   "importFile": "File",
   "extracted": "Extracted colours",
   "importConfirm": "Use this logo",
   "imported": "Logo uploaded",
-  "invalidFile": "Unsupported or too large file (5 MB max).",
+  "invalidFile": "Unsupported or too large file (SVG 1 MB, PNG 2 MB max).",
   "empty": "No logos yet",
   "emptyBody": "Run a first batch of 8 proposals.",
   "batchReady": "New logo proposals",
@@ -130,6 +130,11 @@
     "watermark": "Free plan: watermarked 512 px PNG only.",
     "upgrade": "Upgrade to a paid plan",
     "done": "File downloaded",
-    "previewNote": "Browser preview: the final file (outlined text, SVGO-optimised) is produced by the server."
+    "previewNote": "Browser preview: the final file (outlined text, SVGO-optimised) is produced by the server.",
+    "zipAll": "Complete archive",
+    "zipAllBody": "Built by the server: vector SVG and PDF (text as outlines), PNG 512/1024/2048, JPG, app icons, social formats and licences.",
+    "zipAllButton": "Download the ZIP archive",
+    "saveFirst": "Save the version first: the server export uses the last saved version.",
+    "serverFailed": "The export failed, please try again."
   }
 }
