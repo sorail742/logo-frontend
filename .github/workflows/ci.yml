@@ -12,11 +12,14 @@ jobs:
       NEXT_TELEMETRY_DISABLED: 1
     steps:
       - uses: actions/checkout@v4
+      # Version de pnpm lue dans le champ « packageManager » de package.json
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run build
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      # Les types PageProps / LayoutProps sont générés par Next.js avant la vérification
+      - run: pnpm exec next typegen && pnpm typecheck
+      - run: pnpm build
