@@ -89,5 +89,12 @@
   "regenerate": "Mettre à jour",
   "zipFree": "Offre gratuite : l'archive contient les logos en PNG 512 px filigranés. Formats vectoriels, charte et supports d'impression sont inclus dans les offres payantes.",
   "guideFree": "La charte est incluse dans le Pack Identité et les offres payantes.",
-  "jobQueued": "Préparation lancée : vous serez prévenu quand le fichier sera prêt."
+  "jobQueued": "Préparation lancée : vous serez prévenu quand le fichier sera prêt.",
+  "social": {
+    "title": "Kit réseaux sociaux",
+    "body": "Photos de profil et bannières aux dimensions de chaque réseau, logo placé dans la zone visible sur mobile comme sur ordinateur. Inclus dans l'archive ZIP.",
+    "free": "Aperçu de vos visuels réseaux sociaux. Le téléchargement est inclus dans les offres payantes.",
+    "download": "Télécharger en PNG",
+    "done": "Visuel téléchargé"
+  }
 }

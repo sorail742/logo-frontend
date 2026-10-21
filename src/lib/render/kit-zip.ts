@@ -3,7 +3,7 @@
 import type { BrandKit, EmailSignatureData, HandwrittenData, Signature, StampData } from "@/lib/types";
 import { renderEmailSignature, type EmailTemplateId, type SignatureBrand } from "./email-signature";
 import { svgToPngBlob, svgToStandalone } from "./export";
-import { iconPackEntries, licencesText, socialSvg, SOCIAL_FORMATS } from "./logo-assets";
+import { iconPackEntries, licencesText, socialSvg, SOCIAL_KIT } from "./logo-assets";
 import { LOGO_VARIANTS, renderLogoSvg } from "./logo";
 import { renderHandwrittenSvg, renderStampSvg } from "./stamp";
 import { buildZip, type ZipEntry } from "./zip";
@@ -27,10 +27,10 @@ export async function buildKitZip(kit: BrandKit, options: { projectName: string;
 
   entries.push(...(await iconPackEntries(spec)));
 
-  for (const format of SOCIAL_FORMATS) {
+  for (const format of SOCIAL_KIT) {
     entries.push({
-      path: `reseaux-sociaux/${format.id}.png`,
-      data: await svgToPngBlob(socialSvg(spec, format.id), { size: Math.max(format.width, format.height) }),
+      path: `reseaux-sociaux/${format.file}.png`,
+      data: await svgToPngBlob(socialSvg(spec, format), { size: Math.max(format.width, format.height) }),
     });
   }
 

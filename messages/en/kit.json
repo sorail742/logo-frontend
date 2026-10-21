@@ -89,5 +89,12 @@
   "regenerate": "Update",
   "zipFree": "Free plan: the archive contains watermarked 512 px PNG logos. Vector formats, the brand guide and print templates come with paid plans.",
   "guideFree": "The brand guide is included in the Identity Pack and paid plans.",
-  "jobQueued": "Started: you will be notified when the file is ready."
+  "jobQueued": "Started: you will be notified when the file is ready.",
+  "social": {
+    "title": "Social media kit",
+    "body": "Profile pictures and banners sized for each network, with the logo inside the area visible on both mobile and desktop. Included in the ZIP archive.",
+    "free": "Preview of your social media visuals. Downloads are included in paid plans.",
+    "download": "Download as PNG",
+    "done": "Visual downloaded"
+  }
 }
