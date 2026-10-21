@@ -160,5 +160,28 @@
       "bags": "Bags",
       "stand": "Stand and roll-up banner"
     }
+  },
+  "animation": {
+    "title": "Animated logo",
+    "body": "The symbol, the name and then the tagline appear in turn. Animated SVG for your website, 1080 px square video for WhatsApp statuses, Reels and TikTok.",
+    "free": "Preview of your animated logo. Downloads are included in paid plans.",
+    "alt": "Animated logo of {name}",
+    "replay": "Replay",
+    "style": "Animation",
+    "styles": {
+      "reveal": "Reveal",
+      "draw": "Draw",
+      "bounce": "Bounce"
+    },
+    "background": "Background",
+    "backgrounds": {
+      "light": "Light background",
+      "brand": "Brand colour"
+    },
+    "svg": "Animated SVG",
+    "video": "1080 px video",
+    "recording": "Recording…",
+    "videoNote": "The video is recorded in your browser (MP4, or WebM depending on the browser): keep the tab open for a few seconds.",
+    "done": "File downloaded"
   }
 }

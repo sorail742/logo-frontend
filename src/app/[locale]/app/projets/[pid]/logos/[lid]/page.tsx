@@ -17,6 +17,7 @@ import { Field } from "@/components/common/field";
 import { EditorControls } from "@/components/logos/editor-controls";
 import { ExportPanel, VariantsGrid } from "@/components/logos/export-panel";
 import { LogoMockups } from "@/components/logos/logo-mockups";
+import { LogoAnimationPanel } from "@/components/logos/logo-animation-panel";
 import { MockupGallery } from "@/components/logos/mockup-gallery";
 import { CommentsPanel } from "@/components/projects/comments-panel";
 import { useApiErrorToast } from "@/hooks/use-api-error";
@@ -140,6 +141,8 @@ export default function LogoEditorPage() {
           <VariantsGrid spec={spec} />
 
           <MockupGallery spec={spec} canDownload={can("export.download")} isFree={credits.data?.planCode === "FREE"} />
+
+          <LogoAnimationPanel spec={spec} canDownload={can("export.download")} isFree={credits.data?.planCode === "FREE"} />
 
           <div className="grid gap-6 xl:grid-cols-2">
             {can("export.download") && <ExportPanel spec={spec} logoId={lid} isFree={credits.data?.planCode === "FREE"} saved={!dirty} />}
