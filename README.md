@@ -180,6 +180,24 @@ Les polices (interface et bibliothèque des logos, licence OFL) sont auto-héber
 Pour ajouter ou mettre à jour une police : modifier la liste dans `scripts/fetch-fonts.py`, puis
 lancer `python scripts/fetch-fonts.py` (régénère aussi `src/app/fonts.ts`).
 
+## Branches
+
+| Branche | Rôle |
+| --- | --- |
+| `main` | Production : ne reçoit que des fusions depuis `develop` |
+| `develop` | Développement : branche d'intégration, point de départ du travail |
+
+Le travail se fait sur une branche créée depuis `develop` (par exemple `feat/kit-partage` ou
+`fix/polices`), puis une pull request vers `develop`. Une mise en production est une pull request
+de `develop` vers `main`. On ne pousse jamais directement sur `main`.
+
+```bash
+git switch develop && git pull
+git switch -c feat/ma-fonctionnalite
+# … commits …
+git push -u origin feat/ma-fonctionnalite   # puis pull request vers develop
+```
+
 ## Scripts
 
 ```bash
