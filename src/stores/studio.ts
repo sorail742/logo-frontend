@@ -56,6 +56,8 @@ interface StudioState {
   change(fn: (doc: DesignDoc) => DesignDoc, history?: HistoryMode): void;
   begin(): void;
   end(): void;
+  /** Abandonne le geste en cours : le document revient à son état de départ. */
+  cancel(): void;
   undo(): void;
   redo(): void;
   setPage(index: number): void;
@@ -161,6 +163,13 @@ export const useStudio = create<StudioState>((set, get) => {
       if (gestureBase && doc && gestureBase !== doc) {
         set({ past: [...past, gestureBase].slice(-HISTORY_LIMIT), future: [] });
       }
+      gestureBase = null;
+      lastMerge = null;
+      set({ guides: [] });
+    },
+    cancel: () => {
+      const base = gestureBase;
+      if (base && base !== get().doc) set((s) => ({ doc: base, revision: s.revision + 1 }));
       gestureBase = null;
       lastMerge = null;
       set({ guides: [] });
