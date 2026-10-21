@@ -490,7 +490,10 @@
     "brand": "Brand",
     "uploads": "Uploads",
     "layers": "Layers",
-    "check": "Check"
+    "check": "Check",
+    "comments": "Comments",
+    "generate": "Generate",
+    "photos": "Photos"
   },
   "pages": {
     "label": "Pages",
@@ -632,7 +635,8 @@
     "saved": "Saved",
     "pending": "Unsaved changes",
     "saving": "Saving…",
-    "saveError": "Save failed"
+    "saveError": "Save failed",
+    "comment": "Comment"
   },
   "shortcuts": {
     "title": "Keyboard shortcuts",
@@ -656,7 +660,8 @@
       "zoom": "Ctrl + wheel",
       "fit": "Ctrl 0 / 1",
       "export": "Ctrl E",
-      "pages": "Page Up / Down"
+      "pages": "Page Up / Down",
+      "comment": "C"
     },
     "actions": {
       "undo": "Undo",
@@ -678,7 +683,8 @@
       "zoom": "Zoom",
       "fit": "Fit to screen / actual size",
       "export": "Export",
-      "pages": "Previous / next page"
+      "pages": "Previous / next page",
+      "comment": "Comment mode"
     }
   },
   "list": {
@@ -729,5 +735,107 @@
     "deleteTitle": "Delete this design?",
     "deleteBody": "“{name}” will be permanently deleted.",
     "cancel": "Cancel"
+  },
+  "comments": {
+    "sendHint": "Ctrl + Enter to send",
+    "cancel": "Cancel",
+    "send": "Send",
+    "thread": "Thread #{number}",
+    "resolve": "Mark as resolved",
+    "reopen": "Reopen",
+    "close": "Close",
+    "delete": "Delete",
+    "deleteThread": "Delete thread",
+    "resolvedNote": "Thread resolved. Replying reopens it.",
+    "reply": "Reply… (@ to mention)",
+    "placeholder": "Your comment… (@ to mention)",
+    "pin": "Comment {number} by {author}",
+    "modeHint": "Click the page to pin a comment · Esc to exit",
+    "unavailable": "Comments are coming in a future version.",
+    "startCommenting": "Comment on the design",
+    "stopCommenting": "Exit comment mode",
+    "help": "Pin your feedback to the exact spot on the page: the team is notified and can reply or resolve the thread.",
+    "open": "Open ({count})",
+    "resolved": "Resolved ({count})",
+    "emptyOpen": "No open threads.",
+    "emptyResolved": "No resolved threads.",
+    "page": "Page {number}",
+    "replies": "{count, plural, one {# reply} other {# replies}}"
+  },
+  "generate": {
+    "describe": "Describe the image",
+    "placeholder": "E.g. festive background announcing our music festival",
+    "ideas": [
+      "Soft background for a quote",
+      "Wax pattern for an event poster",
+      "Waves for a water campaign",
+      "Confetti for a birthday",
+      "Bogolan pattern for a craft brand"
+    ],
+    "style": "Style",
+    "styles": {
+      "auto": "Auto",
+      "abstract": "Abstract",
+      "gradient": "Gradient",
+      "geometric": "Geometric",
+      "waves": "Waves",
+      "wax": "Wax pattern",
+      "bogolan": "Bogolan",
+      "confetti": "Confetti"
+    },
+    "format": "Format",
+    "aspects": {
+      "square": "Square",
+      "portrait": "Portrait",
+      "landscape": "Landscape"
+    },
+    "brandColors": "Brand colors",
+    "generate": "Generate 4 images",
+    "working": "Generating…",
+    "results": "Proposals",
+    "add": "Add",
+    "adding": "Adding…",
+    "added": "Image added",
+    "result": "Proposal {index}",
+    "failed": "Generation failed.",
+    "demo": "Demo provider: generative visuals in your colors; the description mostly guides the style. An AI image provider can be plugged in without changing the editor.",
+    "background": "Background",
+    "addedBackground": "Image set as page background"
+  },
+  "photos": {
+    "search": "Search photos",
+    "placeholder": "Market, team, coffee…",
+    "suggestions": [
+      "Market",
+      "Team",
+      "Office",
+      "Nature",
+      "City",
+      "Coffee",
+      "Fashion",
+      "School"
+    ],
+    "orientation": "Orientation",
+    "orientations": {
+      "all": "All",
+      "landscape": "Landscape",
+      "portrait": "Portrait",
+      "square": "Square"
+    },
+    "curated": "Curated picks",
+    "results": "Results for “{q}”",
+    "empty": "No photos for this search. Try another word.",
+    "more": "Show more",
+    "by": "Photo by {author}",
+    "add": "Add the photo by {author}",
+    "added": "Photo added",
+    "clear": "Clear search",
+    "provided": "Photos provided by Pexels",
+    "license": "Free to use, including commercially; crediting the photographer is appreciated.",
+    "unavailableTitle": "Photo library not enabled",
+    "unavailable": "The platform administrator can enable it with a free Pexels key. Meanwhile, upload your own photos or generate an on-brand visual.",
+    "importOwn": "Upload my photos",
+    "error": "The photo library isn't responding. Try again in a moment.",
+    "retry": "Try again"
   }
 }

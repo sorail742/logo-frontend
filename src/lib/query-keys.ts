@@ -22,6 +22,8 @@ export const qk = {
   ledger: (wid: string) => ["workspaces", wid, "ledger"] as const,
   invoices: (wid: string) => ["workspaces", wid, "invoices"] as const,
   plans: ["plans"] as const,
+  capabilities: ["library", "capabilities"] as const,
+  photos: (q: string, orientation: string) => ["library", "photos", q, orientation] as const,
   notifications: ["notifications"] as const,
   admin: (section: string, q?: string) => ["admin", section, q ?? ""] as const,
 };

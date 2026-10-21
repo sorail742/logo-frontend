@@ -28,8 +28,9 @@ import { elementTransform, imagePlacement, renderBackground, renderElement } fro
 import { isFrame } from "@/lib/studio/smart";
 import { naturalWidth, relayout } from "@/lib/studio/text";
 import type { DesignElement, DesignPage, ImageElement, TextElement } from "@/lib/studio/types";
-import { useStudio } from "@/stores/studio";
+import { MAX_ZOOM, MIN_ZOOM, useStudio } from "@/stores/studio";
 import { cn } from "@/lib/utils";
+import { CommentLayer } from "./comments";
 
 // Zone de travail du Studio : la page est dessinée en SVG (repère de la page, zoom et
 // déplacement par transformation), les poignées et repères par-dessus, en px écran pour
@@ -81,7 +82,9 @@ type Gesture =
   | { type: "rotate"; pivot: Point; startAngle: number; originals: Originals }
   | { type: "marquee"; start: Point; current: Point; base: string[] }
   | { type: "pan"; screen: Point; panX: number; panY: number }
-  | { type: "crop"; start: Point; original: ImageElement };
+  | { type: "crop"; start: Point; original: ImageElement }
+  /** Deux doigts : écartement et milieu au départ (repère de l'écran), vue de départ. */
+  | { type: "pinch"; distance: number; mid: Point; zoom: number; panX: number; panY: number };
 
 const ElementLayer = memo(function ElementLayer({ el }: { el: DesignElement }) {
   return <g data-el={el.id} dangerouslySetInnerHTML={{ __html: renderElement(el) }} />;
@@ -166,11 +169,14 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
   const guides = useStudio((s) => s.guides);
   const printGuides = useStudio((s) => s.printGuides);
   const viewport = useStudio((s) => s.viewport);
+  const commentMode = useStudio((s) => s.commentMode);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const gesture = useRef<Gesture | null>(null);
   const space = useRef(false);
+  /** Doigts posés sur l'écran tactile (position à l'écran). */
+  const touches = useRef(new Map<number, Point>());
   const [hoverId, setHoverId] = useState<string | null>(null);
   const [marquee, setMarquee] = useState<Box | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -252,6 +258,13 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
     return { x: (clientX - rect.left - px) / z, y: (clientY - rect.top - py) / z };
   };
   const toScreen = (p: Point): Point => ({ x: panX + p.x * zoom, y: panY + p.y * zoom });
+  /** Écartement et milieu des deux premiers doigts, milieu dans le repère de la zone de travail. */
+  const twoFingers = () => {
+    const [a, b] = [...touches.current.values()];
+    if (!a || !b) return null;
+    const rect = svgRef.current!.getBoundingClientRect();
+    return { distance: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), mid: { x: (a.x + b.x) / 2 - rect.left, y: (a.y + b.y) / 2 - rect.top } };
+  };
 
   const selectedEls = useMemo(() => {
     const ids = new Set(selection);
@@ -292,12 +305,38 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
     const p = toPage(event.clientX, event.clientY);
     svgRef.current!.setPointerCapture(event.pointerId);
 
+    if (event.pointerType === "touch") {
+      touches.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      const fingers = touches.current.size >= 2 ? twoFingers() : null;
+      if (fingers) {
+        // Deuxième doigt : pincer zoome, glisser déplace la vue ; le geste du premier doigt est annulé.
+        const g = gesture.current;
+        if (g && (g.type === "move" || g.type === "resize" || g.type === "rotate" || g.type === "crop")) state.cancel();
+        setMarquee(null);
+        setInfo(null);
+        gesture.current = { type: "pinch", ...fingers, zoom: state.zoom, panX: state.panX, panY: state.panY };
+        setActive("pinch");
+        return;
+      }
+    }
+
     if (event.button === 1 || space.current) {
       gesture.current = { type: "pan", screen: { x: event.clientX, y: event.clientY }, panX: state.panX, panY: state.panY };
       setActive("pan");
       return;
     }
     if (event.button !== 0) return;
+
+    // Mode commentaire : un clic sur la page pose une épingle.
+    if (state.commentMode) {
+      // Pas de changement de focus au clic : la zone de saisie de l'épingle le garde.
+      event.preventDefault();
+      gesture.current = null;
+      const inside = p.x >= 0 && p.y >= 0 && p.x <= doc.width && p.y <= doc.height;
+      state.setDraftPin(inside ? { x: p.x / doc.width, y: p.y / doc.height } : null);
+      return;
+    }
+    if (state.activeThread) state.openThread(null);
 
     const handle = (event.target as Element).closest("[data-handle]")?.getAttribute("data-handle");
     const current = state.doc!.pages[state.pageIndex]!;
@@ -343,12 +382,19 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
     } else {
       const base = event.shiftKey ? state.selection : [];
       if (!event.shiftKey) state.select([]);
+      // Au doigt, glisser sur le fond déplace la vue (la sélection par lasso reste à la souris).
+      if (event.pointerType === "touch") {
+        gesture.current = { type: "pan", screen: { x: event.clientX, y: event.clientY }, panX: state.panX, panY: state.panY };
+        setActive("pan");
+        return;
+      }
       gesture.current = { type: "marquee", start: p, current: p, base };
     }
   };
 
   const onPointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
     const state = useStudio.getState();
+    if (touches.current.has(event.pointerId)) touches.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     const g = gesture.current;
     const p = toPage(event.clientX, event.clientY);
     if (!g) {
@@ -362,6 +408,14 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
       case "pan":
         state.setView({ panX: g.panX + event.clientX - g.screen.x, panY: g.panY + event.clientY - g.screen.y });
         return;
+      case "pinch": {
+        const fingers = twoFingers();
+        if (!fingers) return;
+        const z = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, (g.zoom * fingers.distance) / g.distance));
+        // Le point de la page pris entre les doigts au départ reste entre les doigts.
+        state.setView({ zoom: z, panX: fingers.mid.x - ((g.mid.x - g.panX) / g.zoom) * z, panY: fingers.mid.y - ((g.mid.y - g.panY) / g.zoom) * z });
+        return;
+      }
       case "pending": {
         if (Math.hypot(event.clientX - g.screen.x, event.clientY - g.screen.y) < DRAG_THRESHOLD) return;
         const move = startMove(g.start, g.alt);
@@ -490,9 +544,12 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
     }
   };
 
-  const onPointerUp = () => {
+  const onPointerUp = (event: ReactPointerEvent<SVGSVGElement>) => {
     const state = useStudio.getState();
+    touches.current.delete(event.pointerId);
     const g = gesture.current;
+    // Un doigt levé pendant le pincement : la vue reste où elle est, le doigt restant ne fait plus rien.
+    if (g?.type === "pinch" && touches.current.size >= 2) return;
     gesture.current = null;
     setActive(null);
     setInfo(null);
@@ -509,6 +566,7 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
 
   const onDoubleClick = (event: ReactMouseEvent<SVGSVGElement>) => {
     const state = useStudio.getState();
+    if (state.commentMode) return;
     const p = toPage(event.clientX, event.clientY);
     const hit = hitTest(state.doc!.pages[state.pageIndex]!.elements, p, 4 / state.zoom);
     if (!hit || hit.locked) return;
@@ -547,7 +605,7 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
   const safe = doc.print ? (5 / doc.print.widthMm) * doc.width : 0;
   const editing = editingId ? (page.elements.find((el) => el.id === editingId) as TextElement | undefined) : undefined;
   const crop = cropId ? (page.elements.find((el) => el.id === cropId) as ImageElement | undefined) : undefined;
-  const hover = hoverId && !selection.includes(hoverId) && !busy ? page.elements.find((el) => el.id === hoverId) : undefined;
+  const hover = hoverId && !selection.includes(hoverId) && !busy && !commentMode ? page.elements.find((el) => el.id === hoverId) : undefined;
   const outside = (inset: number) => {
     const x = panX - inset * zoom;
     const y = panY - inset * zoom;
@@ -603,7 +661,7 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
   };
 
   const toolbarAnchor = (() => {
-    if (!selectedEls.length || busy || editing || crop) return null;
+    if (!selectedEls.length || busy || editing || crop || commentMode) return null;
     const box = union(selectedEls.map(aabb))!;
     const top = toScreen({ x: box.x + box.width / 2, y: box.y });
     return { x: top.x, y: Math.max(8, top.y - 52) };
@@ -622,7 +680,7 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
     >
       <svg
         ref={svgRef}
-        className={cn("absolute inset-0 size-full touch-none select-none", active === "pan" && "cursor-grabbing")}
+        className={cn("absolute inset-0 size-full touch-none select-none", active === "pan" && "cursor-grabbing", commentMode && "cursor-crosshair")}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -720,6 +778,8 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
       )}
 
       {editing && <TextEditor el={editing} zoom={zoom} panX={panX} panY={panY} />}
+
+      <CommentLayer />
 
       {crop && (
         <div className="absolute top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-foreground px-3 py-1.5 text-xs text-background shadow">

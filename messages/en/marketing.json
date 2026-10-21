@@ -140,7 +140,8 @@
     "SLOGANS_BATCH": "Batch of 10 taglines",
     "EMAIL_SIGNATURE": "Email signature",
     "HANDWRITTEN_OR_STAMP": "Initials or stamp",
-    "BRAND_GUIDE_PDF": "PDF brand guide"
+    "BRAND_GUIDE_PDF": "PDF brand guide",
+    "STUDIO_IMAGES": "Batch of 4 images (Studio)"
   },
   "nameTool": {
     "title": "Free name generator",

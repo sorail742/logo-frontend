@@ -114,7 +114,7 @@ messages/{fr,en}/  traductions par espace de noms
 - **Kit (§7)** : page du kit (contenu figé de chaque version), versions consultables et
   restaurables, charte graphique PDF et archive ZIP produites par l'API (liens signés relus avant
   expiration), lien de partage avec mot de passe et expiration, page publique avec
-  téléchargements, espaces, invitations, commentaires avec mentions @ (projet, logo, kit),
+  téléchargements, espaces, invitations, commentaires avec mentions @ (projet, logo, kit, création du Studio),
   notifications, historique d'activité, corbeille 30 jours.
 - **Comptes et paiements (§8)** : e-mail, Google, SMS, mot de passe oublié, 2FA TOTP, profil,
   export et suppression des données, offres, grand livre de crédits, paiement Orange Money
@@ -132,8 +132,10 @@ couleurs, polices, nom, slogan) est le point de départ de chaque création.
   fond perdu de 3 mm), présentation 16:9, bannière d'e-mail, taille libre.
 - **Canevas** (`components/studio/canvas.tsx`) : sélection, lasso, déplacement aimanté avec guides
   (bords et centres de la page et des éléments), redimensionnement et rotation (aussi en groupe),
-  Alt + glisser pour dupliquer, zoom à la molette et main (Espace), édition du texte en place,
-  recadrage d'une photo dans son masque, cadres photo à remplir par dépôt, repères d'impression.
+  Alt + glisser pour dupliquer, zoom à la molette et main (Espace), sur écran tactile pincement
+  à deux doigts (zoom autour des doigts) et glisser sur le fond pour déplacer la vue, édition du
+  texte en place, recadrage d'une photo dans son masque, cadres photo à remplir par dépôt,
+  repères d'impression.
 - **Éléments** : textes (47 polices, dégradés, contour, texte en arc, surlignage), formes
   (rectangle, cercle, polygone, étoile, forme organique, arche, trait, flèche), 1 890 icônes
   lucide (`public/studio/icons.json`, recherche en français), photos (import, collage, masques,
@@ -145,6 +147,15 @@ couleurs, polices, nom, slogan) est le point de départ de chaque création.
   fonds étirés, décors ancrés, contenu regroupé en bandes et réparti), huit variations,
   contrôle qualité continu (`lib/studio/quality.ts` : contraste WCAG, corps minimal, zone de
   sécurité, fond perdu, résolution des photos, couleurs hors charte, polices) avec corrections.
+- **Images et photos** : onglet « Générer » (4 visuels par lot aux couleurs de la marque, sept
+  styles dont wax et bogolan, formats carré, portrait, paysage ; ajout sur la page ou en fond) et
+  onglet « Photos » (banque Pexels relayée par l'API : recherche en français, orientation, crédit
+  du photographe ; message explicatif si la plateforme n'a pas de clé). En mode simulé, les
+  visuels sont produits dans le navigateur par le même moteur que l'API
+  (`lib/render/artwork.ts`) et la banque de photos est indiquée comme non activée.
+- **Avis épinglés** : touche C ou bouton « Commenter », clic sur la page pour poser une épingle,
+  fils de réponses, résolution, onglet « Avis » ; les lecteurs voient et commentent sans modifier,
+  et le lien d'une notification ouvre le fil (`?commentaire=`).
 - **Exports** : PNG (×0,5 à ×3, fond transparent) et JPG dans le navigateur ; PDF d'impression et
   SVG au texte vectorisé par l'API (indisponibles en mode simulé, où le SVG est produit avec
   polices intégrées). Sauvegarde automatique avec aperçu ; raccourcis clavier (touche ?).

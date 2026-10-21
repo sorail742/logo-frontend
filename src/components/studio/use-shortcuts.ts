@@ -61,7 +61,11 @@ export function useStudioShortcuts(handlers: { onExport(): void; onHelp(): void 
         return state.arrange(event.shiftKey ? (up ? "front" : "back") : up ? "forward" : "backward");
       }
       if (key === "?" || (event.shiftKey && event.code === "Slash")) return run(() => handlers.onHelp());
+      if (key === "c" && !mod && !event.altKey) return run(() => state.setCommentMode(!state.commentMode));
       if (key === "escape") {
+        if (state.draftPin) return state.setDraftPin(null);
+        if (state.activeThread) return state.openThread(null);
+        if (state.commentMode) return state.setCommentMode(false);
         if (state.cropId) return state.setCrop(null);
         return state.select([]);
       }

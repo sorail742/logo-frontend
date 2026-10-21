@@ -90,3 +90,14 @@ export function useInkColors(brand: StudioBrand | null) {
   const ink = readableFrom(brand ? [brand.colors.text, brand.colors.primary, brand.colors.background] : ["#111827"], bg, 4.5);
   return { accent, secondary, ink, background: bg };
 }
+
+/** Photo posée en fond de page : couvre toute la page, au dernier plan, rôle « fond ». */
+export function placeAsBackground(image: PreparedImage) {
+  releaseFocus();
+  const state = useStudio.getState();
+  const doc = state.doc;
+  if (!doc) return;
+  const el = createImage(image.src, image.naturalWidth, image.naturalHeight, { x: 0, y: 0, width: doc.width, height: doc.height, fit: "cover", role: "background" });
+  state.change((d) => mapPage(d, state.pageIndex, (p) => ({ ...p, elements: [el, ...p.elements] })));
+  state.select([el.id]);
+}

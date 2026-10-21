@@ -7,13 +7,17 @@ import type {
   BrandKit,
   Brief,
   Comment,
+  CommentAnchor,
   EntityType,
   GenerationJob,
   Invitation,
   Invoice,
   JobEvent,
   LedgerEntry,
+  LibraryCapabilities,
   LibraryFont,
+  PhotoOrientation,
+  PhotoPage,
   Logo,
   LogoEngine,
   LogoSpec,
@@ -39,6 +43,7 @@ import type {
   Workspace,
   WorkspaceRole,
 } from "@/lib/types";
+import type { ArtworkStyle } from "@/lib/render/artwork";
 import type { DesignDoc, StudioDesign, StudioDesignSummary } from "@/lib/studio/types";
 
 // Contrat du client API : une méthode par route REST (§13). Deux implémentations :
@@ -110,6 +115,15 @@ export interface StudioDesignInput {
   doc: DesignDoc;
   /** Aperçu PNG (data URL, ~400 px). */
   thumbnail?: string;
+}
+
+export interface StudioImagesInput {
+  /** Description libre (donnée, jamais instruction pour le fournisseur). */
+  prompt: string;
+  style: "auto" | ArtworkStyle;
+  aspect: "square" | "portrait" | "landscape";
+  /** Couleurs #rrggbb ; par défaut, celles du logo favori. */
+  palette?: string[];
 }
 
 export interface StudioExportInput {
@@ -264,6 +278,8 @@ export interface ApiClient {
     remove(sdid: string): Promise<void>;
     /** PDF d'impression ou SVG vectorisé produit par le worker (lien dans le résultat de la tâche). */
     requestExport(sdid: string, input: StudioExportInput, idempotencyKey: string): Promise<JobAccepted>;
+    /** Lot de 4 images (1 crédit), produit par le worker ; URL dans le résultat de la tâche. */
+    generateImages(pid: string, input: StudioImagesInput, idempotencyKey: string): Promise<JobAccepted>;
   };
 
   jobs: {
@@ -273,8 +289,13 @@ export interface ApiClient {
   };
 
   comments: {
-    list(pid: string): Promise<Comment[]>;
-    create(pid: string, input: { targetType: Comment["targetType"]; targetId: string; body: string }): Promise<Comment>;
+    list(pid: string, filter?: { targetType: Comment["targetType"]; targetId: string }): Promise<Comment[]>;
+    create(
+      pid: string,
+      input: { targetType: Comment["targetType"]; targetId: string; body: string; anchor?: CommentAnchor; parentId?: string },
+    ): Promise<Comment>;
+    /** Fil résolu ou rouvert (premier message) : son auteur, un éditeur ou un propriétaire. */
+    resolve(cid: string, resolved: boolean): Promise<Comment>;
     /** Par son auteur ou un propriétaire de l'espace. */
     remove(cid: string): Promise<void>;
   };
@@ -298,6 +319,10 @@ export interface ApiClient {
 
   library: {
     fonts(): Promise<LibraryFont[]>;
+    capabilities(): Promise<LibraryCapabilities>;
+    /** Banque de photos : 501 NOT_AVAILABLE si elle n'est pas activée. */
+    photos(input: { q?: string; page?: number; orientation?: PhotoOrientation; locale?: string }): Promise<PhotoPage>;
+    photoFile(id: string): Promise<Blob>;
   };
 
   admin: {

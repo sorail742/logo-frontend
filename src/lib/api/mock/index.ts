@@ -21,6 +21,7 @@ import { paletteFromColors } from "@/lib/render/color";
 import { FONTS } from "@/lib/render/fonts";
 import { findOfficialTerms, renderStampSvg } from "@/lib/render/stamp";
 import { DEFAULT_SPEC, LOGO_VARIANTS, renderLogoSvg } from "@/lib/render/logo";
+import { hashSeed, renderArtwork, styleFromPrompt } from "@/lib/render/artwork";
 import type { StudioDesign } from "@/lib/studio/types";
 import type {
   BrandKit,
@@ -848,6 +849,30 @@ export const mockClient: ApiClient = {
     async requestExport() {
       throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Le PDF d'impression est produit par le serveur de la plateforme.");
     },
+    async generateImages(pid, input, key) {
+      await wait();
+      const project = projectOr404(pid);
+      requireRole(project.workspaceId, "EDITOR");
+      const job = startJob(project, "STUDIO_IMAGES", CREDIT_COSTS.STUDIO_IMAGES, { ...input }, key);
+      // Même générateur que le fournisseur de démonstration de l'API.
+      const ratio = input.aspect === "square" ? 1 : input.aspect === "portrait" ? 4 / 5 : 16 / 9;
+      const width = ratio >= 1 ? 1200 : Math.round(1200 * ratio);
+      const height = ratio >= 1 ? Math.round(1200 / ratio) : 1200;
+      const palette = input.palette?.length ? input.palette : ["#0f6b5c", "#f2b705", "#14281d", "#f6fbf4"];
+      const style = input.style === "auto" ? (styleFromPrompt(input.prompt) ?? "abstract") : input.style;
+      const seed = hashSeed(`${input.prompt}|${input.style}|${palette.join()}`);
+      job.result = {
+        demo: true,
+        provider: "mock",
+        images: Array.from({ length: 4 }, (_, i) => ({
+          url: `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(renderArtwork({ style, palette, width, height, seed: seed + i * 7919 }))))}`,
+          width,
+          height,
+        })),
+      };
+      save();
+      return { jobId: job.id };
+    },
   },
 
   slogans: {
@@ -1038,14 +1063,42 @@ export const mockClient: ApiClient = {
   },
 
   comments: {
-    async list(pid) {
-      return db().comments.filter((c) => c.projectId === pid);
+    async list(pid, filter) {
+      return db().comments.filter((c) => c.projectId === pid && (!filter || (c.targetType === filter.targetType && c.targetId === filter.targetId)));
     },
     async create(pid, input) {
       const user = currentUser();
       requireRole(projectOr404(pid).workspaceId, "VIEWER");
-      const comment = { id: id("c"), projectId: pid, authorId: user.id, authorName: user.fullName, mentions: [], ...input, createdAt: now() };
-      db().comments.unshift(comment);
+      const data = db();
+      const parent = input.parentId ? data.comments.find((c) => c.id === input.parentId && c.projectId === pid && !c.parentId) : null;
+      if (input.parentId && !parent) throw problem(400, "Ce fil de discussion n'existe pas sur cet élément");
+      // Une réponse rouvre un fil résolu.
+      if (parent) Object.assign(parent, { resolvedAt: null, resolvedById: null });
+      const comment = {
+        id: id("c"),
+        projectId: pid,
+        authorId: user.id,
+        authorName: user.fullName,
+        mentions: [],
+        targetType: input.targetType,
+        targetId: input.targetId,
+        body: input.body.trim(),
+        anchor: parent ? null : (input.anchor ?? null),
+        parentId: parent?.id ?? null,
+        resolvedAt: null,
+        resolvedById: null,
+        createdAt: now(),
+      };
+      data.comments.unshift(comment);
+      save();
+      return comment;
+    },
+    async resolve(cid, resolved) {
+      const user = currentUser();
+      const comment = db().comments.find((c) => c.id === cid);
+      if (!comment) throw problem(404, "Commentaire introuvable");
+      if (comment.authorId !== user.id) requireRole(projectOr404(comment.projectId).workspaceId, "EDITOR");
+      Object.assign(comment, resolved ? { resolvedAt: now(), resolvedById: user.id } : { resolvedAt: null, resolvedById: null });
       save();
       return comment;
     },
@@ -1055,7 +1108,7 @@ export const mockClient: ApiClient = {
       const comment = data.comments.find((c) => c.id === cid);
       if (!comment) throw problem(404, "Commentaire introuvable");
       if (comment.authorId !== user.id) requireRole(projectOr404(comment.projectId).workspaceId, "OWNER");
-      data.comments = data.comments.filter((c) => c.id !== cid);
+      data.comments = data.comments.filter((c) => c.id !== cid && c.parentId !== cid);
       save();
     },
   },
@@ -1172,6 +1225,18 @@ export const mockClient: ApiClient = {
     async fonts() {
       return FONTS.map((f) => ({ id: f.id, name: f.name, category: f.category, license: "OFL" as const, isActive: true }));
     },
+    // Démonstration locale : visuels génératifs, pas de banque de photos (elle demande une clé côté serveur).
+    async capabilities() {
+      await wait(80);
+      return { aiImages: { provider: "demo", demo: true }, photos: false };
+    },
+    async photos() {
+      await wait(120);
+      throw problem(501, "Banque de photos non activée", "NOT_AVAILABLE");
+    },
+    async photoFile() {
+      throw problem(501, "Banque de photos non activée", "NOT_AVAILABLE");
+    },
   },
 
   admin: {
@@ -1187,7 +1252,7 @@ export const mockClient: ApiClient = {
       return {
         signups: data.users.length + 312,
         activeUsers: 187,
-        generations: { NAMES: count("NAMES") + 820, LOGOS: count("LOGOS") + 410, LOGO_EXPORT: count("LOGO_EXPORT") + 95, SLOGANS: count("SLOGANS") + 260, SIGNATURE: 140, BRAND_GUIDE: 52, EXPORT_ZIP: 61 },
+        generations: { NAMES: count("NAMES") + 820, LOGOS: count("LOGOS") + 410, LOGO_EXPORT: count("LOGO_EXPORT") + 95, SLOGANS: count("SLOGANS") + 260, SIGNATURE: 140, BRAND_GUIDE: 52, EXPORT_ZIP: 61, DESIGN_EXPORT: count("DESIGN_EXPORT") + 38, STUDIO_IMAGES: count("STUDIO_IMAGES") + 74 },
         conversionRate: 0.064,
         revenueGnf: days.reduce((s, d) => s + d.revenueGnf, 0),
         aiCostUsd: days.reduce((s, d) => s + d.aiCostUsd, 0),

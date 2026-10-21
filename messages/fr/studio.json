@@ -490,7 +490,10 @@
     "brand": "Marque",
     "uploads": "Importer",
     "layers": "Calques",
-    "check": "Vérifier"
+    "check": "Vérifier",
+    "comments": "Avis",
+    "generate": "Générer",
+    "photos": "Photos"
   },
   "pages": {
     "label": "Pages",
@@ -632,7 +635,8 @@
     "saved": "Enregistré",
     "pending": "Modifications non enregistrées",
     "saving": "Enregistrement…",
-    "saveError": "Échec de l'enregistrement"
+    "saveError": "Échec de l'enregistrement",
+    "comment": "Commenter"
   },
   "shortcuts": {
     "title": "Raccourcis clavier",
@@ -656,7 +660,8 @@
       "zoom": "Ctrl + molette",
       "fit": "Ctrl 0 / 1",
       "export": "Ctrl E",
-      "pages": "Pg préc. / Pg suiv."
+      "pages": "Pg préc. / Pg suiv.",
+      "comment": "C"
     },
     "actions": {
       "undo": "Annuler",
@@ -678,7 +683,8 @@
       "zoom": "Zoomer",
       "fit": "Ajuster à l'écran / taille réelle",
       "export": "Exporter",
-      "pages": "Page précédente / suivante"
+      "pages": "Page précédente / suivante",
+      "comment": "Mode commentaire"
     }
   },
   "list": {
@@ -729,5 +735,107 @@
     "deleteTitle": "Supprimer cette création ?",
     "deleteBody": "« {name} » sera supprimée définitivement.",
     "cancel": "Annuler"
+  },
+  "comments": {
+    "sendHint": "Ctrl + Entrée pour envoyer",
+    "cancel": "Annuler",
+    "send": "Envoyer",
+    "thread": "Fil n° {number}",
+    "resolve": "Marquer comme résolu",
+    "reopen": "Rouvrir",
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "deleteThread": "Supprimer le fil",
+    "resolvedNote": "Fil résolu. Répondre le rouvre.",
+    "reply": "Répondre… (@ pour mentionner)",
+    "placeholder": "Votre commentaire… (@ pour mentionner)",
+    "pin": "Commentaire {number} de {author}",
+    "modeHint": "Cliquez sur la page pour épingler un commentaire · Échap pour quitter",
+    "unavailable": "Les commentaires arrivent avec une prochaine version.",
+    "startCommenting": "Commenter la création",
+    "stopCommenting": "Quitter le mode commentaire",
+    "help": "Épinglez vos remarques à l'endroit précis de la page : l'équipe est prévenue et peut répondre ou résoudre le fil.",
+    "open": "Ouverts ({count})",
+    "resolved": "Résolus ({count})",
+    "emptyOpen": "Aucun fil ouvert.",
+    "emptyResolved": "Aucun fil résolu.",
+    "page": "Page {number}",
+    "replies": "{count, plural, one {# réponse} other {# réponses}}"
+  },
+  "generate": {
+    "describe": "Décrivez l'image",
+    "placeholder": "Ex. : fond festif pour l'annonce de notre festival de musique",
+    "ideas": [
+      "Fond doux pour une citation",
+      "Motif wax pour une affiche d'événement",
+      "Vagues pour une campagne sur l'eau",
+      "Confettis pour un anniversaire",
+      "Motif bogolan pour une marque artisanale"
+    ],
+    "style": "Style",
+    "styles": {
+      "auto": "Auto",
+      "abstract": "Abstrait",
+      "gradient": "Dégradé",
+      "geometric": "Géométrique",
+      "waves": "Vagues",
+      "wax": "Motif wax",
+      "bogolan": "Bogolan",
+      "confetti": "Confettis"
+    },
+    "format": "Format",
+    "aspects": {
+      "square": "Carré",
+      "portrait": "Portrait",
+      "landscape": "Paysage"
+    },
+    "brandColors": "Couleurs de la marque",
+    "generate": "Générer 4 images",
+    "working": "Génération…",
+    "results": "Propositions",
+    "add": "Ajouter",
+    "adding": "Ajout…",
+    "added": "Image ajoutée",
+    "result": "Proposition {index}",
+    "failed": "La génération n'a pas abouti.",
+    "demo": "Fournisseur de démonstration : visuels génératifs à vos couleurs, la description guide surtout le style. Un fournisseur d'images IA pourra être branché sans changer l'éditeur.",
+    "background": "En fond",
+    "addedBackground": "Image posée en fond de page"
+  },
+  "photos": {
+    "search": "Rechercher des photos",
+    "placeholder": "Marché, équipe, café…",
+    "suggestions": [
+      "Marché",
+      "Équipe",
+      "Bureau",
+      "Nature",
+      "Ville",
+      "Café",
+      "Mode",
+      "École"
+    ],
+    "orientation": "Orientation",
+    "orientations": {
+      "all": "Toutes",
+      "landscape": "Paysage",
+      "portrait": "Portrait",
+      "square": "Carrée"
+    },
+    "curated": "Sélection du moment",
+    "results": "Résultats pour « {q} »",
+    "empty": "Aucune photo pour cette recherche. Essayez un autre mot, en français ou en anglais.",
+    "more": "Voir plus",
+    "by": "Photo de {author}",
+    "add": "Ajouter la photo de {author}",
+    "added": "Photo ajoutée",
+    "clear": "Effacer la recherche",
+    "provided": "Photos fournies par Pexels",
+    "license": "Libres d'usage, y compris commercial ; citer le photographe est apprécié.",
+    "unavailableTitle": "Banque de photos non activée",
+    "unavailable": "L'administrateur de la plateforme peut l'activer avec une clé Pexels gratuite. En attendant, importez vos propres photos ou générez un visuel aux couleurs de la marque.",
+    "importOwn": "Importer mes photos",
+    "error": "La banque de photos ne répond pas. Réessayez dans un instant.",
+    "retry": "Réessayer"
   }
 }

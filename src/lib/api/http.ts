@@ -39,6 +39,8 @@ interface RequestOptions {
   headers?: Record<string, string>;
   auth?: boolean;
   retry?: boolean;
+  /** Fichier binaire plutôt que JSON. */
+  blob?: boolean;
 }
 
 let refreshing: Promise<Session | null> | null = null;
@@ -91,6 +93,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     throw new ApiError(problem);
   }
   if (response.status === 204) return undefined as T;
+  if (options.blob) return (await response.blob()) as T;
   return (await response.json()) as T;
 }
 
@@ -145,7 +148,7 @@ function toPlan(plan: ApiPlan): Plan | null {
   };
 }
 
-function qs(params: Record<string, string | boolean | undefined>) {
+function qs(params: Record<string, string | number | boolean | undefined>) {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== "" && value !== false) search.set(key, String(value));
@@ -312,6 +315,7 @@ export const httpClient: ApiClient = {
     duplicate: (sdid) => post(`/studio-designs/${sdid}/duplicate`),
     remove: (sdid) => del(`/studio-designs/${sdid}`),
     requestExport: (sdid, input, key) => post(`/studio-designs/${sdid}/export`, input, key),
+    generateImages: (pid, input, key) => post(`/projects/${pid}/studio-images`, input, key),
   },
 
   jobs: {
@@ -323,8 +327,9 @@ export const httpClient: ApiClient = {
   },
 
   comments: {
-    list: (pid) => get(`/projects/${pid}/comments`),
+    list: (pid, filter) => get(`/projects/${pid}/comments${filter ? `?targetType=${filter.targetType}&targetId=${filter.targetId}` : ""}`),
     create: (pid, input) => post(`/projects/${pid}/comments`, input),
+    resolve: (cid, resolved) => patch(`/comments/${cid}`, { resolved }),
     remove: (cid) => del(`/comments/${cid}`),
   },
 
@@ -348,6 +353,9 @@ export const httpClient: ApiClient = {
 
   library: {
     fonts: () => get("/library/fonts"),
+    capabilities: () => get("/library/capabilities"),
+    photos: ({ q, page, orientation, locale }) => get(`/library/photos${qs({ q, page, orientation, locale })}`),
+    photoFile: (id) => request<Blob>(`/library/photos/${encodeURIComponent(id)}/file`, { blob: true, headers: { Accept: "image/*" } }),
   },
 
   admin: {

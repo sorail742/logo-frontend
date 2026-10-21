@@ -14,7 +14,7 @@ export type LogoEngine = "SVG_COMPOSER" | "IMAGE_VECTORIZE" | "UPLOAD";
 export type LogoStyle = "MINIMAL" | "MODERN" | "CLASSIC" | "INSTITUTIONAL" | "PLAYFUL" | "AFRICAN";
 export type SignatureKind = "EMAIL" | "HANDWRITTEN" | "STAMP";
 export type SignatureStatus = "ACTIVE" | "PENDING_REVIEW" | "REJECTED";
-export type JobKind = "NAMES" | "LOGOS" | "LOGO_EXPORT" | "SLOGANS" | "SIGNATURE" | "BRAND_GUIDE" | "EXPORT_ZIP";
+export type JobKind = "NAMES" | "LOGOS" | "LOGO_EXPORT" | "SLOGANS" | "SIGNATURE" | "BRAND_GUIDE" | "EXPORT_ZIP" | "DESIGN_EXPORT" | "STUDIO_IMAGES";
 export type JobStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELED";
 export type LedgerReason = "PURCHASE" | "SUBSCRIPTION_GRANT" | "GENERATION" | "REFUND" | "ADMIN_ADJUSTMENT" | "PROMO";
 export type PaymentProvider = "ORANGE_MONEY" | "MOBILE_MONEY_AGGREGATOR" | "CARD";
@@ -284,7 +284,18 @@ export interface GenerationJob {
   costCredits: number;
   error: string | null;
   /** Sortie d'une tâche d'export : lien signé de l'archive tant qu'elle est conservée. */
-  result?: { downloadUrl?: string; fileName?: string; files?: number; restricted?: boolean; expired?: boolean } | null;
+  result?: {
+    downloadUrl?: string;
+    fileName?: string;
+    files?: number;
+    restricted?: boolean;
+    expired?: boolean;
+    /** Images du Studio (URL signées, ou data URL en mode simulé). */
+    images?: { url: string; width: number; height: number }[];
+    provider?: string;
+    /** Fournisseur de démonstration : visuels génératifs. */
+    demo?: boolean;
+  } | null;
   createdAt: string;
   finishedAt: string | null;
 }
@@ -345,7 +356,14 @@ export interface AppNotification {
   createdAt: string;
 }
 
-export type CommentTarget = "PROJECT" | "NAME" | "LOGO" | "SIGNATURE" | "SLOGAN" | "KIT";
+export type CommentTarget = "PROJECT" | "NAME" | "LOGO" | "SIGNATURE" | "SLOGAN" | "KIT" | "DESIGN";
+
+/** Épingle d'un commentaire sur une page du Studio, en proportion de la page (0 à 1). */
+export interface CommentAnchor {
+  pageId: string;
+  x: number;
+  y: number;
+}
 
 export interface Comment {
   id: string;
@@ -356,6 +374,12 @@ export interface Comment {
   body: string;
   /** Membres mentionnés avec @ (COL-02). */
   mentions: { userId: string; fullName: string }[];
+  /** Épingle sur une création du Studio (premier message d'un fil). */
+  anchor?: CommentAnchor | null;
+  /** Fil auquel répond ce message. */
+  parentId?: string | null;
+  resolvedAt?: string | null;
+  resolvedById?: string | null;
   createdAt: string;
 }
 
@@ -404,6 +428,34 @@ export interface AuditEntry {
   entityId: string;
   ip: string | null;
   createdAt: string;
+}
+
+/** Photo de la banque (Pexels) : vignette servie par Pexels, fichier relayé par l'API. */
+export interface LibraryPhoto {
+  id: string;
+  width: number;
+  height: number;
+  alt: string;
+  color: string | null;
+  thumbUrl: string;
+  author: string;
+  authorUrl: string;
+  pageUrl: string;
+  source: "pexels";
+}
+
+export interface PhotoPage {
+  photos: LibraryPhoto[];
+  page: number;
+  hasMore: boolean;
+}
+
+export type PhotoOrientation = "landscape" | "portrait" | "square";
+
+/** Ressources activées sur la plateforme. */
+export interface LibraryCapabilities {
+  aiImages: { provider: string; demo: boolean };
+  photos: boolean;
 }
 
 export interface LibraryFont {
