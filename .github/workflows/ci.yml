@@ -18,7 +18,8 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      # --ignore-scripts : aucun script d'installation des dépendances n'est exécuté (chaîne d'approvisionnement)
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm lint
       # Les types PageProps / LayoutProps sont générés par Next.js avant la vérification
       - run: pnpm exec next typegen && pnpm typecheck
