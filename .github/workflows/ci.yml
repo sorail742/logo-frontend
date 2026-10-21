@@ -13,7 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # Version de pnpm lue dans le champ « packageManager » de package.json
-      - uses: pnpm/action-setup@v4
+      # Action tierce épinglée par empreinte de commit (v4) : une étiquette peut être déplacée
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
