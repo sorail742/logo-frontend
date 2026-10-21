@@ -196,6 +196,7 @@ export default function NamesPage() {
             <NameCard
               key={name.id}
               name={name}
+              brief={project?.brief}
               isChosen={project?.chosenName?.id === name.id}
               canEdit={canEdit}
               canVote={can("comment.create")}

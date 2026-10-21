@@ -1,11 +1,15 @@
 "use client";
 
+import { useMemo } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Ban, CheckCircle2, ExternalLink, Heart, Loader2, Search, Sparkles, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { AvailabilityCheck, CheckStatus, NameSuggestion } from "@/lib/types";
+import { SvgView } from "@/components/brand/svg-view";
+import { renderLogoSvg } from "@/lib/render/logo";
+import { namePreviewSpecs } from "@/lib/render/name-previews";
+import type { AvailabilityCheck, Brief, CheckStatus, NameSuggestion } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<CheckStatus, string> = {
@@ -82,8 +86,22 @@ export function AvailabilityResults({ checks }: { checks: AvailabilityCheck[] })
   );
 }
 
+/** Le nom mis en forme en trois pistes de logo, pour le juger en situation. */
+function NameLogoPreviews({ value, brief }: { value: string; brief?: Brief | null }) {
+  const t = useTranslations("names");
+  const svgs = useMemo(() => namePreviewSpecs(value, brief).map((spec) => renderLogoSvg(spec).svg), [value, brief]);
+  return (
+    <div className="grid grid-cols-3 gap-2" role="group" aria-label={t("logoPreviews")}>
+      {svgs.map((svg, index) => (
+        <SvgView key={index} svg={svg} className="aspect-[4/3] rounded-lg border bg-white p-2" />
+      ))}
+    </div>
+  );
+}
+
 export function NameCard({
   name,
+  brief,
   isChosen,
   canEdit,
   canVote,
@@ -98,6 +116,7 @@ export function NameCard({
   onToggleCompare,
 }: {
   name: NameSuggestion;
+  brief?: Brief | null;
   isChosen: boolean;
   canEdit: boolean;
   canVote: boolean;
@@ -133,6 +152,7 @@ export function NameCard({
           </Button>
         )}
       </div>
+      {!name.isRejected && <NameLogoPreviews value={name.value} brief={brief} />}
       <p className="text-sm">{name.meaning}</p>
       <div className="grid gap-1 text-xs text-muted-foreground">
         {name.pronunciation && <p>{t("pronunciation", { value: name.pronunciation })}</p>}
