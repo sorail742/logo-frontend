@@ -18,6 +18,7 @@ export function SiteHeader() {
 
   const links = [
     { href: "/#fonctionnalites", label: t("features") },
+    { href: "/#studio", label: t("studio") },
     { href: "/tarifs", label: t("pricing") },
     { href: "/outils/generateur-de-noms", label: t("nameTool") },
     { href: "/outils/signature-email", label: t("emailTool") },

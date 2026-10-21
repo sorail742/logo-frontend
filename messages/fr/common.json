@@ -13,7 +13,8 @@
     "login": "Connexion",
     "signup": "Créer un compte",
     "dashboard": "Mon espace",
-    "skip": "Aller au contenu"
+    "skip": "Aller au contenu",
+    "studio": "Studio"
   },
   "actions": {
     "save": "Enregistrer",
@@ -90,5 +91,11 @@
     "moderation": "La file de modération des cachets arrive avec le module Signatures.",
     "smsLogin": "La connexion par SMS arrive prochainement.",
     "googleLogin": "La connexion Google n'est pas configurée."
+  },
+  "fontCategories": {
+    "sans": "Sans empattement",
+    "serif": "Avec empattement",
+    "display": "Affichage",
+    "script": "Manuscrite"
   }
 }

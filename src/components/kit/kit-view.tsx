@@ -10,10 +10,21 @@ import { cssFontFamily } from "@/lib/render/fonts";
 import { readableOn } from "@/lib/render/color";
 import type { BrandKit } from "@/lib/types";
 
+/**
+ * Page du kit (KIT-01). Le contenu figé de la version (nom, sigle, origine) prime sur celui du
+ * projet, qui sert de repli pour les kits qui n'en ont pas.
+ */
 export function KitView({ kit, projectName, acronym, meaning }: { kit: BrandKit; projectName: string; acronym?: string | null; meaning?: string | null }) {
   const t = useTranslations("kit");
   const tv = useTranslations("logos.variants");
-  const spec = kit.logoSpec;
+  // Logo importé non retravaillé : son SVG d'origine (nettoyé par l'API) fait foi, sans variantes.
+  const spec = kit.logoSvg ? null : kit.logoSpec;
+  const mainSvg = kit.logoSvg ?? (spec ? renderLogoSvg(spec).svg : null);
+  // Une version figée fait foi même sans sigle ni origine (nom saisi) : pas de repli sur le projet.
+  const frozen = kit.name !== null;
+  const name = kit.name ?? projectName;
+  const shownAcronym = frozen ? kit.acronym : acronym;
+  const shownMeaning = frozen ? kit.meaning : meaning;
 
   return (
     <div className="grid gap-6">
@@ -21,18 +32,30 @@ export function KitView({ kit, projectName, acronym, meaning }: { kit: BrandKit;
         <CardContent className="grid gap-6 md:grid-cols-[1fr_1.4fr] md:items-center">
           <div className="grid gap-2">
             <p className="text-xs text-muted-foreground">{t("name")}</p>
-            <p className="text-3xl font-semibold tracking-tight">{projectName}</p>
-            {acronym && acronym !== projectName && (
+            <p className="text-3xl font-semibold tracking-tight">{name}</p>
+            {shownAcronym && shownAcronym !== name && (
               <p className="text-sm">
                 <span className="text-muted-foreground">{t("acronym")} : </span>
-                {acronym}
+                {shownAcronym}
               </p>
             )}
-            {meaning && <p className="text-sm text-muted-foreground">{meaning}</p>}
+            {shownMeaning && <p className="text-sm text-muted-foreground">{shownMeaning}</p>}
             <p className="mt-2 text-xs text-muted-foreground">{t("slogan")}</p>
             <p className="text-lg italic">{kit.slogan ?? t("noSlogan")}</p>
+            {kit.devise && (
+              <p className="text-sm">
+                <span className="text-muted-foreground">{t("devise")} : </span>
+                {kit.devise}
+              </p>
+            )}
+            {kit.mission && (
+              <p className="text-sm">
+                <span className="text-muted-foreground">{t("mission")} : </span>
+                {kit.mission}
+              </p>
+            )}
           </div>
-          {spec && <SvgView svg={renderLogoSvg(spec).svg} label={projectName} className="bg-checker aspect-[16/9] rounded-xl p-6" />}
+          {mainSvg && <SvgView svg={mainSvg} label={name} className="bg-checker aspect-[16/9] rounded-xl p-6" />}
         </CardContent>
       </Card>
 

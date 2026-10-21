@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/empty-state";
 import { useProject } from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
-import { FileQuestion } from "lucide-react";
+import { FileQuestion, Sparkles } from "lucide-react";
 
 const STEPS = [
   { id: "overview", path: "", done: null },
@@ -18,6 +18,7 @@ const STEPS = [
   { id: "logos", path: "/logos", done: "logo" },
   { id: "signatures", path: "/signatures", done: "signatures" },
   { id: "kit", path: "/kit", done: "kit" },
+  { id: "studio", path: "/studio", done: null },
 ] as const;
 
 export function ProjectFrame({ children }: { children: ReactNode }) {
@@ -64,7 +65,7 @@ export function ProjectFrame({ children }: { children: ReactNode }) {
                     )}
                     aria-hidden="true"
                   >
-                    {done ? <Check className="size-3" /> : index}
+                    {done ? <Check className="size-3" /> : step.id === "studio" ? <Sparkles className="size-3" /> : index}
                   </span>
                   {t(`app.steps.${step.id}`)}
                 </Link>

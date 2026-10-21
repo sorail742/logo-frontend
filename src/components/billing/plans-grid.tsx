@@ -26,7 +26,7 @@ export function PlansGrid({
       {plans.map((plan) => {
         const current = currentPlan === plan.code;
         return (
-          <article key={plan.code} className={cn("relative flex flex-col rounded-xl border bg-card p-5", plan.highlighted && "border-primary shadow-md")}>
+          <article key={plan.code} className={cn("relative flex flex-col rounded-2xl border bg-card p-5 shadow-xs transition hover:shadow-md", plan.highlighted && "border-primary bg-gradient-to-b from-primary/5 to-card shadow-lg shadow-primary/10 ring-1 ring-primary/20")}>
             {plan.highlighted && <Badge className="absolute -top-2.5 left-5">{t("pricing.popular")}</Badge>}
             <h3 className="font-semibold">{plan.name}</h3>
             <p className="mt-3 text-2xl font-semibold tracking-tight">{formatGnf(plan.priceGnf, locale)}</p>

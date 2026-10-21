@@ -1,0 +1,733 @@
+{
+  "canvas": {
+    "label": "Workspace",
+    "duplicate": "Duplicate",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "delete": "Delete",
+    "cropHint": "Drag to frame the photo · Enter or Esc to finish"
+  },
+  "paint": {
+    "saturation": "Saturation and brightness",
+    "hue": "Hue",
+    "hex": "Hex code",
+    "eyedropper": "Eyedropper: pick a color on screen",
+    "none": "None",
+    "solid": "Solid",
+    "linear": "Linear",
+    "radial": "Radial",
+    "stop": "Stop {index}",
+    "position": "Position",
+    "addStop": "Add a stop",
+    "removeStop": "Remove stop",
+    "angle": "Angle",
+    "preset": "Brand gradient {index}",
+    "brand": "Brand colors",
+    "document": "Document colors",
+    "harmonies": "Harmonies",
+    "harmony": {
+      "complementary": "Complementary",
+      "analogous": "Analogous",
+      "triadic": "Triadic",
+      "split": "Split complementary",
+      "tints": "Tints",
+      "shades": "Shades"
+    },
+    "classics": "Classics"
+  },
+  "text": {
+    "font": "Font",
+    "searchFont": "Search fonts",
+    "brandFonts": "Brand fonts"
+  },
+  "roles": {
+    "background": "Background",
+    "title": "Title",
+    "subtitle": "Subtitle",
+    "body": "Text",
+    "logo": "Logo",
+    "cta": "Button",
+    "photo": "Photo frame",
+    "decor": "Decoration",
+    "info": "Information"
+  },
+  "inspector": {
+    "types": {
+      "text": "Text",
+      "shape": "Shape",
+      "icon": "Icon",
+      "image": "Photo",
+      "svg": "Logo or artwork"
+    },
+    "multiple": "{count} elements",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "icon": "Icon",
+    "color": "Color",
+    "strokeWidth": "Stroke width",
+    "layout": "Layout",
+    "width": "Width",
+    "height": "Height",
+    "rotation": "Rotation",
+    "flipX": "Flip horizontally",
+    "flipY": "Flip vertically",
+    "alignPage": "Align to page",
+    "alignSelection": "Align selection",
+    "align": {
+      "left": "Align left",
+      "hcenter": "Center horizontally",
+      "right": "Align right",
+      "top": "Align top",
+      "vcenter": "Center vertically",
+      "bottom": "Align bottom"
+    },
+    "distributeX": "Distribute ↔",
+    "distributeY": "Distribute ↕",
+    "order": "Order",
+    "front": "Bring to front",
+    "forward": "Bring forward",
+    "backward": "Send backward",
+    "back": "Send to back",
+    "effects": "Effects",
+    "opacity": "Opacity",
+    "blend": "Blend",
+    "blends": {
+      "normal": "Normal",
+      "multiply": "Multiply",
+      "screen": "Screen",
+      "overlay": "Overlay",
+      "darken": "Darken",
+      "lighten": "Lighten",
+      "soft-light": "Soft light"
+    },
+    "shadow": "Shadow",
+    "shadows": {
+      "soft": "Soft",
+      "hard": "Offset",
+      "glow": "Glow"
+    },
+    "blur": "Blur",
+    "shadowColor": "Shadow color",
+    "shadowOpacity": "Strength",
+    "text": "Text",
+    "weight": "Weight",
+    "weights": {
+      "400": "Regular",
+      "600": "Semibold",
+      "700": "Bold",
+      "800": "Extra bold",
+      "900": "Black"
+    },
+    "size": "Size",
+    "letterSpacing": "Letter spacing",
+    "lineHeight": "Line height",
+    "textAlign": "Text alignment",
+    "alignText": {
+      "left": "Left",
+      "center": "Center",
+      "right": "Right"
+    },
+    "uppercase": "Uppercase",
+    "fill": "Color",
+    "textEffects": "Text effects",
+    "outline": "Outline",
+    "outlineColor": "Outline color",
+    "curve": "Curve",
+    "highlight": "Highlight",
+    "highlightColor": "Highlight color",
+    "padding": "Padding",
+    "radius": "Corner radius",
+    "shape": "Shape",
+    "line": "Line",
+    "border": "Border",
+    "borderColor": "Border color",
+    "dash": "Style",
+    "dashes": {
+      "solid": "Solid",
+      "dashed": "Dashed",
+      "dotted": "Dotted"
+    },
+    "points": "Points",
+    "sides": "Sides",
+    "innerRatio": "Inner radius",
+    "reshape": "New shape",
+    "photo": "Photo",
+    "crop": "Crop",
+    "replace": "Replace",
+    "fit": "Fit",
+    "fits": {
+      "cover": "Fill",
+      "contain": "Whole"
+    },
+    "mask": "Mask",
+    "masks": {
+      "none": "None",
+      "rounded": "Rounded corners",
+      "circle": "Circle",
+      "arch": "Arch",
+      "blob": "Organic"
+    },
+    "filters": "Adjustments",
+    "filterPresets": {
+      "original": "Original",
+      "mono": "Black & white",
+      "vivid": "Vivid",
+      "soft": "Soft",
+      "dramatic": "Dramatic",
+      "dreamy": "Dreamy"
+    },
+    "brightness": "Brightness",
+    "contrast": "Contrast",
+    "saturation": "Saturation",
+    "logoVariant": "Logo version",
+    "logoVariants": {
+      "color": "Color",
+      "white": "White (dark backgrounds)",
+      "black": "Black",
+      "icon": "Symbol only",
+      "horizontal": "Horizontal",
+      "vertical": "Vertical"
+    },
+    "page": "Page {number}",
+    "printSize": "Print {width} × {height} mm · {bleed} mm bleed",
+    "screenSize": "{width} × {height} px",
+    "background": "Background",
+    "useAsBackground": "{color} background",
+    "pageName": "Name",
+    "print": "Print",
+    "printGuides": "Print guides",
+    "printHelp": "The red line marks the bleed ({bleed} mm, trimmed off when printed): extend backgrounds and photos into it. The blue line marks the safe area: keep text and logos inside it.",
+    "tips": "Tips",
+    "tipDrag": "Drag a photo from your computer, or paste it (Ctrl V).",
+    "tipAlt": "Alt + drag creates a copy of the element.",
+    "tipShift": "Shift constrains moves and proportions; Ctrl turns snapping off.",
+    "tipSpace": "Space + drag pans the view; Ctrl + wheel zooms.",
+    "tipDouble": "Double-click a text to type, a photo to crop it."
+  },
+  "templates": {
+    "intro": "Layouts in your colors, with your logo and fonts, composed for this design's format.",
+    "categories": {
+      "all": "All",
+      "announce": "Announcement",
+      "promo": "Promotion",
+      "event": "Event",
+      "quote": "Quote",
+      "hiring": "Hiring",
+      "info": "Presentation",
+      "minimal": "Minimal",
+      "card": "Card",
+      "carousel": "Carousel"
+    },
+    "names": {
+      "bold-announce": "Bold announcement",
+      "split-promo": "Arched promotion",
+      "event-gradient": "Gradient event",
+      "quote-serif": "Framed quote",
+      "hiring-list": "Job offer",
+      "photo-frame": "Photo and text",
+      "key-figures": "Key figures",
+      "minimal-logo": "Minimal logo",
+      "carousel-tips": "Tips carousel",
+      "business-card": "Two-sided business card"
+    },
+    "pages": "{count} pages",
+    "applied": "Template applied",
+    "appliedPages": "{count} pages added",
+    "copy": {
+      "kicker": "New",
+      "announceTitle": "Grand opening",
+      "announceBody": "Come and discover what's new this Saturday, from 9 am to 6 pm.",
+      "cta": "Learn more",
+      "promoKicker": "Special offer",
+      "promoValue": "-30%",
+      "promoTitle": "On the whole collection",
+      "promoBody": "Until November 30, in store and online.",
+      "eventKicker": "Event",
+      "eventTitle": "Open day",
+      "eventDate": "Saturday, December 14 · 10 am",
+      "eventPlace": "Kaloum, Conakry",
+      "quote": "Quality is never an accident; it is always the result of intelligent effort.",
+      "quoteAuthor": "John Ruskin",
+      "hiringKicker": "Join us",
+      "hiringTitle": "We're hiring",
+      "hiringRole": "Communications officer",
+      "hiringPoints": [
+        "Permanent role in Conakry",
+        "Young, committed team",
+        "Ongoing training"
+      ],
+      "hiringCta": "Apply before January 15",
+      "photoTitle": "Our expertise, at your service",
+      "photoBody": "Describe your business in one clear sentence: what you do, for whom, and what sets you apart.",
+      "statsTitle": "Key figures",
+      "stats": [
+        {
+          "value": "12 years",
+          "label": "of experience serving our clients"
+        },
+        {
+          "value": "3,500",
+          "label": "clients supported in Guinea"
+        },
+        {
+          "value": "98%",
+          "label": "satisfied clients"
+        }
+      ],
+      "carouselCover": "3 tips for a successful launch",
+      "carouselSwipe": "Swipe",
+      "carouselTips": [
+        {
+          "title": "Know your audience",
+          "body": "Describe precisely who you want to reach: their needs, their habits, the channels they use."
+        },
+        {
+          "title": "Polish your identity",
+          "body": "A consistent logo, colors and fonts make your brand recognizable everywhere, from flyers to posts."
+        },
+        {
+          "title": "Tell your story",
+          "body": "Explain why you exist: a sincere mission, simply told, builds trust."
+        }
+      ],
+      "carouselEnd": "Follow us for more tips",
+      "person": "Aïssatou Diallo",
+      "role": "Director",
+      "phone": "+224 620 00 00 00",
+      "email": "contact@example.gn",
+      "website": "www.example.gn",
+      "address": "Kaloum, Conakry"
+    }
+  },
+  "elements": {
+    "shapes": "Shapes",
+    "frames": "Photo frames",
+    "framesHelp": "Drop a photo on a frame, or double-click it: the photo takes its shape.",
+    "icons": "Icons",
+    "iconCount": "{count} icons",
+    "searchIcons": "Search: home, phone, heart…",
+    "noIcon": "No matching icon.",
+    "more": "Show more ({count})",
+    "shape": {
+      "rect": "Rectangle",
+      "rounded": "Rounded rectangle",
+      "ellipse": "Circle",
+      "triangle": "Triangle",
+      "hexagon": "Hexagon",
+      "star": "Star",
+      "burst": "Badge",
+      "blob": "Organic shape",
+      "arch": "Arch",
+      "ring": "Ring",
+      "line": "Line",
+      "arrow": "Arrow",
+      "frameCircle": "Round frame",
+      "frameArch": "Arch frame",
+      "frameRounded": "Rounded frame",
+      "frameBlob": "Organic frame"
+    }
+  },
+  "textPanel": {
+    "addTitle": "Add a heading",
+    "addSubtitle": "Add a subheading",
+    "addBody": "Add a paragraph",
+    "effects": "Text styles",
+    "pairings": "Font pairings",
+    "pairWith": "with {font}",
+    "samples": {
+      "title": "Your heading",
+      "subtitle": "A catchy subheading",
+      "body": "Write your text here: one or two sentences are often enough.",
+      "pairTitle": "A striking heading",
+      "pairBody": "Readable, elegant body text that matches the heading."
+    },
+    "styles": {
+      "outline": "Outline",
+      "gradient": "Gradient",
+      "highlight": "Highlighted",
+      "retro": "Retro",
+      "neon": "Neon",
+      "arc": "Curved text",
+      "script": "Elegance",
+      "label": "Label"
+    },
+    "styleNames": {
+      "outline": "Outline",
+      "gradient": "Gradient",
+      "highlight": "Highlight",
+      "retro": "Retro",
+      "neon": "Neon",
+      "arc": "Curved",
+      "script": "Script",
+      "label": "Label"
+    }
+  },
+  "brand": {
+    "none": "Loading the project's identity…",
+    "apply": "Apply my brand to the page",
+    "applyHelp": "Colors snapped to your palette, headings and text in your fonts.",
+    "applied": "The page now follows your brand guidelines",
+    "logos": "Logo",
+    "variants": {
+      "color": "Color",
+      "white": "White",
+      "black": "Black",
+      "icon": "Symbol",
+      "horizontal": "Horizontal",
+      "vertical": "Vertical"
+    },
+    "colors": "Colors",
+    "roles": {
+      "primary": "Primary",
+      "secondary": "Secondary",
+      "text": "Text",
+      "background": "Background"
+    },
+    "useColor": "Apply to the selection, or to the page background",
+    "colorHelp": "A click colors the selection; with nothing selected, the page background.",
+    "fonts": "Fonts and text",
+    "headingFont": "Headings: {font}",
+    "bodyFont": "Body: {font}",
+    "symbol": "Symbol",
+    "addSymbol": "Add the logo symbol"
+  },
+  "uploads": {
+    "import": "Import photos",
+    "help": "Drag and drop images here or onto the page, or paste them (Ctrl V). PNG, JPEG, WebP.",
+    "browse": "Browse…",
+    "used": "In this design",
+    "reuse": "Add again",
+    "rights": "Only import images you have the right to use.",
+    "processing": "{count, plural, one {Preparing the photo…} other {Preparing # photos…}}",
+    "added": "{count, plural, one {Photo added} other {# photos added}}",
+    "failed": "This image could not be imported."
+  },
+  "layers": {
+    "label": "Page layers",
+    "empty": "The page is empty.",
+    "rename": "Layer name",
+    "renameHint": "Double-click to rename",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "show": "Show",
+    "hide": "Hide"
+  },
+  "check": {
+    "great": "Ready to publish",
+    "good": "A few touch-ups recommended",
+    "needsWork": "Fix before exporting",
+    "summary": "{errors, plural, =0 {No errors} one {# error} other {# errors}} · {warnings, plural, =0 {no warnings} one {# warning} other {# warnings}}",
+    "fixAll": "Fix all ({count})",
+    "fixedAll": "{count} fixes applied",
+    "fixed": "Fixed",
+    "perfect": "Nothing to report",
+    "perfectBody": "Readability, print and brand consistency all check out.",
+    "page": "Page {number}",
+    "show": "Show",
+    "fix": "Fix",
+    "codes": {
+      "contrast": {
+        "title": "Hard-to-read text (contrast {ratio}:1)",
+        "body": "Contrast with the background should reach {minimum}:1 (WCAG). The fix adjusts the text color."
+      },
+      "textOverPhoto": {
+        "title": "Text over a photo",
+        "body": "Its readability depends on the image. The fix adds a subtle shadow behind the letters."
+      },
+      "tinyText": {
+        "title": "Text too small ({size})",
+        "body": "Aim for at least {minimum} so it stays readable."
+      },
+      "safeMargin": {
+        "title": "Too close to the trim edge",
+        "body": "Keep text and logos {margin} from the edge: trimming can vary slightly."
+      },
+      "offPage": {
+        "title": "Element cut off by the page edge",
+        "body": "Part of it won't appear in the export. The fix brings it back inside the page."
+      },
+      "bleed": {
+        "title": "Missing bleed",
+        "body": "This area touches the edge: extend it by {bleed} to avoid a white line after trimming."
+      },
+      "lowResolution": {
+        "title": "Low-resolution photo ({dpi} dpi)",
+        "body": "For print, aim for 300 dpi (150 minimum): make the photo smaller or import a larger version."
+      },
+      "upscaled": {
+        "title": "Photo enlarged ×{factor}",
+        "body": "It may look blurry. Import a larger image or make it smaller."
+      },
+      "offBrand": {
+        "title": "Off-brand color ({color})",
+        "body": "The fix replaces it with the closest color from your palette."
+      },
+      "tooManyFonts": {
+        "title": "{count} different fonts",
+        "body": "Two or three fonts are enough for a consistent design."
+      },
+      "emptyText": {
+        "title": "Empty text",
+        "body": "This block has no text."
+      },
+      "hidden": {
+        "title": "Hidden element",
+        "body": "It won't appear in the export."
+      },
+      "textOverlap": {
+        "title": "Overlapping text",
+        "body": "Move them apart so they stay readable."
+      }
+    }
+  },
+  "panels": {
+    "label": "Tools",
+    "close": "Collapse panel",
+    "open": "Open panel",
+    "templates": "Templates",
+    "elements": "Elements",
+    "text": "Text",
+    "brand": "Brand",
+    "uploads": "Uploads",
+    "layers": "Layers",
+    "check": "Check"
+  },
+  "pages": {
+    "label": "Pages",
+    "page": "Page {number}",
+    "moveLeft": "Move earlier",
+    "moveRight": "Move later",
+    "add": "Add a page",
+    "duplicate": "Duplicate page",
+    "remove": "Delete page",
+    "zoomOut": "Zoom out",
+    "zoomIn": "Zoom in",
+    "zoom": "Zoom level",
+    "fit": "Fit to screen"
+  },
+  "export": {
+    "title": "Export",
+    "description": "Design format: {size}.",
+    "printDescription": "Print format: {width} × {height} mm.",
+    "format": "Format",
+    "serverOnly": "Produced by the platform server",
+    "help": {
+      "png": "Lossless image, ideal for social media; transparent background available.",
+      "jpg": "Lightweight image for the web and messaging apps.",
+      "pdf": "{print, select, yes {Actual-size print PDF: bleed, trim box and crop marks, outlined text.} other {Vector PDF with outlined text, ready to share.}}",
+      "svg": "Vector file that scales without loss; text converted to outlines."
+    },
+    "pages": "Pages to export",
+    "allPages": "All pages ({count})",
+    "currentPage": "Page {number}",
+    "transparent": "Transparent background",
+    "quality": "Quality",
+    "cropMarks": "Crop marks",
+    "working": "Preparing…",
+    "download": "Download",
+    "done": "Export ready",
+    "failed": "The export failed."
+  },
+  "resize": {
+    "title": "Magic resize",
+    "description": "Your design is recomposed for each format: backgrounds stretched, decorations anchored to corners, text and logos rearranged to keep the balance.",
+    "customName": "{width} × {height}",
+    "groups": {
+      "social": "Social media",
+      "print": "Print",
+      "screen": "Screen",
+      "brand": "Brand"
+    },
+    "custom": "Custom size",
+    "width": "Width",
+    "height": "Height",
+    "preview": "Preview",
+    "previewEmpty": "Choose one or more formats.",
+    "resizeHere": "Resize this design",
+    "createCopies": "{count, plural, =0 {Create copies} one {Create 1 copy} other {Create # copies}}",
+    "created": "{count, plural, one {Copy created} other {# copies created}}",
+    "resized": "Design resized to {format}"
+  },
+  "formats": {
+    "post-square": {
+      "name": "Square post"
+    },
+    "post-portrait": {
+      "name": "Portrait post"
+    },
+    "story": {
+      "name": "Story / Status"
+    },
+    "facebook-cover": {
+      "name": "Facebook cover"
+    },
+    "linkedin-banner": {
+      "name": "LinkedIn banner"
+    },
+    "youtube-thumbnail": {
+      "name": "YouTube thumbnail"
+    },
+    "flyer-a5": {
+      "name": "A5 flyer"
+    },
+    "flyer-a4": {
+      "name": "A4 flyer"
+    },
+    "poster-a3": {
+      "name": "A3 poster"
+    },
+    "business-card": {
+      "name": "Business card"
+    },
+    "invitation": {
+      "name": "Invitation"
+    },
+    "certificate": {
+      "name": "Certificate"
+    },
+    "rollup": {
+      "name": "Roll-up banner"
+    },
+    "slide": {
+      "name": "16:9 presentation"
+    },
+    "email-banner": {
+      "name": "Email banner"
+    },
+    "logo-canvas": {
+      "name": "Logo board"
+    }
+  },
+  "variations": {
+    "title": "Variations",
+    "description": "Eight takes on this page in your colors and fonts. Hover a proposal to use it.",
+    "noBrand": "Variations rely on the project's identity, which is loading.",
+    "replace": "Replace",
+    "add": "Add",
+    "replaced": "Page replaced",
+    "added": "Variation added as a new page",
+    "kinds": {
+      "palette": "Swapped palette",
+      "fonts": "Other fonts",
+      "mirror": "Mirrored",
+      "dark": "Inverted background",
+      "harmony": "Color harmony",
+      "mix": "Remix"
+    }
+  },
+  "editor": {
+    "notFound": "This design could not be found.",
+    "back": "Back to designs",
+    "loading": "Loading the design",
+    "home": "Home",
+    "name": "Design name",
+    "undo": "Undo",
+    "redo": "Redo",
+    "shortcuts": "Keyboard shortcuts",
+    "variations": "Variations",
+    "resize": "Resize",
+    "export": "Export",
+    "properties": "Properties",
+    "readOnly": "Read only",
+    "saved": "Saved",
+    "pending": "Unsaved changes",
+    "saving": "Saving…",
+    "saveError": "Save failed"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "keys": {
+      "undo": "Ctrl Z",
+      "redo": "Ctrl Shift Z",
+      "clipboard": "Ctrl C / V / X",
+      "duplicate": "Ctrl D",
+      "selectAll": "Ctrl A",
+      "delete": "Delete",
+      "nudge": "← ↑ → ↓",
+      "nudgeMore": "Shift + arrows",
+      "order": "Ctrl ] / [",
+      "lock": "Ctrl L",
+      "hide": "Ctrl Shift H",
+      "edit": "Enter",
+      "deselect": "Esc",
+      "altDrag": "Alt + drag",
+      "shiftDrag": "Shift + drag",
+      "pan": "Space + drag",
+      "zoom": "Ctrl + wheel",
+      "fit": "Ctrl 0 / 1",
+      "export": "Ctrl E",
+      "pages": "Page Up / Down"
+    },
+    "actions": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "clipboard": "Copy, paste, cut",
+      "duplicate": "Duplicate",
+      "selectAll": "Select all",
+      "delete": "Delete",
+      "nudge": "Move by 1 px",
+      "nudgeMore": "Move by 10 px",
+      "order": "Forward / backward (Shift: front / back)",
+      "lock": "Lock",
+      "hide": "Hide",
+      "edit": "Type in the text / crop the photo",
+      "deselect": "Deselect",
+      "altDrag": "Duplicate while dragging",
+      "shiftDrag": "Move along an axis, keep proportions",
+      "pan": "Pan the view",
+      "zoom": "Zoom",
+      "fit": "Fit to screen / actual size",
+      "export": "Export",
+      "pages": "Previous / next page"
+    }
+  },
+  "list": {
+    "title": "Design studio",
+    "description": "Posts, stories, flyers, posters, business cards, presentations: create all your materials from your identity.",
+    "new": "New design",
+    "quick": "Quick start",
+    "mine": "Project designs",
+    "emptyTitle": "Your first design",
+    "emptyBody": "Pick a format: templates in your colors, with your logo and fonts, are waiting in the editor.",
+    "features": {
+      "templates": {
+        "title": "On-brand templates",
+        "body": "Composed for your format, with your logo."
+      },
+      "resize": {
+        "title": "Magic resize",
+        "body": "One design turned into a story, flyer or banner."
+      },
+      "brand": {
+        "title": "Brand guidelines kept",
+        "body": "Colors, fonts and contrast checked."
+      },
+      "print": {
+        "title": "Printer-ready",
+        "body": "Actual-size PDF, bleed, crop marks."
+      }
+    },
+    "newTitle": "New design",
+    "newDescription": "Pick a format. You can adapt it to others in one click later.",
+    "groups": {
+      "social": "Social media",
+      "print": "Print",
+      "screen": "Screen",
+      "brand": "Brand"
+    },
+    "custom": "Custom size",
+    "customUse": "Use",
+    "width": "Width",
+    "height": "Height",
+    "name": "Name",
+    "create": "Create",
+    "actions": "Actions",
+    "duplicate": "Duplicate",
+    "duplicated": "Design duplicated",
+    "delete": "Delete",
+    "deleted": "Design deleted",
+    "deleteTitle": "Delete this design?",
+    "deleteBody": "“{name}” will be permanently deleted.",
+    "cancel": "Cancel"
+  }
+}

@@ -39,6 +39,7 @@ import type {
   Workspace,
   WorkspaceRole,
 } from "@/lib/types";
+import type { DesignDoc, StudioDesign, StudioDesignSummary } from "@/lib/studio/types";
 
 // Contrat du client API : une méthode par route REST (§13). Deux implémentations :
 // http.ts (API NestJS réelle) et mock/ (simulation locale).
@@ -60,7 +61,9 @@ export type ApiFeature =
   | "payments"
   | "moderation"
   | "smsLogin"
-  | "googleLogin";
+  | "googleLogin"
+  /** Exports du Studio produits par le serveur : PDF d'impression, SVG au texte vectorisé. */
+  | "studioExport";
 
 export interface JobAccepted {
   jobId: string;
@@ -98,6 +101,31 @@ export interface SloganGenerationInput {
   maxWords: number;
   language: "fr" | "en";
   kind: SloganKind;
+}
+
+export interface StudioDesignInput {
+  name: string;
+  /** Identifiant du format (src/lib/studio/formats.ts) ou « custom ». */
+  format: string;
+  doc: DesignDoc;
+  /** Aperçu PNG (data URL, ~400 px). */
+  thumbnail?: string;
+}
+
+export interface StudioExportInput {
+  format: "pdf" | "svg";
+  /** Indices des pages ; toutes par défaut. */
+  pages?: number[];
+  /** Traits de coupe (formats imprimés). */
+  cropMarks?: boolean;
+}
+
+/** Déclinaison d'un logo produite par le serveur (texte vectorisé). */
+export interface LogoVariantFile {
+  id: string;
+  file: string;
+  dark: boolean;
+  svg: string;
 }
 
 export interface CheckoutInput {
@@ -192,6 +220,11 @@ export interface ApiClient {
       lid: string,
       input: { formats: ("svg" | "pdf" | "png" | "jpg")[]; sizes?: number[]; iconPack: boolean; social?: boolean },
     ): Promise<JobAccepted & { restricted?: boolean }>;
+    /**
+     * Déclinaisons (couleur, noir, blanc, icône, dispositions) de la dernière version ;
+     * `transparent` : version blanche sans fond, pour la poser sur une création.
+     */
+    variants(lid: string, options?: { transparent?: boolean }): Promise<{ versionId: string; variants: LogoVariantFile[] }>;
   };
 
   slogans: {
@@ -212,10 +245,25 @@ export interface ApiClient {
   brandKits: {
     list(pid: string): Promise<BrandKit[]>;
     create(pid: string): Promise<BrandKit>;
-    generateGuide(kid: string): Promise<JobAccepted>;
-    generateZip(kid: string): Promise<JobAccepted>;
+    /** Recopie une version sous un nouveau numéro, qui devient la version courante (KIT-06). */
+    restore(kid: string): Promise<BrandKit>;
+    generateGuide(kid: string, idempotencyKey: string): Promise<JobAccepted>;
+    /** `restricted` : offre gratuite, archive réduite à des PNG 512 px filigranés. */
+    generateZip(kid: string): Promise<JobAccepted & { restricted?: boolean }>;
     share(kid: string, input: { enabled: boolean; password?: string; expiresAt?: string | null }): Promise<BrandKit>;
     publicKit(token: string, password?: string): Promise<PublicKit>;
+  };
+
+  studio: {
+    list(pid: string): Promise<StudioDesignSummary[]>;
+    create(pid: string, input: StudioDesignInput): Promise<StudioDesign>;
+    get(sdid: string): Promise<StudioDesign>;
+    /** Sauvegarde (automatique) : nom, document, aperçu. */
+    save(sdid: string, patch: Partial<Pick<StudioDesignInput, "name" | "doc" | "thumbnail">>): Promise<StudioDesignSummary>;
+    duplicate(sdid: string): Promise<StudioDesign>;
+    remove(sdid: string): Promise<void>;
+    /** PDF d'impression ou SVG vectorisé produit par le worker (lien dans le résultat de la tâche). */
+    requestExport(sdid: string, input: StudioExportInput, idempotencyKey: string): Promise<JobAccepted>;
   };
 
   jobs: {
@@ -227,6 +275,8 @@ export interface ApiClient {
   comments: {
     list(pid: string): Promise<Comment[]>;
     create(pid: string, input: { targetType: Comment["targetType"]; targetId: string; body: string }): Promise<Comment>;
+    /** Par son auteur ou un propriétaire de l'espace. */
+    remove(cid: string): Promise<void>;
   };
 
   notifications: {

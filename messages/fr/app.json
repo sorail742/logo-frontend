@@ -15,7 +15,9 @@
   "shell": {
     "credits": "{count, plural, one {# crédit} other {# crédits}}",
     "buyCredits": "Acheter des crédits",
-    "readOnly": "Vous êtes Lecteur dans cet espace : la génération et l'édition sont désactivées."
+    "readOnly": "Vous êtes Lecteur dans cet espace : la génération et l'édition sont désactivées.",
+    "creditsCard": "Crédits disponibles",
+    "topUp": "Recharger"
   },
   "dashboard": {
     "title": "Mes projets",
@@ -29,7 +31,30 @@
     "updated": "Modifié le {date}",
     "deleteConfirm": "Le projet sera placé dans la corbeille pendant 30 jours.",
     "deleted": "Projet placé dans la corbeille",
-    "duplicated": "Projet dupliqué"
+    "duplicated": "Projet dupliqué",
+    "hello": "Bonjour {name}",
+    "helloBody": "Que créons-nous aujourd'hui ?",
+    "recent": "Projets récents",
+    "quick": {
+      "newProject": {
+        "title": "Nouveau projet",
+        "body": "Nom, logo, signatures et kit"
+      },
+      "studio": {
+        "title": "Créer un visuel",
+        "body": "Publication, flyer, carte de visite…"
+      },
+      "names": {
+        "title": "Trouver un nom",
+        "body": "10 idées vérifiées en quelques secondes"
+      },
+      "signature": {
+        "title": "Signature e-mail",
+        "body": "Gratuite, compatible Gmail et Outlook"
+      }
+    },
+    "openStudio": "Ouvrir le Studio",
+    "steps": "{done}/{total} étapes"
   },
   "trash": {
     "title": "Corbeille",
@@ -44,7 +69,8 @@
     "names": "Nom",
     "logos": "Logo",
     "signatures": "Signatures",
-    "kit": "Kit de marque"
+    "kit": "Kit de marque",
+    "studio": "Studio"
   },
   "newProject": {
     "title": "Nouveau projet",
@@ -77,7 +103,18 @@
     "noActivity": "Aucune activité pour l'instant.",
     "status": "Statut",
     "rename": "Titre de travail",
-    "stepsDone": "{done} étapes sur {total}"
+    "stepsDone": "{done} étapes sur {total}",
+    "studioTitle": "Créations du Studio",
+    "studioEmpty": "Déclinez votre marque en publications, stories, flyers et cartes de visite.",
+    "openStudio": "Ouvrir le Studio",
+    "newDesign": "Nouvelle création",
+    "palette": "Couleurs",
+    "fonts": "Polices",
+    "kitLink": "Kit de marque",
+    "seeAll": "Tout voir",
+    "brand": "Votre marque",
+    "headingFont": "Titres",
+    "bodyFont": "Textes"
   },
   "brief": {
     "title": "Brief",
@@ -176,7 +213,10 @@
     "title": "Commentaires",
     "placeholder": "Écrire un commentaire… (@ pour mentionner)",
     "send": "Envoyer",
-    "empty": "Aucun commentaire."
+    "empty": "Aucun commentaire.",
+    "delete": "Supprimer le commentaire",
+    "mention": "Mentionner :",
+    "mentioned": "Mentionné : {names}"
   },
   "job": {
     "QUEUED": "En file d'attente…",

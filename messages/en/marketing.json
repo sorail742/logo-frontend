@@ -1,11 +1,17 @@
 {
   "hero": {
-    "eyebrow": "For associations, apps, startups and projects",
-    "title": "Your name, your logo and your signatures, in one flow",
-    "subtitle": "Find an available name, create an editable vector logo, get your tagline, email signature and stamp. Pay in GNF with Orange Money.",
+    "eyebrow": "New: the design studio that knows your brand",
+    "title": "Your brand identity,",
+    "subtitle": "Find an available name, create your logo, then turn it into posts, stories, flyers, business cards and presentations with a studio that knows your brand. Pay in GNF with Orange Money.",
     "cta": "Start for free",
     "secondary": "Try without an account",
-    "proof": "No card required · 3 name batches per day for free"
+    "proof": "No card required · 3 name batches per day for free",
+    "titleAccent": "from name to poster.",
+    "proofItems": [
+      "No credit card",
+      "3 free name batches every day",
+      "In French and English, prices in Guinean francs"
+    ]
   },
   "problem": {
     "title": "An identity shouldn't take weeks",
@@ -14,7 +20,8 @@
       "skills": "Associations and student projects lack budget and design skills.",
       "tools": "Existing tools are in English, billed in foreign currencies, without mobile payment.",
       "taken": "A name chosen without checking often turns out to be taken."
-    }
+    },
+    "kicker": "The problem"
   },
   "modules": {
     "title": "Three modules, one kit",
@@ -36,16 +43,18 @@
     }
   },
   "journey": {
-    "title": "How it works",
+    "title": "From idea to first visual in an afternoon",
     "steps": {
       "1": "Create a project and pick its type",
       "2": "Describe your organisation in a few lines",
       "3": "Generate names and check availability",
       "4": "Generate your logo, then fine-tune it",
       "5": "Get your tagline, email signature and stamp",
-      "6": "Download or share your kit"
+      "6": "Download or share your kit",
+      "7": "Create your visuals in the Studio"
     },
-    "shortcuts": "Already have a name or a logo? Jump straight to the next step."
+    "shortcuts": "Already have a name or a logo? Jump straight to the next step.",
+    "kicker": "How it works"
   },
   "personas": {
     "title": "Built for you",
@@ -53,7 +62,8 @@
     "app": "App makers: a name with a free domain, app icon and favicon.",
     "startup": "Startups and SMEs: full kit, PDF guide, teamwork.",
     "agency": "Freelancers and agencies: quick directions, batch exports, one workspace per client.",
-    "student": "Students and clubs: free plan, fast results."
+    "student": "Students and clubs: free plan, fast results.",
+    "kicker": "Who is it for?"
   },
   "payment": {
     "title": "Pay the way you are used to",
@@ -62,8 +72,9 @@
   },
   "cta": {
     "title": "Your identity starts with a name",
-    "body": "Try the name generator without creating an account.",
-    "button": "Generate names"
+    "body": "Try the name generator without an account, then bring your brand to life in the Studio.",
+    "button": "Generate names",
+    "secondary": "Create an account"
   },
   "pricing": {
     "title": "Plans for every organisation",
@@ -86,7 +97,10 @@
       "a3": "On purchase, commercial usage rights are assigned to you and the logo becomes exclusive. We recommend registering the trademark with OAPI.",
       "q4": "How do I get association pricing?",
       "a4": "Upload your registration proof from the Billing page; an administrator validates it."
-    }
+    },
+    "studioIncluded": "The design studio is included in every plan",
+    "studioIncludedBody": "On-brand templates, magic resize, quality check and PNG, JPG, SVG and print PDF exports, at no credit cost.",
+    "kicker": "Pricing"
   },
   "features": {
     "free": {
@@ -144,5 +158,95 @@
   "emailTool": {
     "title": "Free email signature generator",
     "subtitle": "Create a professional signature compatible with Gmail, Outlook and Apple Mail, no account needed."
+  },
+  "showcase": {
+    "chipResize": "Magic resize",
+    "chipCheck": "Readability checked",
+    "chipPrint": "Printer-ready PDF",
+    "brands": "Sample brands"
+  },
+  "audience": {
+    "title": "For every kind of organization",
+    "items": [
+      "Associations",
+      "NGOs",
+      "Startups",
+      "Apps",
+      "Small businesses",
+      "Student clubs",
+      "Events",
+      "Freelancers and agencies"
+    ]
+  },
+  "bento": {
+    "kicker": "Your whole brand universe",
+    "title": "Five tools that work together",
+    "subtitle": "Each step builds on the last: the name feeds the logo, the logo feeds the guidelines, the guidelines feed every visual.",
+    "names": {
+      "title": "An available name",
+      "body": "Batches of 10 explained names, with acronym, score and domain and social handle checks.",
+      "free": "available"
+    },
+    "logos": {
+      "title": "A vector logo",
+      "body": "8 proposals per batch, an editor to adjust everything, and every version: color, white, black, app icon."
+    },
+    "studio": {
+      "title": "The design studio",
+      "body": "Posts, stories, flyers, posters, business cards and presentations, composed in your colors with your logo.",
+      "points": [
+        "On-brand templates",
+        "Magic resize",
+        "Quality check before export",
+        "Print PDF"
+      ]
+    },
+    "signatures": {
+      "title": "Signatures and stamp",
+      "body": "Slogan, Gmail- and Outlook-ready email signature, handwritten signature and a stamp ready to be made."
+    },
+    "kit": {
+      "title": "A brand kit",
+      "body": "PDF brand guidelines, a tidy archive and a password-protected share page."
+    }
+  },
+  "studio": {
+    "kicker": "Design studio",
+    "title": "A studio that knows your brand",
+    "body": "No blank page: your colors, logo and fonts are already there. Each template composes itself for the chosen format, and each design is checked before it goes to the printer or social media.",
+    "cta": "Create my first visual",
+    "features": {
+      "templates": {
+        "title": "On-brand templates",
+        "body": "Announcements, promotions, events, carousels, business cards: composed with your logo, colors and fonts."
+      },
+      "resize": {
+        "title": "Magic resize",
+        "body": "A post becomes a story, an A5 flyer or a LinkedIn banner: the layout recomposes instead of stretching."
+      },
+      "check": {
+        "title": "Quality check",
+        "body": "Text contrast, minimum size, safe area, bleed, photo resolution, off-brand colors — fixed in one click."
+      },
+      "print": {
+        "title": "Printer-ready",
+        "body": "Actual-size PDF with bleed, trim box and crop marks; outlined text."
+      },
+      "variations": {
+        "title": "One-click variations",
+        "body": "Swapped palette, inverted background, color harmonies, other fonts, mirrored layout: eight on-brand directions."
+      },
+      "library": {
+        "title": "A real toolbox",
+        "body": "1,890 icons, 47 fonts, gradients, shadows, curved text, photo masks, layers, eyedropper and keyboard shortcuts."
+      }
+    },
+    "score": "Quality score",
+    "scoreItems": [
+      "Text contrast",
+      "Safe area",
+      "Photo resolution",
+      "Brand colors"
+    ]
   }
 }

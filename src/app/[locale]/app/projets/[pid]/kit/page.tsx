@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
-import { FileArchive, FileText, Layers, Link2, Loader2, Lock, Package } from "lucide-react";
+import { FileArchive, FileText, Layers, Link2, Loader2, Lock, Package, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ButtonLink } from "@/components/common/button-link";
@@ -16,12 +16,12 @@ import { Field } from "@/components/common/field";
 import { JobProgress } from "@/components/common/job-progress";
 import { PageHeader } from "@/components/common/page-header";
 import { KitView } from "@/components/kit/kit-view";
+import { CommentsPanel } from "@/components/projects/comments-panel";
 import { useApiErrorToast } from "@/hooks/use-api-error";
 import { useJob } from "@/hooks/use-job";
 import { useProject } from "@/hooks/use-project";
 import { useCredits } from "@/hooks/use-workspace";
 import { api } from "@/lib/api";
-import { CREDIT_COSTS } from "@/lib/credits";
 import { slugify } from "@/lib/format";
 import { qk } from "@/lib/query-keys";
 import { downloadBlob } from "@/lib/render/export";
@@ -30,6 +30,9 @@ import type { BrandKit } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ComingSoon } from "@/components/common/coming-soon";
 
+/** Les liens signés de l'API valent 15 min : la liste est relue avant leur expiration. */
+const KIT_REFRESH_MS = 10 * 60_000;
+
 export default function KitPage() {
   return api.isAvailable("brandKits") ? <KitContent /> : <KitComingSoon />;
 }
@@ -37,6 +40,27 @@ export default function KitPage() {
 function KitComingSoon() {
   const t = useTranslations("kit");
   return <ComingSoon feature="brandKits" title={t("title")} />;
+}
+
+/** Lien de téléchargement : URL signée de l'API (nouvel onglet) ou page interne (mode simulé). */
+function FileLink({ href, children, variant = "outline" }: { href: string; children: ReactNode; variant?: "outline" | "default" }) {
+  if (/^https?:\/\//.test(href)) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant })}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <ButtonLink href={href} variant={variant}>
+      {children}
+    </ButtonLink>
+  );
+}
+
+/** Date choisie (AAAA-MM-JJ) : le lien reste valable jusqu'à la fin de cette journée. */
+function endOfDay(date: string) {
+  return new Date(`${date}T23:59:59`).toISOString();
 }
 
 function KitContent() {
@@ -54,7 +78,11 @@ function KitContent() {
   const [password, setPassword] = useState("");
   const [expires, setExpires] = useState("");
 
-  const { data: kits = [] } = useQuery({ queryKey: qk.brandKits(pid), queryFn: () => api.brandKits.list(pid) });
+  const { data: kits = [] } = useQuery({
+    queryKey: qk.brandKits(pid),
+    queryFn: () => api.brandKits.list(pid),
+    refetchInterval: KIT_REFRESH_MS,
+  });
   const { data: logos = [] } = useQuery({ queryKey: qk.logos(pid), queryFn: () => api.logos.list(pid) });
   const { data: signatures = [] } = useQuery({ queryKey: qk.signatures(pid), queryFn: () => api.signatures.list(pid) });
   const kit = kits.find((k) => k.id === selectedId) ?? kits[0] ?? null;
@@ -62,45 +90,62 @@ function KitContent() {
   const guide = useJob(guideJob, { invalidate });
   const zip = useJob(zipJob, { invalidate });
 
+  const onCreated = (created: BrandKit, message: string) => {
+    toast.success(message);
+    setSelectedId(created.id);
+    queryClient.invalidateQueries({ queryKey: qk.brandKits(pid) });
+    queryClient.invalidateQueries({ queryKey: qk.project(pid) });
+  };
   const create = useMutation({
     mutationFn: () => api.brandKits.create(pid),
-    onSuccess: (created) => {
-      toast.success(t("created", { version: created.version }));
-      setSelectedId(created.id);
-      queryClient.invalidateQueries({ queryKey: qk.brandKits(pid) });
-      queryClient.invalidateQueries({ queryKey: qk.project(pid) });
-    },
+    onSuccess: (created) => onCreated(created, t("created", { version: created.version })),
+    onError,
+  });
+  const restore = useMutation({
+    mutationFn: (kid: string) => api.brandKits.restore(kid),
+    onSuccess: (created) => onCreated(created, t("restored", { version: created.restoredFrom ?? "", newVersion: created.version })),
     onError,
   });
   const share = useMutation({
-    mutationFn: (enabled: boolean) => api.brandKits.share(kit!.id, { enabled, password: password || undefined, expiresAt: expires ? new Date(expires).toISOString() : null }),
+    mutationFn: (enabled: boolean) =>
+      api.brandKits.share(kit!.id, { enabled, password: password || undefined, expiresAt: expires ? endOfDay(expires) : null }),
     onSuccess: (updated) => {
       toast.success(t("shareUpdated"));
+      setPassword("");
       queryClient.setQueryData<BrandKit[]>(qk.brandKits(pid), (list) => list?.map((k) => (k.id === updated.id ? updated : k)));
     },
     onError,
   });
 
+  const startGuide = () =>
+    api.brandKits.generateGuide(kit!.id, crypto.randomUUID()).then(({ jobId }) => {
+      setGuideJob(jobId);
+      toast.info(t("jobQueued"));
+    }, onError);
+  const startZip = () =>
+    api.brandKits.generateZip(kit!.id).then(({ jobId }) => {
+      setZipJob(jobId);
+      toast.info(t("jobQueued"));
+    }, onError);
+
   const name = project?.chosenName?.value ?? project?.title ?? "";
   const isFree = credits.data?.planCode === "FREE";
   const canEdit = can("content.edit");
   const shareUrl = kit?.shareToken && typeof window !== "undefined" ? `${window.location.origin}${locale === "fr" ? "" : `/${locale}`}/kit/${kit.shareToken}` : null;
+  const today = new Date().toISOString().slice(0, 10);
 
-  const downloadZip = async () => {
+  // Mode simulé : l'archive est assemblée dans le navigateur.
+  const buildClientZip = async () => {
     if (!kit) return;
-    if (kit.zipUrl && kit.zipUrl !== "client") {
-      window.location.href = kit.zipUrl;
-      return;
-    }
     setZipping(true);
     try {
       const logo = kit.logoSpec;
       const blob = await buildKitZip(kit, {
-        projectName: name,
+        projectName: kit.name ?? name,
         signatures,
-        brand: { name, slogan: kit.slogan ?? undefined, logoUrl: null, primary: logo?.colors.primary ?? "#0f766e", secondary: logo?.colors.secondary ?? "#f59e0b" },
+        brand: { name: kit.name ?? name, slogan: kit.slogan ?? undefined, logoUrl: null, primary: logo?.colors.primary ?? "#0f766e", secondary: logo?.colors.secondary ?? "#f59e0b" },
       });
-      downloadBlob(blob, `kit-${slugify(name) || "marque"}-v${kit.version}.zip`);
+      downloadBlob(blob, `kit-${slugify(kit.name ?? name) || "marque"}-v${kit.version}.zip`);
     } catch (error) {
       onError(error);
     } finally {
@@ -148,7 +193,10 @@ function KitContent() {
         }
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="min-w-0">{kit && <KitView kit={kit} projectName={name} acronym={project?.chosenName?.acronym} meaning={project?.chosenName?.meaning} />}</div>
+        <div className="grid min-w-0 content-start gap-6">
+          {kit && <KitView kit={kit} projectName={name} acronym={project?.chosenName?.acronym} meaning={project?.chosenName?.meaning} />}
+          {kit && <CommentsPanel pid={pid} targetType="KIT" targetId={kit.id} />}
+        </div>
         <div className="grid content-start gap-6">
           <Card>
             <CardHeader>
@@ -156,19 +204,30 @@ function KitContent() {
             </CardHeader>
             <CardContent className="grid gap-1.5">
               {kits.map((k, index) => (
-                <button
-                  key={k.id}
-                  type="button"
-                  onClick={() => setSelectedId(k.id)}
-                  aria-pressed={kit?.id === k.id}
-                  className={cn("flex items-center justify-between rounded-lg border px-3 py-2 text-left text-sm", kit?.id === k.id ? "border-primary bg-accent" : "hover:bg-muted")}
-                >
-                  <span>
-                    <span className="font-medium">{t("version", { version: k.version })}</span>
-                    <span className="block text-xs text-muted-foreground">{t("createdAt", { date: format.dateTime(new Date(k.createdAt), { dateStyle: "medium" }) })}</span>
-                  </span>
-                  {index === 0 && <Badge variant="secondary">{t("current")}</Badge>}
-                </button>
+                <div key={k.id} className={cn("flex items-center gap-1 rounded-lg border", kit?.id === k.id ? "border-primary bg-accent" : "hover:bg-muted")}>
+                  <button type="button" onClick={() => setSelectedId(k.id)} aria-pressed={kit?.id === k.id} className="min-w-0 flex-1 px-3 py-2 text-left text-sm">
+                    <span className="flex items-center gap-2 font-medium">
+                      {t("version", { version: k.version })}
+                      {index === 0 && <Badge variant="secondary">{t("current")}</Badge>}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {k.restoredFrom ? t("restoredFrom", { version: k.restoredFrom }) : t("createdAt", { date: format.dateTime(new Date(k.createdAt), { dateStyle: "medium" }) })}
+                    </span>
+                  </button>
+                  {canEdit && index > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="mr-1 shrink-0"
+                      onClick={() => restore.mutate(k.id)}
+                      disabled={restore.isPending}
+                      aria-label={`${t("restore")} — ${t("version", { version: k.version })}`}
+                      title={t("restore")}
+                    >
+                      <RotateCcw />
+                    </Button>
+                  )}
+                </div>
               ))}
             </CardContent>
           </Card>
@@ -187,21 +246,23 @@ function KitContent() {
                   </p>
                   <p className="text-xs text-muted-foreground">{t("guideBody")}</p>
                   {kit.guidePdfUrl ? (
-                    <ButtonLink href={kit.guidePdfUrl} variant="outline">
-                      {t("openGuide")}
-                    </ButtonLink>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <FileLink href={kit.guidePdfUrl}>{t("openGuide")}</FileLink>
+                      {canEdit && (
+                        <Button variant="ghost" size="sm" onClick={startGuide} disabled={guide.running}>
+                          {t("regenerate")}
+                        </Button>
+                      )}
+                    </div>
                   ) : (
                     <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => api.brandKits.generateGuide(kit.id).then(({ jobId }) => setGuideJob(jobId), onError)}
-                        disabled={guide.running || isFree}
-                      >
+                      <Button variant="outline" onClick={startGuide} disabled={guide.running || isFree || !canEdit}>
                         {t("generateGuide")}
                       </Button>
-                      <CreditCost cost={CREDIT_COSTS.BRAND_GUIDE_PDF} />
+                      <CreditCost cost={kit.guideCost} />
                     </div>
                   )}
+                  {isFree && <p className="text-xs text-muted-foreground">{t("guideFree")}</p>}
                   <JobProgress event={guide.event} running={guide.running} />
                 </div>
                 <div className="grid gap-2 border-t pt-4">
@@ -210,16 +271,28 @@ function KitContent() {
                     {t("zip")}
                   </p>
                   <p className="text-xs text-muted-foreground">{t("zipBody")}</p>
-                  {kit.zipUrl ? (
-                    <Button onClick={downloadZip} disabled={zipping}>
+                  {kit.zipUrl === "client" ? (
+                    <Button onClick={buildClientZip} disabled={zipping}>
                       {zipping && <Loader2 className="animate-spin" />}
                       {zipping ? t("preparing") : t("downloadZip")}
                     </Button>
+                  ) : kit.zipUrl ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <FileLink href={kit.zipUrl} variant="default">
+                        {t("downloadZip")}
+                      </FileLink>
+                      {canEdit && (
+                        <Button variant="ghost" size="sm" onClick={startZip} disabled={zip.running}>
+                          {t("regenerate")}
+                        </Button>
+                      )}
+                    </div>
                   ) : (
-                    <Button variant="outline" onClick={() => api.brandKits.generateZip(kit.id).then(({ jobId }) => setZipJob(jobId), onError)} disabled={zip.running || isFree}>
+                    <Button variant="outline" onClick={startZip} disabled={zip.running || !canEdit}>
                       {t("generateZip")}
                     </Button>
                   )}
+                  {isFree && <p className="text-xs text-muted-foreground">{t("zipFree")}</p>}
                   <JobProgress event={zip.event} running={zip.running} />
                 </div>
                 {isFree && (
@@ -263,12 +336,12 @@ function KitContent() {
                 ) : (
                   <>
                     <Field label={t("sharePassword")} htmlFor="share-password">
-                      <Input id="share-password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                      <Input id="share-password" type="password" autoComplete="new-password" minLength={4} value={password} onChange={(e) => setPassword(e.target.value)} />
                     </Field>
                     <Field label={t("shareExpires")} htmlFor="share-expires">
-                      <Input id="share-expires" type="date" value={expires} onChange={(e) => setExpires(e.target.value)} />
+                      <Input id="share-expires" type="date" min={today} value={expires} onChange={(e) => setExpires(e.target.value)} />
                     </Field>
-                    <Button onClick={() => share.mutate(true)} disabled={share.isPending}>
+                    <Button onClick={() => share.mutate(true)} disabled={share.isPending || (password.length > 0 && password.length < 4)}>
                       {t("shareEnable")}
                     </Button>
                   </>

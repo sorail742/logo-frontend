@@ -74,19 +74,25 @@ src/
     (marketing)/   accueil, tarifs, outils gratuits, kit partagé, invitation, pages légales
     (auth)/        connexion, inscription, mot de passe oublié / réinitialisation
     app/           application : projets, brief, noms, logos (+ éditeur), signatures, kit,
-                   espace et membres, facturation, notifications, profil, corbeille
+                   Studio (créations du projet), espace et membres, facturation, notifications,
+                   profil, corbeille
+    studio/[sdid]  éditeur plein écran du Studio de création
     admin/         back-office (Support, Admin, Super admin, 2FA obligatoire)
-  components/      ui/ (shadcn), layout/, brand/, projects/, names/, logos/, signatures/, kit/, billing/, admin/
+  components/      ui/ (shadcn), layout/, brand/, marketing/, projects/, names/, logos/, signatures/,
+                   kit/, studio/ (canevas, panneaux, inspecteur, fenêtres), billing/, admin/
   hooks/           espace courant, projet courant, suivi des tâches (SSE), erreurs d'API
   i18n/            routage next-intl
   lib/
     api/           contrat du client (§13), implémentation HTTP et API simulée (mock/)
     render/        aperçu du futur packages/render : composition SVG des logos, variantes,
                    cachets, paraphes, signatures e-mail HTML, exports PNG/ICO/ZIP
+    studio/        Studio de création : document, rendu SVG, mise en page du texte, géométrie,
+                   formats, modèles à la marque, redimensionnement magique, variations,
+                   contrôle qualité, couleurs (harmonies, écart perçu)
     types.ts       types alignés sur le schéma Prisma (§12)
     permissions.ts matrice des rôles (§3) — indicative, l'API fait foi
     credits.ts     coût des actions en crédits (§8.3)
-  stores/          session, éditeur de logo (historique annuler / rétablir)
+  stores/          session, éditeur de logo, Studio (document, sélection, vue, historique)
 messages/{fr,en}/  traductions par espace de noms
 ```
 
@@ -105,8 +111,10 @@ messages/{fr,en}/  traductions par espace de noms
   signature e-mail (6 modèles, HTML tableaux + styles en ligne, texte brut, copie, guides, lot CSV),
   paraphe par police ou dessiné, cachet rond/ovale/rectangulaire, encres, attestation horodatée,
   validation manuelle des termes officiels.
-- **Kit (§7)** : page du kit, versions, charte imprimable, archive ZIP rangée avec LICENCES.txt,
-  lien de partage avec mot de passe et expiration, espaces, invitations, commentaires,
+- **Kit (§7)** : page du kit (contenu figé de chaque version), versions consultables et
+  restaurables, charte graphique PDF et archive ZIP produites par l'API (liens signés relus avant
+  expiration), lien de partage avec mot de passe et expiration, page publique avec
+  téléchargements, espaces, invitations, commentaires avec mentions @ (projet, logo, kit),
   notifications, historique d'activité, corbeille 30 jours.
 - **Comptes et paiements (§8)** : e-mail, Google, SMS, mot de passe oublié, 2FA TOTP, profil,
   export et suppression des données, offres, grand livre de crédits, paiement Orange Money
@@ -114,12 +122,42 @@ messages/{fr,en}/  traductions par espace de noms
 - **Back-office (§9)** : indicateurs, utilisateurs, ajustement de crédits motivé, paiements et
   remboursements, export CSV, modération des cachets, bibliothèque, IA, paramètres, audit.
 
+## Studio de création
+
+Éditeur de supports à la marque, au-delà d'un éditeur généraliste : la marque du projet (logo,
+couleurs, polices, nom, slogan) est le point de départ de chaque création.
+
+- **Formats** : publications carrée et portrait, story, couvertures et bannières, miniature
+  YouTube, flyers A5 et A4, affiche A3, carte de visite, invitation, diplôme, kakémono (en mm,
+  fond perdu de 3 mm), présentation 16:9, bannière d'e-mail, taille libre.
+- **Canevas** (`components/studio/canvas.tsx`) : sélection, lasso, déplacement aimanté avec guides
+  (bords et centres de la page et des éléments), redimensionnement et rotation (aussi en groupe),
+  Alt + glisser pour dupliquer, zoom à la molette et main (Espace), édition du texte en place,
+  recadrage d'une photo dans son masque, cadres photo à remplir par dépôt, repères d'impression.
+- **Éléments** : textes (47 polices, dégradés, contour, texte en arc, surlignage), formes
+  (rectangle, cercle, polygone, étoile, forme organique, arche, trait, flèche), 1 890 icônes
+  lucide (`public/studio/icons.json`, recherche en français), photos (import, collage, masques,
+  filtres), logo du projet et ses déclinaisons ; ombres, opacité, modes de fusion, calques,
+  verrouillage, alignement et répartition, pages multiples.
+- **Fonctions à la marque** : modèles composés pour le format (`lib/studio/templates.ts`),
+  application de la charte à une page, couleurs par défaut lisibles sur le fond, sélecteur de
+  couleur avec pipette, dégradés et harmonies, redimensionnement magique (`lib/studio/smart.ts` :
+  fonds étirés, décors ancrés, contenu regroupé en bandes et réparti), huit variations,
+  contrôle qualité continu (`lib/studio/quality.ts` : contraste WCAG, corps minimal, zone de
+  sécurité, fond perdu, résolution des photos, couleurs hors charte, polices) avec corrections.
+- **Exports** : PNG (×0,5 à ×3, fond transparent) et JPG dans le navigateur ; PDF d'impression et
+  SVG au texte vectorisé par l'API (indisponibles en mode simulé, où le SVG est produit avec
+  polices intégrées). Sauvegarde automatique avec aperçu ; raccourcis clavier (touche ?).
+- Pour régénérer la bibliothèque d'icônes après une mise à jour de lucide-react :
+  `node scripts/build-icons.mjs`.
+
 ## Ce qui revient au serveur
 
 Le front ne contacte jamais directement l'IA ni le paiement (§11). Côté API/workers : génération
-IA, conversion du texte en tracés et SVGO, PDF vectoriels et archive ZIP des logos (déjà en
-place), charte PDF (Playwright), URL signées S3, webhooks de paiement, e-mails. Dans le
-navigateur, les exports sont des aperçus fidèles ; la charte s'enregistre en PDF via l'impression.
+IA, conversion du texte en tracés et SVGO, exports des logos, charte graphique PDF, archive du kit
+avec supports imprimables, URL signées, e-mails (déjà en place) ; webhooks de paiement (phase 6).
+En mode simulé, les exports sont des aperçus fidèles assemblés dans le navigateur et la charte
+s'enregistre en PDF via l'impression.
 
 L'éditeur de logo est piloté par une spec déclarative (`LogoSpec`) rendue en SVG ; le cahier
 prévoit Fabric.js, qui pourra s'y brancher pour la manipulation directe sur canevas.

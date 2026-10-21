@@ -13,7 +13,8 @@
     "login": "Log in",
     "signup": "Sign up",
     "dashboard": "My workspace",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "studio": "Studio"
   },
   "actions": {
     "save": "Save",
@@ -90,5 +91,11 @@
     "moderation": "The stamp moderation queue comes with the Signatures module.",
     "smsLogin": "SMS sign-in is coming soon.",
     "googleLogin": "Google sign-in is not configured."
+  },
+  "fontCategories": {
+    "sans": "Sans serif",
+    "serif": "Serif",
+    "display": "Display",
+    "script": "Script"
   }
 }
