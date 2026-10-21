@@ -4,6 +4,7 @@ import type {
   AvailabilityCheck,
   Brief,
   Comment,
+  CreditRequest,
   EntityType,
   GenerationJob,
   Invoice,
@@ -52,6 +53,8 @@ export interface DbWorkspace {
   creditBalance: number;
   planCode: PlanCode;
   renewsAt: string | null;
+  viewerDownloads?: boolean;
+  deletedAt?: string | null;
 }
 
 export interface DbProject {
@@ -152,6 +155,8 @@ export interface Db {
   comments: (Comment & { projectId: string })[];
   activity: { id: string; projectId: string; actor: string; action: string; createdAt: string }[];
   audit: AuditEntry[];
+  /** Ajustements proposés par le support (absent des données enregistrées avant leur arrivée). */
+  creditRequests?: (CreditRequest & { requestedById: string })[];
   publicTries: { day: string; count: number };
   freeUsage: Record<string, { day: string; names: number; logos: number }>;
 }

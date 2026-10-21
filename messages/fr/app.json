@@ -61,7 +61,8 @@
     "description": "Les projets supprimés restent récupérables pendant 30 jours.",
     "empty": "La corbeille est vide.",
     "deletedOn": "Supprimé le {date}",
-    "restored": "Projet restauré"
+    "restored": "Projet restauré",
+    "ownerOnly": "La corbeille est réservée au propriétaire de l'espace."
   },
   "steps": {
     "overview": "Aperçu",
@@ -178,7 +179,21 @@
     "createBody": "Un espace par organisation ou par client (agences). Les crédits et l'abonnement sont propres à chaque espace.",
     "create": "Créer l'espace",
     "created": "Espace créé",
-    "linkInvitation": "Lien d'invitation"
+    "linkInvitation": "Lien d'invitation",
+    "settings": "Réglages de l'espace",
+    "settingsSaved": "Réglage enregistré",
+    "viewerDownloads": "Les lecteurs peuvent télécharger",
+    "viewerDownloadsBody": "Ils récupèrent alors les fichiers du kit et exportent logos et créations, sans rien modifier ni consommer de crédits.",
+    "leaveTitle": "Quitter l'espace",
+    "leaveBody": "Vous perdrez l'accès à ses projets. Un propriétaire pourra vous inviter à nouveau.",
+    "leave": "Quitter l'espace",
+    "leaveConfirm": "Quitter cet espace ? Vous perdrez l'accès à ses projets.",
+    "left": "Vous avez quitté l'espace",
+    "deleteTitle": "Supprimer l'espace",
+    "deleteBody": "L'espace disparaît pour tous ses membres et ses projets partent à la corbeille (purge définitive après 30 jours). Les factures et l'historique des crédits sont conservés.",
+    "deleteConfirm": "Saisissez « {name} » pour confirmer",
+    "delete": "Supprimer définitivement l'espace",
+    "deleted": "Espace supprimé"
   },
   "profile": {
     "title": "Profil",

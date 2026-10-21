@@ -17,7 +17,7 @@ export function useWorkspace() {
     ...query,
     workspaces,
     workspace,
-    can: (action: Action) => can(action, workspace?.role),
+    can: (action: Action) => can(action, workspace?.role, { viewerDownloads: workspace?.viewerDownloads }),
   };
 }
 

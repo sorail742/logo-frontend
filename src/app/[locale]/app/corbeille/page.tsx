@@ -22,7 +22,7 @@ export default function TrashPage() {
   const { data } = useQuery({
     queryKey: qk.projects(workspace?.id ?? "none", filters),
     queryFn: () => api.projects.list(workspace!.id, filters),
-    enabled: Boolean(workspace),
+    enabled: Boolean(workspace) && can("trash.view"),
   });
   const restore = useMutation({
     mutationFn: api.projects.restore,
@@ -36,7 +36,9 @@ export default function TrashPage() {
   return (
     <>
       <PageHeader title={t("app.trash.title")} description={t("app.trash.description")} />
-      {data?.length === 0 ? (
+      {workspace && !can("trash.view") ? (
+        <EmptyState icon={Trash2} title={t("app.trash.ownerOnly")} />
+      ) : data?.length === 0 ? (
         <EmptyState icon={Trash2} title={t("app.trash.empty")} />
       ) : (
         <ul className="divide-y rounded-xl border">

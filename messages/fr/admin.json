@@ -63,7 +63,23 @@
     "delta": "Crédits (+ ou −)",
     "reason": "Motif (obligatoire)",
     "adjust": "Appliquer l'ajustement",
-    "adjusted": "Crédits ajustés"
+    "adjusted": "Crédits ajustés",
+    "requestCredits": "Proposer un ajustement de crédits",
+    "requestHelp": "Votre proposition sera appliquée après validation d'un administrateur.",
+    "request": "Envoyer la proposition",
+    "requested": "Proposition envoyée pour validation",
+    "requests": "Ajustements proposés par le support",
+    "workspace": "Espace",
+    "requestedBy": "Proposé par",
+    "requestStatus": {
+      "PENDING": "En attente",
+      "APPROVED": "Validé",
+      "REJECTED": "Refusé"
+    },
+    "approve": "Valider",
+    "reject": "Refuser",
+    "approved": "Ajustement validé et appliqué",
+    "rejected": "Proposition refusée"
   },
   "payments": {
     "empty": "Aucun paiement.",

@@ -25,6 +25,7 @@ import { hashSeed, renderArtwork, styleFromPrompt } from "@/lib/render/artwork";
 import type { StudioDesign } from "@/lib/studio/types";
 import type {
   BrandKit,
+  CreditRequest,
   JobEvent,
   JobKind,
   Logo,
@@ -32,6 +33,7 @@ import type {
   Project,
   PublicKit,
   StampData,
+  PlatformRole,
   User,
   Workspace,
   WorkspaceRole,
@@ -60,11 +62,23 @@ function roleIn(workspaceId: string): WorkspaceRole | null {
 
 const RANK: Record<WorkspaceRole, number> = { VIEWER: 1, EDITOR: 2, OWNER: 3 };
 
-/** Équivalent du WorkspaceGuard côté API. */
+/** Équivalent du WorkspaceGuard côté API : un espace supprimé n'existe plus pour personne. */
 function requireRole(workspaceId: string, minimum: WorkspaceRole) {
+  const workspace = db().workspaces.find((w) => w.id === workspaceId);
+  if (!workspace || workspace.deletedAt) throw problem(404, "Espace introuvable", "NOT_FOUND");
   const role = roleIn(workspaceId);
-  if (!role || RANK[role] < RANK[minimum]) throw problem(403, "Action non autorisée pour votre rôle", "FORBIDDEN");
+  if (!role) throw problem(404, "Ressource introuvable", "NOT_FOUND");
+  if (RANK[role] < RANK[minimum]) throw problem(403, "Action non autorisée pour votre rôle", "FORBIDDEN");
   return role;
+}
+
+const PLATFORM_RANK: Record<PlatformRole, number> = { USER: 0, SUPPORT: 1, ADMIN: 2, SUPER_ADMIN: 3 };
+
+/** Équivalent du RolesGuard : rôle plateforme minimal. */
+function requirePlatform(minimum: PlatformRole) {
+  const user = currentUser();
+  if (PLATFORM_RANK[user.role] < PLATFORM_RANK[minimum]) throw problem(403, "Droits insuffisants", "FORBIDDEN");
+  return user;
 }
 
 function projectOr404(pid: string): DbProject {
@@ -145,8 +159,8 @@ function toProject(project: DbProject): Project {
 }
 
 function toWorkspace(workspace: ReturnType<typeof db>["workspaces"][number], role: WorkspaceRole): Workspace {
-  const { renewsAt: _renewsAt, ...rest } = workspace;
-  return { ...rest, role };
+  const { renewsAt: _renewsAt, deletedAt: _deletedAt, ...rest } = workspace;
+  return { ...rest, viewerDownloads: Boolean(workspace.viewerDownloads), role };
 }
 
 function projectName(project: DbProject) {
@@ -465,7 +479,9 @@ export const mockClient: ApiClient = {
       const data = db();
       return data.memberships
         .filter((m) => m.userId === user.id)
-        .map((m) => toWorkspace(data.workspaces.find((w) => w.id === m.workspaceId)!, m.role));
+        .map((m) => ({ workspace: data.workspaces.find((w) => w.id === m.workspaceId), role: m.role }))
+        .filter(({ workspace }) => workspace && !workspace.deletedAt)
+        .map(({ workspace, role }) => toWorkspace(workspace!, role));
     },
     async create({ name }) {
       await wait();
@@ -477,12 +493,27 @@ export const mockClient: ApiClient = {
       save();
       return toWorkspace(workspace, "OWNER");
     },
-    async update(wid, { name }) {
+    async update(wid, { name, viewerDownloads }) {
       requireRole(wid, "OWNER");
       const workspace = db().workspaces.find((w) => w.id === wid)!;
-      workspace.name = name;
+      if (name !== undefined) workspace.name = name;
+      if (viewerDownloads !== undefined) workspace.viewerDownloads = viewerDownloads;
+      audit("workspace.update", "Workspace", wid);
       save();
       return toWorkspace(workspace, "OWNER");
+    },
+    async remove(wid, confirm) {
+      await wait();
+      requireRole(wid, "OWNER");
+      const data = db();
+      const workspace = data.workspaces.find((w) => w.id === wid)!;
+      if (workspace.kind === "PERSONAL") throw problem(400, "L’espace personnel disparaît avec le compte", "VALIDATION");
+      if (confirm.trim() !== workspace.name) throw problem(400, "Saisissez le nom exact de l’espace pour confirmer", "VALIDATION");
+      workspace.deletedAt = now();
+      for (const project of data.projects) if (project.workspaceId === wid && !project.deletedAt) project.deletedAt = now();
+      data.invitations = data.invitations.filter((i) => i.workspaceId !== wid);
+      audit("workspace.delete", "Workspace", wid);
+      save();
     },
     async members(wid) {
       requireRole(wid, "VIEWER");
@@ -514,9 +545,16 @@ export const mockClient: ApiClient = {
       save();
     },
     async removeMember(wid, uid) {
-      requireRole(wid, "OWNER");
+      // Retrait par un propriétaire, ou départ volontaire de n'importe quel membre.
+      const role = requireRole(wid, "VIEWER");
+      const user = currentUser();
+      if (uid !== user.id && role !== "OWNER") throw problem(403, "Seul un propriétaire peut retirer un autre membre", "FORBIDDEN");
       const data = db();
-      data.memberships = data.memberships.filter((m) => !(m.workspaceId === wid && m.userId === uid));
+      const member = data.memberships.find((m) => m.workspaceId === wid && m.userId === uid);
+      if (!member) throw problem(404, "Membre introuvable", "NOT_FOUND");
+      const owners = data.memberships.filter((m) => m.workspaceId === wid && m.role === "OWNER").length;
+      if (member.role === "OWNER" && owners <= 1) throw problem(409, "L’espace doit garder au moins un propriétaire", "CONFLICT");
+      data.memberships = data.memberships.filter((m) => m !== member);
       save();
     },
     async acceptInvitation(token) {
@@ -537,7 +575,8 @@ export const mockClient: ApiClient = {
   projects: {
     async list(wid, filters = {}) {
       await wait(120);
-      requireRole(wid, "VIEWER");
+      // La corbeille relève de qui peut supprimer et restaurer : le propriétaire.
+      requireRole(wid, filters.trash ? "OWNER" : "VIEWER");
       const q = filters.q?.toLowerCase().trim();
       return db()
         .projects.filter((p) => p.workspaceId === wid)
@@ -1242,6 +1281,7 @@ export const mockClient: ApiClient = {
   admin: {
     async stats() {
       await wait();
+      requirePlatform("SUPPORT");
       const data = db();
       const days = Array.from({ length: 14 }, (_, i) => {
         const date = new Date(Date.now() - (13 - i) * 864e5).toISOString().slice(0, 10);
@@ -1260,6 +1300,7 @@ export const mockClient: ApiClient = {
       };
     },
     async users(q) {
+      requirePlatform("SUPPORT");
       const term = q?.toLowerCase() ?? "";
       const data = db();
       return data.users
@@ -1267,8 +1308,14 @@ export const mockClient: ApiClient = {
         .map((u) => ({ id: u.id, fullName: u.fullName, email: u.email, role: u.role, createdAt: u.createdAt, suspendedAt: u.suspendedAt, totpEnabled: u.totpEnabled, workspaces: data.memberships.filter((m) => m.userId === u.id).length }));
     },
     async updateUser(uid, patch) {
+      const actor = requirePlatform("ADMIN");
       const data = db();
       const user = data.users.find((u) => u.id === uid)!;
+      if (uid === actor.id && patch.suspended) throw problem(403, "Action impossible sur votre propre compte", "FORBIDDEN");
+      // Hiérarchie : on n'agit que sur un rang inférieur au sien (le super admin agit sur tous).
+      if (uid !== actor.id && actor.role !== "SUPER_ADMIN" && PLATFORM_RANK[user.role] >= PLATFORM_RANK[actor.role]) {
+        throw problem(403, "Action impossible sur un compte de rang égal ou supérieur", "FORBIDDEN");
+      }
       if (patch.suspended !== undefined) user.suspendedAt = patch.suspended ? now() : null;
       if (patch.reset2fa) user.totpEnabled = false;
       audit(patch.reset2fa ? "user.reset_2fa" : patch.suspended ? "user.suspend" : "user.reactivate", "User", uid);
@@ -1276,16 +1323,63 @@ export const mockClient: ApiClient = {
       return (await mockClient.admin.users()).find((u) => u.id === uid)!;
     },
     async adjustCredits({ workspaceId, delta, reason }) {
+      requirePlatform("ADMIN");
       if (!reason.trim()) throw problem(400, "Le motif est obligatoire", "VALIDATION");
       writeLedger(workspaceId, delta, "ADMIN_ADJUSTMENT", reason);
       audit("credits.adjust", "Workspace", workspaceId);
       save();
     },
+    async requestCredits({ workspaceId, delta, reason }) {
+      const actor = requirePlatform("SUPPORT");
+      const data = db();
+      const workspace = data.workspaces.find((w) => w.id === workspaceId);
+      if (!workspace) throw problem(404, "Espace introuvable", "NOT_FOUND");
+      if (reason.trim().length < 5) throw problem(400, "Le motif est obligatoire", "VALIDATION");
+      const request = {
+        id: id("cr"),
+        workspaceId,
+        workspaceName: workspace.name,
+        delta,
+        reason: reason.trim(),
+        status: "PENDING" as const,
+        requestedBy: actor.fullName,
+        requestedById: actor.id,
+        decidedBy: null,
+        decisionNote: null,
+        decidedAt: null,
+        createdAt: now(),
+      };
+      (data.creditRequests ??= []).unshift(request);
+      audit("credits.request", "Workspace", workspaceId);
+      save();
+      const { requestedById: _requester, ...dto } = request;
+      return dto;
+    },
+    async creditRequests(status) {
+      requirePlatform("SUPPORT");
+      return (db().creditRequests ?? []).filter((r) => !status || r.status === status).map(({ requestedById: _requester, ...dto }): CreditRequest => dto);
+    },
+    async decideCreditRequest(requestId, approve, note) {
+      const actor = requirePlatform("ADMIN");
+      const data = db();
+      const request = (data.creditRequests ?? []).find((r) => r.id === requestId);
+      if (!request) throw problem(404, "Demande introuvable", "NOT_FOUND");
+      if (request.status !== "PENDING") throw problem(409, "Cette demande a déjà été traitée", "CONFLICT");
+      if (request.requestedById === actor.id) throw problem(403, "Une demande est validée par un autre administrateur que son auteur", "FORBIDDEN");
+      if (approve) writeLedger(request.workspaceId, request.delta, "ADMIN_ADJUSTMENT", `Demande du support validée : ${request.reason}`);
+      Object.assign(request, { status: approve ? "APPROVED" : "REJECTED", decidedBy: actor.fullName, decisionNote: note ?? null, decidedAt: now() });
+      audit(approve ? "credits.request.approve" : "credits.request.reject", "Workspace", request.workspaceId);
+      save();
+      const { requestedById: _requester, ...dto } = request;
+      return dto;
+    },
     async payments() {
+      requirePlatform("SUPPORT");
       const data = db();
       return data.payments.map(({ workspaceId, creditsGranted: _c, resolveAt: _r, willFail: _f, ...rest }) => ({ ...rest, workspaceName: data.workspaces.find((w) => w.id === workspaceId)?.name }));
     },
     async refund(paymentId) {
+      requirePlatform("ADMIN");
       const data = db();
       const payment = data.payments.find((p) => p.id === paymentId);
       if (!payment || payment.status !== "SUCCEEDED") throw problem(400, "Seul un paiement réussi peut être remboursé");
@@ -1295,6 +1389,7 @@ export const mockClient: ApiClient = {
       save();
     },
     async moderation() {
+      requirePlatform("SUPPORT");
       const data = db();
       return data.signatures
         .filter((s) => s.status === "PENDING_REVIEW")
@@ -1313,12 +1408,14 @@ export const mockClient: ApiClient = {
         });
     },
     async review(sid, decision) {
+      requirePlatform("SUPPORT");
       const signature = db().signatures.find((s) => s.id === sid);
       if (signature) signature.status = decision === "APPROVE" ? "ACTIVE" : "REJECTED";
       audit(`moderation.${decision.toLowerCase()}`, "Signature", sid);
       save();
     },
     async auditLogs() {
+      requirePlatform("SUPER_ADMIN");
       return db().audit;
     },
   },

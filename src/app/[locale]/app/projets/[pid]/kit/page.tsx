@@ -288,7 +288,7 @@ function KitContent() {
                       )}
                     </div>
                   ) : (
-                    <Button variant="outline" onClick={startZip} disabled={zip.running || !canEdit}>
+                    <Button variant="outline" onClick={startZip} disabled={zip.running || !can("export.download")}>
                       {t("generateZip")}
                     </Button>
                   )}
