@@ -44,6 +44,12 @@ interface StudioState {
   printGuides: boolean;
   /** Vue ajustée automatiquement à la page tant que l'utilisateur ne zoome ni ne la déplace. */
   autoFit: boolean;
+  /** Mode commentaire : un clic sur la page pose une épingle. */
+  commentMode: boolean;
+  /** Fil de commentaires ouvert sur le canevas. */
+  activeThread: string | null;
+  /** Épingle en cours de rédaction (proportions de la page courante). */
+  draftPin: { x: number; y: number } | null;
 
   load(meta: StudioMeta, doc: DesignDoc): void;
   rename(name: string): void;
@@ -76,6 +82,9 @@ interface StudioState {
   zoomAt(zoom: number, anchor?: { x: number; y: number }): void;
   setCrop(id: string | null): void;
   togglePrintGuides(): void;
+  setCommentMode(on: boolean): void;
+  openThread(id: string | null): void;
+  setDraftPin(pin: { x: number; y: number } | null): void;
 }
 
 export const MIN_ZOOM = 0.05;
@@ -129,11 +138,14 @@ export const useStudio = create<StudioState>((set, get) => {
     cropId: null,
     printGuides: true,
     autoFit: true,
+    commentMode: false,
+    activeThread: null,
+    draftPin: null,
 
     load: (meta, doc) => {
       gestureBase = null;
       lastMerge = null;
-      set({ meta, doc, pageIndex: 0, selection: [], editingId: null, cropId: null, past: [], future: [], revision: 0, guides: [] });
+      set({ meta, doc, pageIndex: 0, selection: [], editingId: null, cropId: null, past: [], future: [], revision: 0, guides: [], commentMode: false, activeThread: null, draftPin: null });
       get().fit();
     },
     rename: (name) => set((s) => (s.meta ? { meta: { ...s.meta, name }, revision: s.revision + 1 } : s)),
@@ -174,7 +186,7 @@ export const useStudio = create<StudioState>((set, get) => {
       lastMerge = null;
       set((s) => ({ doc: next, past: [...past, doc], future: future.slice(1), revision: s.revision + 1, pageIndex: Math.min(s.pageIndex, next.pages.length - 1) }));
     },
-    setPage: (index) => set({ pageIndex: index, selection: [], editingId: null, cropId: null }),
+    setPage: (index) => set({ pageIndex: index, selection: [], editingId: null, cropId: null, draftPin: null }),
     select: (ids) => set((s) => ({ selection: ids, editingId: null, cropId: ids.length === 1 && ids[0] === s.cropId ? s.cropId : null })),
     toggle: (id) => set((s) => ({ selection: s.selection.includes(id) ? s.selection.filter((x) => x !== id) : [...s.selection, id] })),
     updateElements: (ids, fn, history = "push") => {
@@ -292,6 +304,9 @@ export const useStudio = create<StudioState>((set, get) => {
     },
     setCrop: (id) => set({ cropId: id, editingId: null, selection: id ? [id] : get().selection }),
     togglePrintGuides: () => set((s) => ({ printGuides: !s.printGuides })),
+    setCommentMode: (on) => set({ commentMode: on, draftPin: null, ...(on && { selection: [], editingId: null, cropId: null }) }),
+    openThread: (id) => set({ activeThread: id, draftPin: null }),
+    setDraftPin: (pin) => set({ draftPin: pin, activeThread: null }),
   };
 });
 

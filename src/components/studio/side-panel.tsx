@@ -2,9 +2,10 @@
 
 import { useState, type ComponentType } from "react";
 import { useTranslations } from "next-intl";
-import { ImageUp, Layers, LayoutTemplate, Palette, PanelLeftClose, Shapes, ShieldCheck, Type } from "lucide-react";
+import { ImageUp, Layers, LayoutTemplate, MessageSquare, Palette, PanelLeftClose, Shapes, ShieldCheck, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CommentsListPanel, useDesignThreads } from "./comments";
 import { BrandPanel } from "./panels/brand-panel";
 import { CheckPanel, useQuality } from "./panels/check-panel";
 import { ElementsPanel } from "./panels/elements-panel";
@@ -15,7 +16,7 @@ import { UploadsPanel } from "./panels/uploads-panel";
 
 // Barre latérale : rail d'onglets et panneau correspondant (repliable).
 
-export type PanelId = "templates" | "elements" | "text" | "brand" | "uploads" | "layers" | "check";
+export type PanelId = "templates" | "elements" | "text" | "brand" | "uploads" | "layers" | "check" | "comments";
 
 const TABS: { id: PanelId; icon: ComponentType<{ className?: string }>; Panel: ComponentType }[] = [
   { id: "templates", icon: LayoutTemplate, Panel: TemplatesPanel },
@@ -25,6 +26,7 @@ const TABS: { id: PanelId; icon: ComponentType<{ className?: string }>; Panel: C
   { id: "uploads", icon: ImageUp, Panel: UploadsPanel },
   { id: "layers", icon: Layers, Panel: LayersPanel },
   { id: "check", icon: ShieldCheck, Panel: CheckPanel },
+  { id: "comments", icon: MessageSquare, Panel: CommentsListPanel },
 ];
 
 function CheckBadge() {
@@ -34,15 +36,23 @@ function CheckBadge() {
   return <span className="absolute top-1 right-2 flex min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white">{errors}</span>;
 }
 
-export function SidePanel({ panel, onPanel }: { panel: PanelId | null; onPanel(panel: PanelId | null): void }) {
+function CommentsBadge() {
+  const { threads } = useDesignThreads();
+  const open = threads.filter((th) => !th.root.resolvedAt).length;
+  if (!open) return null;
+  return <span className="absolute top-1 right-2 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">{open}</span>;
+}
+
+export function SidePanel({ panel, onPanel, only }: { panel: PanelId | null; onPanel(panel: PanelId | null): void; only?: PanelId[] }) {
   const t = useTranslations("studio.panels");
-  const [lastPanel, setLastPanel] = useState<PanelId>("templates");
-  const active = TABS.find((tab) => tab.id === panel);
+  const tabs = only ? TABS.filter((tab) => only.includes(tab.id)) : TABS;
+  const [lastPanel, setLastPanel] = useState<PanelId>(tabs[0]!.id);
+  const active = tabs.find((tab) => tab.id === panel);
 
   return (
     <div className="relative z-20 flex h-full shrink-0 border-r bg-background">
       <nav className="flex w-[68px] flex-col items-stretch gap-0.5 border-r py-2" aria-label={t("label")}>
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const Icon = tab.icon;
           const selected = panel === tab.id;
           return (
@@ -62,6 +72,7 @@ export function SidePanel({ panel, onPanel }: { panel: PanelId | null; onPanel(p
               <Icon className="size-5" />
               {t(tab.id)}
               {tab.id === "check" && <CheckBadge />}
+              {tab.id === "comments" && <CommentsBadge />}
             </button>
           );
         })}

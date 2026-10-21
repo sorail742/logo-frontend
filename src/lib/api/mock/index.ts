@@ -1038,14 +1038,42 @@ export const mockClient: ApiClient = {
   },
 
   comments: {
-    async list(pid) {
-      return db().comments.filter((c) => c.projectId === pid);
+    async list(pid, filter) {
+      return db().comments.filter((c) => c.projectId === pid && (!filter || (c.targetType === filter.targetType && c.targetId === filter.targetId)));
     },
     async create(pid, input) {
       const user = currentUser();
       requireRole(projectOr404(pid).workspaceId, "VIEWER");
-      const comment = { id: id("c"), projectId: pid, authorId: user.id, authorName: user.fullName, mentions: [], ...input, createdAt: now() };
-      db().comments.unshift(comment);
+      const data = db();
+      const parent = input.parentId ? data.comments.find((c) => c.id === input.parentId && c.projectId === pid && !c.parentId) : null;
+      if (input.parentId && !parent) throw problem(400, "Ce fil de discussion n'existe pas sur cet élément");
+      // Une réponse rouvre un fil résolu.
+      if (parent) Object.assign(parent, { resolvedAt: null, resolvedById: null });
+      const comment = {
+        id: id("c"),
+        projectId: pid,
+        authorId: user.id,
+        authorName: user.fullName,
+        mentions: [],
+        targetType: input.targetType,
+        targetId: input.targetId,
+        body: input.body.trim(),
+        anchor: parent ? null : (input.anchor ?? null),
+        parentId: parent?.id ?? null,
+        resolvedAt: null,
+        resolvedById: null,
+        createdAt: now(),
+      };
+      data.comments.unshift(comment);
+      save();
+      return comment;
+    },
+    async resolve(cid, resolved) {
+      const user = currentUser();
+      const comment = db().comments.find((c) => c.id === cid);
+      if (!comment) throw problem(404, "Commentaire introuvable");
+      if (comment.authorId !== user.id) requireRole(projectOr404(comment.projectId).workspaceId, "EDITOR");
+      Object.assign(comment, resolved ? { resolvedAt: now(), resolvedById: user.id } : { resolvedAt: null, resolvedById: null });
       save();
       return comment;
     },
@@ -1055,7 +1083,7 @@ export const mockClient: ApiClient = {
       const comment = data.comments.find((c) => c.id === cid);
       if (!comment) throw problem(404, "Commentaire introuvable");
       if (comment.authorId !== user.id) requireRole(projectOr404(comment.projectId).workspaceId, "OWNER");
-      data.comments = data.comments.filter((c) => c.id !== cid);
+      data.comments = data.comments.filter((c) => c.id !== cid && c.parentId !== cid);
       save();
     },
   },

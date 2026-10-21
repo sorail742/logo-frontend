@@ -490,7 +490,8 @@
     "brand": "Brand",
     "uploads": "Uploads",
     "layers": "Layers",
-    "check": "Check"
+    "check": "Check",
+    "comments": "Comments"
   },
   "pages": {
     "label": "Pages",
@@ -632,7 +633,8 @@
     "saved": "Saved",
     "pending": "Unsaved changes",
     "saving": "Saving…",
-    "saveError": "Save failed"
+    "saveError": "Save failed",
+    "comment": "Comment"
   },
   "shortcuts": {
     "title": "Keyboard shortcuts",
@@ -656,7 +658,8 @@
       "zoom": "Ctrl + wheel",
       "fit": "Ctrl 0 / 1",
       "export": "Ctrl E",
-      "pages": "Page Up / Down"
+      "pages": "Page Up / Down",
+      "comment": "C"
     },
     "actions": {
       "undo": "Undo",
@@ -678,7 +681,8 @@
       "zoom": "Zoom",
       "fit": "Fit to screen / actual size",
       "export": "Export",
-      "pages": "Previous / next page"
+      "pages": "Previous / next page",
+      "comment": "Comment mode"
     }
   },
   "list": {
@@ -729,5 +733,31 @@
     "deleteTitle": "Delete this design?",
     "deleteBody": "“{name}” will be permanently deleted.",
     "cancel": "Cancel"
+  },
+  "comments": {
+    "sendHint": "Ctrl + Enter to send",
+    "cancel": "Cancel",
+    "send": "Send",
+    "thread": "Thread #{number}",
+    "resolve": "Mark as resolved",
+    "reopen": "Reopen",
+    "close": "Close",
+    "delete": "Delete",
+    "deleteThread": "Delete thread",
+    "resolvedNote": "Thread resolved. Replying reopens it.",
+    "reply": "Reply… (@ to mention)",
+    "placeholder": "Your comment… (@ to mention)",
+    "pin": "Comment {number} by {author}",
+    "modeHint": "Click the page to pin a comment · Esc to exit",
+    "unavailable": "Comments are coming in a future version.",
+    "startCommenting": "Comment on the design",
+    "stopCommenting": "Exit comment mode",
+    "help": "Pin your feedback to the exact spot on the page: the team is notified and can reply or resolve the thread.",
+    "open": "Open ({count})",
+    "resolved": "Resolved ({count})",
+    "emptyOpen": "No open threads.",
+    "emptyResolved": "No resolved threads.",
+    "page": "Page {number}",
+    "replies": "{count, plural, one {# reply} other {# replies}}"
   }
 }

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Check, CloudOff, Download, Keyboard, Loader2, Redo2, SlidersHorizontal, Sparkles, Undo2, Wand2 } from "lucide-react";
+import { ArrowLeft, Check, CloudOff, Download, Keyboard, Loader2, MessageSquarePlus, Redo2, SlidersHorizontal, Sparkles, Undo2, Wand2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -26,6 +27,7 @@ import { ensureFonts } from "@/lib/studio/text";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useStudio } from "@/stores/studio";
 import { StudioCanvas } from "./canvas";
+import { useDesignThreads } from "./comments";
 import { StudioContext, type StudioContextValue } from "./context";
 import { ExportDialog } from "./export-dialog";
 import { Inspector } from "./inspector";
@@ -77,6 +79,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
   const doc = useStudio((s) => s.doc);
   const revision = useStudio((s) => s.revision);
   const canUndo = useStudio((s) => s.past.length > 0);
+  const commentMode = useStudio((s) => s.commentMode);
   const canRedo = useStudio((s) => s.future.length > 0);
 
   // Petits écrans : le panneau d'outils s'ouvre en surimpression, fermé au départ.
@@ -269,6 +272,16 @@ export function StudioEditor({ sdid }: { sdid: string }) {
             <Button variant="ghost" size="icon" className="hidden md:inline-flex" onClick={() => setDialog("help")} aria-label={t("editor.shortcuts")} title={`${t("editor.shortcuts")} (?)`}>
               <Keyboard />
             </Button>
+            <Button
+              variant={commentMode ? "default" : "ghost"}
+              size="icon"
+              onClick={() => useStudio.getState().setCommentMode(!commentMode)}
+              aria-pressed={commentMode}
+              aria-label={t("editor.comment")}
+              title={`${t("editor.comment")} (C)`}
+            >
+              <MessageSquarePlus />
+            </Button>
             <div className="mx-1 h-6 w-px bg-border" />
             <Button variant="outline" onClick={() => setDialog("variations")} disabled={!canEdit} className="hidden sm:inline-flex">
               <Sparkles />
@@ -291,7 +304,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
         </header>
 
         <div className="flex min-h-0 flex-1">
-          {canEdit && <SidePanel panel={panel} onPanel={setPanel} />}
+          {canEdit ? <SidePanel panel={panel} onPanel={setPanel} /> : <SidePanel panel={panel} onPanel={setPanel} only={["comments"]} />}
           <main className="flex min-w-0 flex-1 flex-col">
             <StudioCanvas onDropFiles={(files, at, frame) => void importImages(files, at, frame)} onRequestImage={(frameId) => pickImages(frameId)} />
             <PageStrip />
@@ -319,6 +332,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
         <ExportDialog open={dialog === "export"} onOpenChange={(open) => setDialog(open ? "export" : null)} />
         <ResizeDialog open={dialog === "resize"} onOpenChange={(open) => setDialog(open ? "resize" : null)} />
         <VariationsDialog open={dialog === "variations"} onOpenChange={(open) => setDialog(open ? "variations" : null)} />
+        <OpenLinkedThread />
         <ShortcutsDialog open={dialog === "help"} onOpenChange={(open) => setDialog(open ? "help" : null)} />
         {canEdit && (
           <Sheet open={propertiesOpen} onOpenChange={setPropertiesOpen}>
@@ -335,6 +349,25 @@ export function StudioEditor({ sdid }: { sdid: string }) {
       </div>
     </StudioContext.Provider>
   );
+}
+
+/** Lien de notification « ?commentaire=… » : ouvre le fil sur sa page. */
+function OpenLinkedThread() {
+  const params = useSearchParams();
+  const wanted = params.get("commentaire");
+  const { threads } = useDesignThreads();
+  const done = useRef(false);
+  useEffect(() => {
+    if (done.current || !wanted) return;
+    const thread = threads.find((th) => th.root.id === wanted || th.replies.some((r) => r.id === wanted));
+    if (!thread) return;
+    done.current = true;
+    const state = useStudio.getState();
+    const index = state.doc?.pages.findIndex((p) => p.id === thread.root.anchor?.pageId) ?? -1;
+    if (index >= 0) state.setPage(index);
+    state.openThread(thread.root.id);
+  }, [wanted, threads]);
+  return null;
 }
 
 function SaveIndicator({ state, readOnly }: { state: SaveState; readOnly: boolean }) {
@@ -374,6 +407,7 @@ const SHORTCUTS = [
   "zoom",
   "fit",
   "export",
+  "comment",
   "pages",
 ] as const;
 

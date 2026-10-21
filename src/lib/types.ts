@@ -345,7 +345,14 @@ export interface AppNotification {
   createdAt: string;
 }
 
-export type CommentTarget = "PROJECT" | "NAME" | "LOGO" | "SIGNATURE" | "SLOGAN" | "KIT";
+export type CommentTarget = "PROJECT" | "NAME" | "LOGO" | "SIGNATURE" | "SLOGAN" | "KIT" | "DESIGN";
+
+/** Épingle d'un commentaire sur une page du Studio, en proportion de la page (0 à 1). */
+export interface CommentAnchor {
+  pageId: string;
+  x: number;
+  y: number;
+}
 
 export interface Comment {
   id: string;
@@ -356,6 +363,12 @@ export interface Comment {
   body: string;
   /** Membres mentionnés avec @ (COL-02). */
   mentions: { userId: string; fullName: string }[];
+  /** Épingle sur une création du Studio (premier message d'un fil). */
+  anchor?: CommentAnchor | null;
+  /** Fil auquel répond ce message. */
+  parentId?: string | null;
+  resolvedAt?: string | null;
+  resolvedById?: string | null;
   createdAt: string;
 }
 

@@ -30,6 +30,7 @@ import { naturalWidth, relayout } from "@/lib/studio/text";
 import type { DesignElement, DesignPage, ImageElement, TextElement } from "@/lib/studio/types";
 import { useStudio } from "@/stores/studio";
 import { cn } from "@/lib/utils";
+import { CommentLayer } from "./comments";
 
 // Zone de travail du Studio : la page est dessinée en SVG (repère de la page, zoom et
 // déplacement par transformation), les poignées et repères par-dessus, en px écran pour
@@ -166,6 +167,7 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
   const guides = useStudio((s) => s.guides);
   const printGuides = useStudio((s) => s.printGuides);
   const viewport = useStudio((s) => s.viewport);
+  const commentMode = useStudio((s) => s.commentMode);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -298,6 +300,17 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
       return;
     }
     if (event.button !== 0) return;
+
+    // Mode commentaire : un clic sur la page pose une épingle.
+    if (state.commentMode) {
+      // Pas de changement de focus au clic : la zone de saisie de l'épingle le garde.
+      event.preventDefault();
+      gesture.current = null;
+      const inside = p.x >= 0 && p.y >= 0 && p.x <= doc.width && p.y <= doc.height;
+      state.setDraftPin(inside ? { x: p.x / doc.width, y: p.y / doc.height } : null);
+      return;
+    }
+    if (state.activeThread) state.openThread(null);
 
     const handle = (event.target as Element).closest("[data-handle]")?.getAttribute("data-handle");
     const current = state.doc!.pages[state.pageIndex]!;
@@ -509,6 +522,7 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
 
   const onDoubleClick = (event: ReactMouseEvent<SVGSVGElement>) => {
     const state = useStudio.getState();
+    if (state.commentMode) return;
     const p = toPage(event.clientX, event.clientY);
     const hit = hitTest(state.doc!.pages[state.pageIndex]!.elements, p, 4 / state.zoom);
     if (!hit || hit.locked) return;
@@ -547,7 +561,7 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
   const safe = doc.print ? (5 / doc.print.widthMm) * doc.width : 0;
   const editing = editingId ? (page.elements.find((el) => el.id === editingId) as TextElement | undefined) : undefined;
   const crop = cropId ? (page.elements.find((el) => el.id === cropId) as ImageElement | undefined) : undefined;
-  const hover = hoverId && !selection.includes(hoverId) && !busy ? page.elements.find((el) => el.id === hoverId) : undefined;
+  const hover = hoverId && !selection.includes(hoverId) && !busy && !commentMode ? page.elements.find((el) => el.id === hoverId) : undefined;
   const outside = (inset: number) => {
     const x = panX - inset * zoom;
     const y = panY - inset * zoom;
@@ -603,7 +617,7 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
   };
 
   const toolbarAnchor = (() => {
-    if (!selectedEls.length || busy || editing || crop) return null;
+    if (!selectedEls.length || busy || editing || crop || commentMode) return null;
     const box = union(selectedEls.map(aabb))!;
     const top = toScreen({ x: box.x + box.width / 2, y: box.y });
     return { x: top.x, y: Math.max(8, top.y - 52) };
@@ -622,7 +636,7 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
     >
       <svg
         ref={svgRef}
-        className={cn("absolute inset-0 size-full touch-none select-none", active === "pan" && "cursor-grabbing")}
+        className={cn("absolute inset-0 size-full touch-none select-none", active === "pan" && "cursor-grabbing", commentMode && "cursor-crosshair")}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -720,6 +734,8 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
       )}
 
       {editing && <TextEditor el={editing} zoom={zoom} panX={panX} panY={panY} />}
+
+      <CommentLayer />
 
       {crop && (
         <div className="absolute top-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-foreground px-3 py-1.5 text-xs text-background shadow">

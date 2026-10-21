@@ -323,8 +323,9 @@ export const httpClient: ApiClient = {
   },
 
   comments: {
-    list: (pid) => get(`/projects/${pid}/comments`),
+    list: (pid, filter) => get(`/projects/${pid}/comments${filter ? `?targetType=${filter.targetType}&targetId=${filter.targetId}` : ""}`),
     create: (pid, input) => post(`/projects/${pid}/comments`, input),
+    resolve: (cid, resolved) => patch(`/comments/${cid}`, { resolved }),
     remove: (cid) => del(`/comments/${cid}`),
   },
 

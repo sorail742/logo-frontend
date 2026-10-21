@@ -7,6 +7,7 @@ import type {
   BrandKit,
   Brief,
   Comment,
+  CommentAnchor,
   EntityType,
   GenerationJob,
   Invitation,
@@ -273,8 +274,13 @@ export interface ApiClient {
   };
 
   comments: {
-    list(pid: string): Promise<Comment[]>;
-    create(pid: string, input: { targetType: Comment["targetType"]; targetId: string; body: string }): Promise<Comment>;
+    list(pid: string, filter?: { targetType: Comment["targetType"]; targetId: string }): Promise<Comment[]>;
+    create(
+      pid: string,
+      input: { targetType: Comment["targetType"]; targetId: string; body: string; anchor?: CommentAnchor; parentId?: string },
+    ): Promise<Comment>;
+    /** Fil résolu ou rouvert (premier message) : son auteur, un éditeur ou un propriétaire. */
+    resolve(cid: string, resolved: boolean): Promise<Comment>;
     /** Par son auteur ou un propriétaire de l'espace. */
     remove(cid: string): Promise<void>;
   };
