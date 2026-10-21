@@ -143,5 +143,22 @@
     "zipAllButton": "Download the ZIP archive",
     "saveFirst": "Save the version first: the server export uses the last saved version.",
     "serverFailed": "The export failed, please try again."
+  },
+  "scenes": {
+    "title": "Mockups",
+    "body": "Your logo on a storefront, T-shirt, mugs, business cards, phone, vehicle, bags and stand. Download as high-definition JPG, included in the kit archive.",
+    "free": "Your logo in context. Downloads are included in paid plans.",
+    "download": "Download as JPG",
+    "done": "Image downloaded",
+    "items": {
+      "storefront": "Storefront",
+      "tshirt": "T-shirt",
+      "mugs": "Mugs",
+      "cards": "Business cards",
+      "phone": "Phone profile",
+      "van": "Delivery van",
+      "bags": "Bags",
+      "stand": "Stand and roll-up banner"
+    }
   }
 }

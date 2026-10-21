@@ -143,5 +143,22 @@
     "zipAllButton": "Télécharger l'archive ZIP",
     "saveFirst": "Enregistrez d'abord la version : l'export serveur porte sur la dernière version enregistrée.",
     "serverFailed": "L'export n'a pas abouti, réessayez."
+  },
+  "scenes": {
+    "title": "Mises en situation",
+    "body": "Votre logo en devanture, sur t-shirt, mugs, cartes de visite, téléphone, véhicule, sacs et stand. Téléchargeables en JPG haute définition, inclus dans l'archive du kit.",
+    "free": "Votre logo en situation. Le téléchargement est inclus dans les offres payantes.",
+    "download": "Télécharger en JPG",
+    "done": "Image téléchargée",
+    "items": {
+      "storefront": "Devanture de boutique",
+      "tshirt": "T-shirt",
+      "mugs": "Mugs",
+      "cards": "Cartes de visite",
+      "phone": "Profil sur téléphone",
+      "van": "Véhicule de livraison",
+      "bags": "Sacs",
+      "stand": "Stand et kakemono"
+    }
   }
 }

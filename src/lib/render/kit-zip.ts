@@ -3,7 +3,7 @@
 import type { BrandKit, EmailSignatureData, HandwrittenData, Signature, StampData } from "@/lib/types";
 import { renderEmailSignature, type EmailTemplateId, type SignatureBrand } from "./email-signature";
 import { svgToPngBlob, svgToStandalone } from "./export";
-import { iconPackEntries, licencesText, socialSvg, SOCIAL_KIT } from "./logo-assets";
+import { brandAssets, iconPackEntries, licencesText, MOCKUP_SCENES, MOCKUP_WIDTH, mockupSceneSvg, socialSvg, SOCIAL_KIT } from "./logo-assets";
 import { LOGO_VARIANTS, renderLogoSvg } from "./logo";
 import { renderHandwrittenSvg, renderStampSvg } from "./stamp";
 import { buildZip, type ZipEntry } from "./zip";
@@ -27,10 +27,17 @@ export async function buildKitZip(kit: BrandKit, options: { projectName: string;
 
   entries.push(...(await iconPackEntries(spec)));
 
+  const assets = brandAssets(spec);
   for (const format of SOCIAL_KIT) {
     entries.push({
       path: `reseaux-sociaux/${format.file}.png`,
-      data: await svgToPngBlob(socialSvg(spec, format), { size: Math.max(format.width, format.height) }),
+      data: await svgToPngBlob(socialSvg(spec, format, assets), { size: Math.max(format.width, format.height) }),
+    });
+  }
+  for (const scene of MOCKUP_SCENES) {
+    entries.push({
+      path: `mises-en-situation/${scene.file}.jpg`,
+      data: await svgToPngBlob(mockupSceneSvg(spec, scene, assets), { size: MOCKUP_WIDTH, type: "image/jpeg", quality: 0.88 }),
     });
   }
 

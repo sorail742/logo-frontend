@@ -5,23 +5,27 @@ import { APP_ICON_SIZES, buildIco, svgToPngBlob } from "./export";
 import { getFont } from "./fonts";
 import { getIcon } from "./icons";
 import { renderLogoSvg } from "./logo";
-import { socialKitSvg, type SocialFormat, type SocialKitInput } from "./social-kit";
+import type { BrandAssets } from "./compose";
+import { mockupSvg, type MockupScene } from "./mockups";
+import { socialKitSvg, type SocialFormat } from "./social-kit";
 import type { ZipEntry } from "./zip";
 
+export { MOCKUP_SCENES, MOCKUP_WIDTH, MOCKUP_HEIGHT, type MockupScene } from "./mockups";
 export { SOCIAL_KIT, type SocialFormat } from "./social-kit";
 
 function iconSpec(spec: LogoSpec): LogoSpec {
   return { ...spec, iconFrame: spec.iconFrame === "none" ? "circle" : spec.iconFrame };
 }
 
-/** Kit réseaux sociaux (LOGO-23) : profils et bannières aux couleurs de la marque, logo en zone sûre. */
-export function socialSvg(spec: LogoSpec, format: SocialFormat) {
+/** Logo et symbole dans toutes leurs couleurs, pour les visuels composés. */
+export function brandAssets(spec: LogoSpec): BrandAssets {
   const layout = spec.layout === "vertical" ? "horizontal" : undefined;
   const icon = iconSpec(spec);
-  const input: SocialKitInput = {
+  return {
     logo: {
       color: renderLogoSvg(spec, { variant: "color", withBackground: false, layout }),
       white: renderLogoSvg(spec, { variant: "white", withBackground: false, layout }),
+      black: renderLogoSvg(spec, { variant: "black", layout }),
     },
     mark: {
       color: renderLogoSvg(icon, { layout: "icon" }),
@@ -31,7 +35,16 @@ export function socialSvg(spec: LogoSpec, format: SocialFormat) {
     colors: spec.colors,
     name: spec.text,
   };
-  return socialKitSvg(input, format);
+}
+
+/** Kit réseaux sociaux (LOGO-23) : profils et bannières aux couleurs de la marque, logo en zone sûre. */
+export function socialSvg(spec: LogoSpec, format: SocialFormat, assets = brandAssets(spec)) {
+  return socialKitSvg(assets, format);
+}
+
+/** Mise en situation du logo (devanture, t-shirt, mugs…), 1600 × 1200. */
+export function mockupSceneSvg(spec: LogoSpec, scene: MockupScene, assets = brandAssets(spec)) {
+  return mockupSvg(assets, scene);
 }
 
 /** Pack d'icônes d'application (LOGO-22). */
