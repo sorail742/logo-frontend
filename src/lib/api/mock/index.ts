@@ -1225,6 +1225,18 @@ export const mockClient: ApiClient = {
     async fonts() {
       return FONTS.map((f) => ({ id: f.id, name: f.name, category: f.category, license: "OFL" as const, isActive: true }));
     },
+    // Démonstration locale : visuels génératifs, pas de banque de photos (elle demande une clé côté serveur).
+    async capabilities() {
+      await wait(80);
+      return { aiImages: { provider: "demo", demo: true }, photos: false };
+    },
+    async photos() {
+      await wait(120);
+      throw problem(501, "Banque de photos non activée", "NOT_AVAILABLE");
+    },
+    async photoFile() {
+      throw problem(501, "Banque de photos non activée", "NOT_AVAILABLE");
+    },
   },
 
   admin: {

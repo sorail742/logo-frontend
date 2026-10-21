@@ -492,7 +492,8 @@
     "layers": "Calques",
     "check": "Vérifier",
     "comments": "Avis",
-    "generate": "Générer"
+    "generate": "Générer",
+    "photos": "Photos"
   },
   "pages": {
     "label": "Pages",
@@ -800,5 +801,41 @@
     "demo": "Fournisseur de démonstration : visuels génératifs à vos couleurs, la description guide surtout le style. Un fournisseur d'images IA pourra être branché sans changer l'éditeur.",
     "background": "En fond",
     "addedBackground": "Image posée en fond de page"
+  },
+  "photos": {
+    "search": "Rechercher des photos",
+    "placeholder": "Marché, équipe, café…",
+    "suggestions": [
+      "Marché",
+      "Équipe",
+      "Bureau",
+      "Nature",
+      "Ville",
+      "Café",
+      "Mode",
+      "École"
+    ],
+    "orientation": "Orientation",
+    "orientations": {
+      "all": "Toutes",
+      "landscape": "Paysage",
+      "portrait": "Portrait",
+      "square": "Carrée"
+    },
+    "curated": "Sélection du moment",
+    "results": "Résultats pour « {q} »",
+    "empty": "Aucune photo pour cette recherche. Essayez un autre mot, en français ou en anglais.",
+    "more": "Voir plus",
+    "by": "Photo de {author}",
+    "add": "Ajouter la photo de {author}",
+    "added": "Photo ajoutée",
+    "clear": "Effacer la recherche",
+    "provided": "Photos fournies par Pexels",
+    "license": "Libres d'usage, y compris commercial ; citer le photographe est apprécié.",
+    "unavailableTitle": "Banque de photos non activée",
+    "unavailable": "L'administrateur de la plateforme peut l'activer avec une clé Pexels gratuite. En attendant, importez vos propres photos ou générez un visuel aux couleurs de la marque.",
+    "importOwn": "Importer mes photos",
+    "error": "La banque de photos ne répond pas. Réessayez dans un instant.",
+    "retry": "Réessayer"
   }
 }

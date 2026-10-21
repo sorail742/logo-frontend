@@ -430,6 +430,34 @@ export interface AuditEntry {
   createdAt: string;
 }
 
+/** Photo de la banque (Pexels) : vignette servie par Pexels, fichier relayé par l'API. */
+export interface LibraryPhoto {
+  id: string;
+  width: number;
+  height: number;
+  alt: string;
+  color: string | null;
+  thumbUrl: string;
+  author: string;
+  authorUrl: string;
+  pageUrl: string;
+  source: "pexels";
+}
+
+export interface PhotoPage {
+  photos: LibraryPhoto[];
+  page: number;
+  hasMore: boolean;
+}
+
+export type PhotoOrientation = "landscape" | "portrait" | "square";
+
+/** Ressources activées sur la plateforme. */
+export interface LibraryCapabilities {
+  aiImages: { provider: string; demo: boolean };
+  photos: boolean;
+}
+
 export interface LibraryFont {
   id: string;
   name: string;

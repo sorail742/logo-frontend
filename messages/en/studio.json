@@ -492,7 +492,8 @@
     "layers": "Layers",
     "check": "Check",
     "comments": "Comments",
-    "generate": "Generate"
+    "generate": "Generate",
+    "photos": "Photos"
   },
   "pages": {
     "label": "Pages",
@@ -800,5 +801,41 @@
     "demo": "Demo provider: generative visuals in your colors; the description mostly guides the style. An AI image provider can be plugged in without changing the editor.",
     "background": "Background",
     "addedBackground": "Image set as page background"
+  },
+  "photos": {
+    "search": "Search photos",
+    "placeholder": "Market, team, coffee…",
+    "suggestions": [
+      "Market",
+      "Team",
+      "Office",
+      "Nature",
+      "City",
+      "Coffee",
+      "Fashion",
+      "School"
+    ],
+    "orientation": "Orientation",
+    "orientations": {
+      "all": "All",
+      "landscape": "Landscape",
+      "portrait": "Portrait",
+      "square": "Square"
+    },
+    "curated": "Curated picks",
+    "results": "Results for “{q}”",
+    "empty": "No photos for this search. Try another word.",
+    "more": "Show more",
+    "by": "Photo by {author}",
+    "add": "Add the photo by {author}",
+    "added": "Photo added",
+    "clear": "Clear search",
+    "provided": "Photos provided by Pexels",
+    "license": "Free to use, including commercially; crediting the photographer is appreciated.",
+    "unavailableTitle": "Photo library not enabled",
+    "unavailable": "The platform administrator can enable it with a free Pexels key. Meanwhile, upload your own photos or generate an on-brand visual.",
+    "importOwn": "Upload my photos",
+    "error": "The photo library isn't responding. Try again in a moment.",
+    "retry": "Try again"
   }
 }

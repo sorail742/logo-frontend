@@ -14,7 +14,10 @@ import type {
   Invoice,
   JobEvent,
   LedgerEntry,
+  LibraryCapabilities,
   LibraryFont,
+  PhotoOrientation,
+  PhotoPage,
   Logo,
   LogoEngine,
   LogoSpec,
@@ -316,6 +319,10 @@ export interface ApiClient {
 
   library: {
     fonts(): Promise<LibraryFont[]>;
+    capabilities(): Promise<LibraryCapabilities>;
+    /** Banque de photos : 501 NOT_AVAILABLE si elle n'est pas activée. */
+    photos(input: { q?: string; page?: number; orientation?: PhotoOrientation; locale?: string }): Promise<PhotoPage>;
+    photoFile(id: string): Promise<Blob>;
   };
 
   admin: {

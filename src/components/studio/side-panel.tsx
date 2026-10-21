@@ -2,7 +2,7 @@
 
 import { useState, type ComponentType } from "react";
 import { useTranslations } from "next-intl";
-import { ImageUp, Layers, LayoutTemplate, MessageSquare, Palette, PanelLeftClose, Shapes, ShieldCheck, Type, WandSparkles } from "lucide-react";
+import { ImageUp, Images, Layers, LayoutTemplate, MessageSquare, Palette, PanelLeftClose, Shapes, ShieldCheck, Type, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CommentsListPanel, useDesignThreads } from "./comments";
@@ -11,18 +11,20 @@ import { CheckPanel, useQuality } from "./panels/check-panel";
 import { ElementsPanel } from "./panels/elements-panel";
 import { GeneratePanel } from "./panels/generate-panel";
 import { LayersPanel } from "./panels/layers-panel";
+import { PhotosPanel } from "./panels/photos-panel";
 import { TemplatesPanel } from "./panels/templates-panel";
 import { TextPanel } from "./panels/text-panel";
 import { UploadsPanel } from "./panels/uploads-panel";
 
 // Barre latérale : rail d'onglets et panneau correspondant (repliable).
 
-export type PanelId = "templates" | "elements" | "generate" | "text" | "brand" | "uploads" | "layers" | "check" | "comments";
+export type PanelId = "templates" | "elements" | "generate" | "photos" | "text" | "brand" | "uploads" | "layers" | "check" | "comments";
 
 const TABS: { id: PanelId; icon: ComponentType<{ className?: string }>; Panel: ComponentType }[] = [
   { id: "templates", icon: LayoutTemplate, Panel: TemplatesPanel },
   { id: "elements", icon: Shapes, Panel: ElementsPanel },
   { id: "generate", icon: WandSparkles, Panel: GeneratePanel },
+  { id: "photos", icon: Images, Panel: PhotosPanel },
   { id: "text", icon: Type, Panel: TextPanel },
   { id: "brand", icon: Palette, Panel: BrandPanel },
   { id: "uploads", icon: ImageUp, Panel: UploadsPanel },
@@ -53,7 +55,7 @@ export function SidePanel({ panel, onPanel, only }: { panel: PanelId | null; onP
 
   return (
     <div className="relative z-20 flex h-full shrink-0 border-r bg-background">
-      <nav className="flex w-[68px] flex-col items-stretch gap-0.5 border-r py-2" aria-label={t("label")}>
+      <nav className="flex w-[68px] flex-col items-stretch gap-0.5 overflow-y-auto border-r py-2 [scrollbar-width:none]" aria-label={t("label")}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const selected = panel === tab.id;
