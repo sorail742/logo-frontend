@@ -491,7 +491,8 @@
     "uploads": "Uploads",
     "layers": "Layers",
     "check": "Check",
-    "comments": "Comments"
+    "comments": "Comments",
+    "generate": "Generate"
   },
   "pages": {
     "label": "Pages",
@@ -759,5 +760,45 @@
     "emptyResolved": "No resolved threads.",
     "page": "Page {number}",
     "replies": "{count, plural, one {# reply} other {# replies}}"
+  },
+  "generate": {
+    "describe": "Describe the image",
+    "placeholder": "E.g. festive background announcing our music festival",
+    "ideas": [
+      "Soft background for a quote",
+      "Wax pattern for an event poster",
+      "Waves for a water campaign",
+      "Confetti for a birthday",
+      "Bogolan pattern for a craft brand"
+    ],
+    "style": "Style",
+    "styles": {
+      "auto": "Auto",
+      "abstract": "Abstract",
+      "gradient": "Gradient",
+      "geometric": "Geometric",
+      "waves": "Waves",
+      "wax": "Wax pattern",
+      "bogolan": "Bogolan",
+      "confetti": "Confetti"
+    },
+    "format": "Format",
+    "aspects": {
+      "square": "Square",
+      "portrait": "Portrait",
+      "landscape": "Landscape"
+    },
+    "brandColors": "Brand colors",
+    "generate": "Generate 4 images",
+    "working": "Generating…",
+    "results": "Proposals",
+    "add": "Add",
+    "adding": "Adding…",
+    "added": "Image added",
+    "result": "Proposal {index}",
+    "failed": "Generation failed.",
+    "demo": "Demo provider: generative visuals in your colors; the description mostly guides the style. An AI image provider can be plugged in without changing the editor.",
+    "background": "Background",
+    "addedBackground": "Image set as page background"
   }
 }

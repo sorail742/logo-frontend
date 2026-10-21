@@ -140,7 +140,8 @@
     "SLOGANS_BATCH": "Lot de 10 slogans",
     "EMAIL_SIGNATURE": "Signature e-mail",
     "HANDWRITTEN_OR_STAMP": "Paraphe ou cachet",
-    "BRAND_GUIDE_PDF": "Charte graphique PDF"
+    "BRAND_GUIDE_PDF": "Charte graphique PDF",
+    "STUDIO_IMAGES": "Lot de 4 images (Studio)"
   },
   "nameTool": {
     "title": "Générateur de noms gratuit",

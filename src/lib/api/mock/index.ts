@@ -21,6 +21,7 @@ import { paletteFromColors } from "@/lib/render/color";
 import { FONTS } from "@/lib/render/fonts";
 import { findOfficialTerms, renderStampSvg } from "@/lib/render/stamp";
 import { DEFAULT_SPEC, LOGO_VARIANTS, renderLogoSvg } from "@/lib/render/logo";
+import { hashSeed, renderArtwork, styleFromPrompt } from "@/lib/render/artwork";
 import type { StudioDesign } from "@/lib/studio/types";
 import type {
   BrandKit,
@@ -848,6 +849,30 @@ export const mockClient: ApiClient = {
     async requestExport() {
       throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Le PDF d'impression est produit par le serveur de la plateforme.");
     },
+    async generateImages(pid, input, key) {
+      await wait();
+      const project = projectOr404(pid);
+      requireRole(project.workspaceId, "EDITOR");
+      const job = startJob(project, "STUDIO_IMAGES", CREDIT_COSTS.STUDIO_IMAGES, { ...input }, key);
+      // Même générateur que le fournisseur de démonstration de l'API.
+      const ratio = input.aspect === "square" ? 1 : input.aspect === "portrait" ? 4 / 5 : 16 / 9;
+      const width = ratio >= 1 ? 1200 : Math.round(1200 * ratio);
+      const height = ratio >= 1 ? Math.round(1200 / ratio) : 1200;
+      const palette = input.palette?.length ? input.palette : ["#0f6b5c", "#f2b705", "#14281d", "#f6fbf4"];
+      const style = input.style === "auto" ? (styleFromPrompt(input.prompt) ?? "abstract") : input.style;
+      const seed = hashSeed(`${input.prompt}|${input.style}|${palette.join()}`);
+      job.result = {
+        demo: true,
+        provider: "mock",
+        images: Array.from({ length: 4 }, (_, i) => ({
+          url: `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(renderArtwork({ style, palette, width, height, seed: seed + i * 7919 }))))}`,
+          width,
+          height,
+        })),
+      };
+      save();
+      return { jobId: job.id };
+    },
   },
 
   slogans: {
@@ -1215,7 +1240,7 @@ export const mockClient: ApiClient = {
       return {
         signups: data.users.length + 312,
         activeUsers: 187,
-        generations: { NAMES: count("NAMES") + 820, LOGOS: count("LOGOS") + 410, LOGO_EXPORT: count("LOGO_EXPORT") + 95, SLOGANS: count("SLOGANS") + 260, SIGNATURE: 140, BRAND_GUIDE: 52, EXPORT_ZIP: 61 },
+        generations: { NAMES: count("NAMES") + 820, LOGOS: count("LOGOS") + 410, LOGO_EXPORT: count("LOGO_EXPORT") + 95, SLOGANS: count("SLOGANS") + 260, SIGNATURE: 140, BRAND_GUIDE: 52, EXPORT_ZIP: 61, DESIGN_EXPORT: count("DESIGN_EXPORT") + 38, STUDIO_IMAGES: count("STUDIO_IMAGES") + 74 },
         conversionRate: 0.064,
         revenueGnf: days.reduce((s, d) => s + d.revenueGnf, 0),
         aiCostUsd: days.reduce((s, d) => s + d.aiCostUsd, 0),

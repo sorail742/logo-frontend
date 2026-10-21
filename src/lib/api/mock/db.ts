@@ -334,4 +334,6 @@ export const JOB_DURATIONS: Record<JobKind, number> = {
   SIGNATURE: 1200,
   BRAND_GUIDE: 2500,
   EXPORT_ZIP: 2500,
+  DESIGN_EXPORT: 1500,
+  STUDIO_IMAGES: 1800,
 };

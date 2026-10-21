@@ -41,7 +41,9 @@
     "APPAREL_PROPOSALS": "Tenues : propositions",
     "APPAREL_MOCKUP": "Tenues : maquettes",
     "PRODUCTION_PACK": "Tenues : packs atelier",
-    "NUMBER_FONT": "Tenues : polices de numéros"
+    "NUMBER_FONT": "Tenues : polices de numéros",
+    "DESIGN_EXPORT": "Exports du Studio",
+    "STUDIO_IMAGES": "Images du Studio"
   },
   "users": {
     "search": "Rechercher par nom ou e-mail",

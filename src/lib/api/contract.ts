@@ -40,6 +40,7 @@ import type {
   Workspace,
   WorkspaceRole,
 } from "@/lib/types";
+import type { ArtworkStyle } from "@/lib/render/artwork";
 import type { DesignDoc, StudioDesign, StudioDesignSummary } from "@/lib/studio/types";
 
 // Contrat du client API : une méthode par route REST (§13). Deux implémentations :
@@ -111,6 +112,15 @@ export interface StudioDesignInput {
   doc: DesignDoc;
   /** Aperçu PNG (data URL, ~400 px). */
   thumbnail?: string;
+}
+
+export interface StudioImagesInput {
+  /** Description libre (donnée, jamais instruction pour le fournisseur). */
+  prompt: string;
+  style: "auto" | ArtworkStyle;
+  aspect: "square" | "portrait" | "landscape";
+  /** Couleurs #rrggbb ; par défaut, celles du logo favori. */
+  palette?: string[];
 }
 
 export interface StudioExportInput {
@@ -265,6 +275,8 @@ export interface ApiClient {
     remove(sdid: string): Promise<void>;
     /** PDF d'impression ou SVG vectorisé produit par le worker (lien dans le résultat de la tâche). */
     requestExport(sdid: string, input: StudioExportInput, idempotencyKey: string): Promise<JobAccepted>;
+    /** Lot de 4 images (1 crédit), produit par le worker ; URL dans le résultat de la tâche. */
+    generateImages(pid: string, input: StudioImagesInput, idempotencyKey: string): Promise<JobAccepted>;
   };
 
   jobs: {

@@ -41,7 +41,9 @@
     "APPAREL_PROPOSALS": "Apparel: proposals",
     "APPAREL_MOCKUP": "Apparel: mockups",
     "PRODUCTION_PACK": "Apparel: print packs",
-    "NUMBER_FONT": "Apparel: number fonts"
+    "NUMBER_FONT": "Apparel: number fonts",
+    "DESIGN_EXPORT": "Studio exports",
+    "STUDIO_IMAGES": "Studio images"
   },
   "users": {
     "search": "Search by name or email",

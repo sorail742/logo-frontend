@@ -2,13 +2,14 @@
 
 import { useState, type ComponentType } from "react";
 import { useTranslations } from "next-intl";
-import { ImageUp, Layers, LayoutTemplate, MessageSquare, Palette, PanelLeftClose, Shapes, ShieldCheck, Type } from "lucide-react";
+import { ImageUp, Layers, LayoutTemplate, MessageSquare, Palette, PanelLeftClose, Shapes, ShieldCheck, Type, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CommentsListPanel, useDesignThreads } from "./comments";
 import { BrandPanel } from "./panels/brand-panel";
 import { CheckPanel, useQuality } from "./panels/check-panel";
 import { ElementsPanel } from "./panels/elements-panel";
+import { GeneratePanel } from "./panels/generate-panel";
 import { LayersPanel } from "./panels/layers-panel";
 import { TemplatesPanel } from "./panels/templates-panel";
 import { TextPanel } from "./panels/text-panel";
@@ -16,11 +17,12 @@ import { UploadsPanel } from "./panels/uploads-panel";
 
 // Barre latérale : rail d'onglets et panneau correspondant (repliable).
 
-export type PanelId = "templates" | "elements" | "text" | "brand" | "uploads" | "layers" | "check" | "comments";
+export type PanelId = "templates" | "elements" | "generate" | "text" | "brand" | "uploads" | "layers" | "check" | "comments";
 
 const TABS: { id: PanelId; icon: ComponentType<{ className?: string }>; Panel: ComponentType }[] = [
   { id: "templates", icon: LayoutTemplate, Panel: TemplatesPanel },
   { id: "elements", icon: Shapes, Panel: ElementsPanel },
+  { id: "generate", icon: WandSparkles, Panel: GeneratePanel },
   { id: "text", icon: Type, Panel: TextPanel },
   { id: "brand", icon: Palette, Panel: BrandPanel },
   { id: "uploads", icon: ImageUp, Panel: UploadsPanel },

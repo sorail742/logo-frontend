@@ -312,6 +312,7 @@ export const httpClient: ApiClient = {
     duplicate: (sdid) => post(`/studio-designs/${sdid}/duplicate`),
     remove: (sdid) => del(`/studio-designs/${sdid}`),
     requestExport: (sdid, input, key) => post(`/studio-designs/${sdid}/export`, input, key),
+    generateImages: (pid, input, key) => post(`/projects/${pid}/studio-images`, input, key),
   },
 
   jobs: {

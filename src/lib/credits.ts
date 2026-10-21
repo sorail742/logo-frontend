@@ -8,6 +8,7 @@ export const CREDIT_COSTS = {
   EMAIL_SIGNATURE: 0,
   HANDWRITTEN_OR_STAMP: 1,
   BRAND_GUIDE_PDF: 3,
+  STUDIO_IMAGES: 1,
 } as const;
 
 export type CreditAction = keyof typeof CREDIT_COSTS;
@@ -18,5 +19,6 @@ export const LOW_CREDITS_THRESHOLD = 5;
 export const FREE_QUOTAS = {
   nameBatchesPerDay: 3,
   logoBatchesPerDay: 1,
+  studioImageBatchesPerDay: 2,
   publicTriesPerDay: 3,
 } as const;

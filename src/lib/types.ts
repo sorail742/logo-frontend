@@ -14,7 +14,7 @@ export type LogoEngine = "SVG_COMPOSER" | "IMAGE_VECTORIZE" | "UPLOAD";
 export type LogoStyle = "MINIMAL" | "MODERN" | "CLASSIC" | "INSTITUTIONAL" | "PLAYFUL" | "AFRICAN";
 export type SignatureKind = "EMAIL" | "HANDWRITTEN" | "STAMP";
 export type SignatureStatus = "ACTIVE" | "PENDING_REVIEW" | "REJECTED";
-export type JobKind = "NAMES" | "LOGOS" | "LOGO_EXPORT" | "SLOGANS" | "SIGNATURE" | "BRAND_GUIDE" | "EXPORT_ZIP";
+export type JobKind = "NAMES" | "LOGOS" | "LOGO_EXPORT" | "SLOGANS" | "SIGNATURE" | "BRAND_GUIDE" | "EXPORT_ZIP" | "DESIGN_EXPORT" | "STUDIO_IMAGES";
 export type JobStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELED";
 export type LedgerReason = "PURCHASE" | "SUBSCRIPTION_GRANT" | "GENERATION" | "REFUND" | "ADMIN_ADJUSTMENT" | "PROMO";
 export type PaymentProvider = "ORANGE_MONEY" | "MOBILE_MONEY_AGGREGATOR" | "CARD";
@@ -284,7 +284,18 @@ export interface GenerationJob {
   costCredits: number;
   error: string | null;
   /** Sortie d'une tâche d'export : lien signé de l'archive tant qu'elle est conservée. */
-  result?: { downloadUrl?: string; fileName?: string; files?: number; restricted?: boolean; expired?: boolean } | null;
+  result?: {
+    downloadUrl?: string;
+    fileName?: string;
+    files?: number;
+    restricted?: boolean;
+    expired?: boolean;
+    /** Images du Studio (URL signées, ou data URL en mode simulé). */
+    images?: { url: string; width: number; height: number }[];
+    provider?: string;
+    /** Fournisseur de démonstration : visuels génératifs. */
+    demo?: boolean;
+  } | null;
   createdAt: string;
   finishedAt: string | null;
 }

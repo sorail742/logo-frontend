@@ -491,7 +491,8 @@
     "uploads": "Importer",
     "layers": "Calques",
     "check": "Vérifier",
-    "comments": "Avis"
+    "comments": "Avis",
+    "generate": "Générer"
   },
   "pages": {
     "label": "Pages",
@@ -759,5 +760,45 @@
     "emptyResolved": "Aucun fil résolu.",
     "page": "Page {number}",
     "replies": "{count, plural, one {# réponse} other {# réponses}}"
+  },
+  "generate": {
+    "describe": "Décrivez l'image",
+    "placeholder": "Ex. : fond festif pour l'annonce de notre festival de musique",
+    "ideas": [
+      "Fond doux pour une citation",
+      "Motif wax pour une affiche d'événement",
+      "Vagues pour une campagne sur l'eau",
+      "Confettis pour un anniversaire",
+      "Motif bogolan pour une marque artisanale"
+    ],
+    "style": "Style",
+    "styles": {
+      "auto": "Auto",
+      "abstract": "Abstrait",
+      "gradient": "Dégradé",
+      "geometric": "Géométrique",
+      "waves": "Vagues",
+      "wax": "Motif wax",
+      "bogolan": "Bogolan",
+      "confetti": "Confettis"
+    },
+    "format": "Format",
+    "aspects": {
+      "square": "Carré",
+      "portrait": "Portrait",
+      "landscape": "Paysage"
+    },
+    "brandColors": "Couleurs de la marque",
+    "generate": "Générer 4 images",
+    "working": "Génération…",
+    "results": "Propositions",
+    "add": "Ajouter",
+    "adding": "Ajout…",
+    "added": "Image ajoutée",
+    "result": "Proposition {index}",
+    "failed": "La génération n'a pas abouti.",
+    "demo": "Fournisseur de démonstration : visuels génératifs à vos couleurs, la description guide surtout le style. Un fournisseur d'images IA pourra être branché sans changer l'éditeur.",
+    "background": "En fond",
+    "addedBackground": "Image posée en fond de page"
   }
 }
