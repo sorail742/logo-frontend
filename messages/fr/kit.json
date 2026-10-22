@@ -54,7 +54,13 @@
     "notFound": "Ce lien de partage n'existe pas ou a expiré.",
     "madeWith": "Kit créé avec Marka",
     "passwordInvalid": "Mot de passe incorrect.",
-    "downloads": "Téléchargements"
+    "downloads": "Téléchargements",
+    "share": "Partager cette page",
+    "shareBody": "Scannez le code avec un téléphone ou copiez le lien pour l'envoyer à un imprimeur, un partenaire ou un membre de l'équipe.",
+    "qr": "QR code de cette page",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié",
+    "copyFailed": "Copie impossible : copiez l'adresse de la page."
   },
   "charter": {
     "title": "Charte graphique",
@@ -89,5 +95,29 @@
   "regenerate": "Mettre à jour",
   "zipFree": "Offre gratuite : l'archive contient les logos en PNG 512 px filigranés. Formats vectoriels, charte et supports d'impression sont inclus dans les offres payantes.",
   "guideFree": "La charte est incluse dans le Pack Identité et les offres payantes.",
-  "jobQueued": "Préparation lancée : vous serez prévenu quand le fichier sera prêt."
+  "jobQueued": "Préparation lancée : vous serez prévenu quand le fichier sera prêt.",
+  "social": {
+    "title": "Kit réseaux sociaux",
+    "body": "Photos de profil et bannières aux dimensions de chaque réseau, logo placé dans la zone visible sur mobile comme sur ordinateur. Inclus dans l'archive ZIP.",
+    "free": "Aperçu de vos visuels réseaux sociaux. Le téléchargement est inclus dans les offres payantes.",
+    "download": "Télécharger en PNG",
+    "done": "Visuel téléchargé"
+  },
+  "texts": {
+    "title": "Textes de marque",
+    "body": "Bios et descriptions prêtes à publier, à la bonne longueur pour chaque plateforme, composées à partir de votre brief et de votre kit. Ajustez-les puis copiez-les.",
+    "copy": "Copier",
+    "copied": "Texte copié",
+    "copyFailed": "Copie impossible : sélectionnez le texte manuellement.",
+    "count": "{count} / {limit}",
+    "items": {
+      "instagram": "Bio Instagram et TikTok",
+      "whatsapp": "Description WhatsApp Business",
+      "facebook": "Facebook : description courte",
+      "linkedin": "LinkedIn : slogan de la page",
+      "google": "Fiche Google Business",
+      "pitch": "Présentation en 30 secondes",
+      "hashtags": "Mots-dièses"
+    }
+  }
 }

@@ -52,6 +52,23 @@ export interface Workspace {
   creditBalance: number;
   role: WorkspaceRole; // rôle de l'utilisateur courant dans l'espace
   planCode: PlanCode;
+  /** Les lecteurs peuvent télécharger fichiers et exports (réglage du propriétaire). */
+  viewerDownloads?: boolean;
+}
+
+/** Ajustement de crédits proposé par le support, validé ou refusé par un admin. */
+export interface CreditRequest {
+  id: string;
+  workspaceId: string;
+  workspaceName: string;
+  delta: number;
+  reason: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  requestedBy: string | null;
+  decidedBy: string | null;
+  decisionNote: string | null;
+  decidedAt: string | null;
+  createdAt: string;
 }
 
 export interface Member {

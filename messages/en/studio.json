@@ -488,6 +488,7 @@
     "elements": "Elements",
     "text": "Text",
     "brand": "Brand",
+    "qr": "QR code",
     "uploads": "Uploads",
     "layers": "Layers",
     "check": "Check",
@@ -837,5 +838,40 @@
     "importOwn": "Upload my photos",
     "error": "The photo library isn't responding. Try again in a moment.",
     "retry": "Try again"
+  },
+  "qr": {
+    "help": "A code to scan on your posters, menus, cards and flyers: it opens your website, a WhatsApp chat, saves your contact or joins the Wi-Fi.",
+    "kinds": {
+      "link": "Link",
+      "whatsapp": "WhatsApp",
+      "contact": "Contact",
+      "wifi": "Wi-Fi"
+    },
+    "fields": {
+      "url": "Website address",
+      "phone": "Number (international format)",
+      "message": "Prefilled message",
+      "name": "Full name",
+      "organization": "Organisation",
+      "email": "Email",
+      "website": "Website",
+      "ssid": "Network name",
+      "password": "Password"
+    },
+    "placeholders": {
+      "url": "www.example.com",
+      "phone": "+224 620 00 00 00",
+      "message": "Hello, I would like to order…",
+      "name": "Aminata Diallo",
+      "organization": "",
+      "email": "contact@example.com",
+      "website": "www.example.com",
+      "ssid": "Shop-Guests",
+      "password": "Leave empty for an open network"
+    },
+    "brandColor": "In brand colours",
+    "preview": "QR code preview",
+    "add": "Add to design",
+    "printTip": "When printing, keep it at least 2 cm wide and test the scan with your phone before printing."
   }
 }

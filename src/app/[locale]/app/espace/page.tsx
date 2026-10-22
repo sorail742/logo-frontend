@@ -4,12 +4,13 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormatter, useTranslations } from "next-intl";
-import { Link2, Mail, UserMinus } from "lucide-react";
+import { DoorOpen, Link2, Mail, Trash2, UserMinus } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Field } from "@/components/common/field";
 import { NativeSelect } from "@/components/common/native-select";
 import { PageHeader } from "@/components/common/page-header";
@@ -33,8 +34,10 @@ function WorkspaceContent() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<WorkspaceRole>("EDITOR");
   const [newName, setNewName] = useState("");
+  const [confirmName, setConfirmName] = useState("");
   const wid = workspace?.id ?? "none";
   const isOwner = can("members.manage");
+  const isOrganization = workspace?.kind === "ORGANIZATION";
 
   const { data: members = [] } = useQuery({ queryKey: qk.members(wid), queryFn: () => api.workspaces.members(wid), enabled: Boolean(workspace) });
   const { data: invitations = [] } = useQuery({ queryKey: qk.invitations(wid), queryFn: () => api.workspaces.invitations(wid), enabled: Boolean(workspace) && isOwner });
@@ -73,6 +76,40 @@ function WorkspaceContent() {
     },
     onError,
   });
+  // Réglages du propriétaire, départ volontaire et suppression (§3).
+  const afterLeaving = () => {
+    queryClient.invalidateQueries({ queryKey: qk.workspaces });
+    const personal = queryClient.getQueryData<{ id: string; kind: string }[]>(qk.workspaces)?.find((w) => w.kind === "PERSONAL");
+    if (personal) setWorkspace(personal.id);
+  };
+  const settings = useMutation({
+    mutationFn: (viewerDownloads: boolean) => api.workspaces.update(wid, { viewerDownloads }),
+    onSuccess: () => {
+      toast.success(t("settingsSaved"));
+      queryClient.invalidateQueries({ queryKey: qk.workspaces });
+    },
+    onError,
+  });
+  const leave = useMutation({
+    mutationFn: () => api.workspaces.removeMember(wid, user!.id),
+    onSuccess: () => {
+      toast.success(t("left"));
+      afterLeaving();
+    },
+    onError,
+  });
+  const destroy = useMutation({
+    mutationFn: () => api.workspaces.remove(wid, confirmName),
+    onSuccess: () => {
+      toast.success(t("deleted"));
+      setConfirmName("");
+      afterLeaving();
+    },
+    onError,
+  });
+  const owners = members.filter((m) => m.role === "OWNER").length;
+  const soleOwner = isOwner && owners <= 1;
+
   const create = useMutation({
     mutationFn: () => api.workspaces.create({ name: newName.trim() }),
     onSuccess: (created) => {
@@ -183,6 +220,22 @@ function WorkspaceContent() {
               </CardContent>
             </Card>
           )}
+          {isOwner && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">{t("settings")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <label className="flex items-start justify-between gap-3 text-sm">
+                  <span>
+                    <span className="font-medium">{t("viewerDownloads")}</span>
+                    <span className="block text-xs text-muted-foreground">{t("viewerDownloadsBody")}</span>
+                  </span>
+                  <Switch checked={Boolean(workspace?.viewerDownloads)} onCheckedChange={(checked) => settings.mutate(checked)} disabled={settings.isPending} />
+                </label>
+              </CardContent>
+            </Card>
+          )}
           <Card className={searchParams.get("nouveau") ? "ring-2 ring-primary" : undefined}>
             <CardHeader>
               <CardTitle className="text-sm">{t("createTitle")}</CardTitle>
@@ -203,6 +256,45 @@ function WorkspaceContent() {
               </form>
             </CardContent>
           </Card>
+          {isOrganization && (!isOwner || !soleOwner) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">{t("leaveTitle")}</CardTitle>
+                <CardDescription className="text-xs">{t("leaveBody")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" onClick={() => window.confirm(t("leaveConfirm")) && leave.mutate()} disabled={leave.isPending}>
+                  <DoorOpen />
+                  {t("leave")}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+          {isOrganization && can("workspace.delete") && (
+            <Card className="border-destructive/40">
+              <CardHeader>
+                <CardTitle className="text-sm text-destructive">{t("deleteTitle")}</CardTitle>
+                <CardDescription className="text-xs">{t("deleteBody")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form
+                  className="grid gap-3"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    if (confirmName.trim() === workspace?.name) destroy.mutate();
+                  }}
+                >
+                  <Field label={t("deleteConfirm", { name: workspace?.name ?? "" })} htmlFor="delete-confirm">
+                    <Input id="delete-confirm" value={confirmName} onChange={(e) => setConfirmName(e.target.value)} autoComplete="off" />
+                  </Field>
+                  <Button type="submit" variant="destructive" disabled={confirmName.trim() !== workspace?.name || destroy.isPending}>
+                    <Trash2 />
+                    {t("delete")}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </>

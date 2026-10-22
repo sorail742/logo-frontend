@@ -11,7 +11,7 @@ import { useApiErrorToast } from "@/hooks/use-api-error";
 import { waitForJob } from "@/hooks/use-job";
 import { api, type ApiClient } from "@/lib/api";
 import { downloadBlob, downloadSvg, svgToPngBlob } from "@/lib/render/export";
-import { iconPackEntries, socialSvg, SOCIAL_FORMATS, type SocialFormatId } from "@/lib/render/logo-assets";
+import { iconPackEntries, socialSvg, SOCIAL_KIT, type SocialFormat } from "@/lib/render/logo-assets";
 import { renderLogoSvg } from "@/lib/render/logo";
 import { buildZip } from "@/lib/render/zip";
 import { slugify } from "@/lib/format";
@@ -46,6 +46,7 @@ function openDownload(url: string) {
  */
 export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: LogoSpec; logoId: string; isFree: boolean; saved?: boolean }) {
   const t = useTranslations("logos.export");
+  const tSocial = useTranslations("logos.export.socialFormats");
   const onError = useApiErrorToast();
   const [busy, setBusy] = useState<string | null>(null);
   const base = slugify(spec.text) || "logo";
@@ -69,11 +70,10 @@ export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: Logo
       downloadBlob(blob, `${base}-${size}.${type === "image/jpeg" ? "jpg" : "png"}`);
     });
 
-  const social = (id: SocialFormatId) =>
-    run(`social-${id}`, async () => {
-      const format = SOCIAL_FORMATS.find((f) => f.id === id)!;
-      const blob = await svgToPngBlob(socialSvg(spec, id), { size: Math.max(format.width, format.height) });
-      downloadBlob(blob, `${base}-${id}.png`);
+  const social = (format: SocialFormat) =>
+    run(`social-${format.id}`, async () => {
+      const blob = await svgToPngBlob(socialSvg(spec, format), { size: Math.max(format.width, format.height) });
+      downloadBlob(blob, `${base}-${format.file}.png`);
     });
 
   const server = (id: string, input: ExportInput) =>
@@ -149,9 +149,9 @@ export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: Logo
                 <Share2 className="size-4" aria-hidden="true" />
                 {t("social")}
               </p>
-              <ExportItem busy={busy} id="social-profile" label={t("socialProfile")} onClick={() => social("profile")} />
-              <ExportItem busy={busy} id="social-facebook" label={t("socialFacebook")} onClick={() => social("facebook")} />
-              <ExportItem busy={busy} id="social-linkedin" label={t("socialLinkedin")} onClick={() => social("linkedin")} />
+              {SOCIAL_KIT.map((format) => (
+                <ExportItem key={format.id} busy={busy} id={`social-${format.id}`} label={tSocial(format.id, { size: `${format.width} × ${format.height}` })} onClick={() => social(format)} />
+              ))}
             </div>
           </>
         )}

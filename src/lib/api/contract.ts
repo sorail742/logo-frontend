@@ -7,6 +7,7 @@ import type {
   BrandKit,
   Brief,
   Comment,
+  CreditRequest,
   CommentAnchor,
   EntityType,
   GenerationJob,
@@ -190,7 +191,9 @@ export interface ApiClient {
   workspaces: {
     list(): Promise<Workspace[]>;
     create(input: { name: string }): Promise<Workspace>;
-    update(wid: string, patch: { name: string }): Promise<Workspace>;
+    update(wid: string, patch: { name?: string; viewerDownloads?: boolean }): Promise<Workspace>;
+    /** Espace d'organisation : confirmé par son nom exact (propriétaire, ou admin). */
+    remove(wid: string, confirm: string): Promise<void>;
     members(wid: string): Promise<Member[]>;
     invitations(wid: string): Promise<Invitation[]>;
     invite(wid: string, input: { email?: string; role: WorkspaceRole; asLink?: boolean }): Promise<Invitation>;
@@ -330,6 +333,10 @@ export interface ApiClient {
     users(q?: string): Promise<AdminUser[]>;
     updateUser(uid: string, patch: { suspended?: boolean; reset2fa?: boolean }): Promise<AdminUser>;
     adjustCredits(input: { workspaceId: string; delta: number; reason: string }): Promise<void>;
+    /** Support : propose un ajustement, appliqué après validation d'un admin. */
+    requestCredits(input: { workspaceId: string; delta: number; reason: string }): Promise<CreditRequest>;
+    creditRequests(status?: CreditRequest["status"]): Promise<CreditRequest[]>;
+    decideCreditRequest(id: string, approve: boolean, note?: string): Promise<CreditRequest>;
     payments(): Promise<Payment[]>;
     refund(paymentId: string): Promise<void>;
     moderation(): Promise<ModerationItem[]>;

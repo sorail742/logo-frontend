@@ -62,9 +62,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const t = useTranslations("app.nav");
   const pathname = usePathname();
   const user = useSessionStore((s) => s.user);
+  const { can } = useWorkspace();
   const links = [
     { href: "/app", label: t("projects"), icon: FolderKanban, match: (p: string) => p === "/app" || p.startsWith("/app/projets") },
-    { href: "/app/corbeille", label: t("trash"), icon: Trash2 },
+    ...(can("trash.view") ? [{ href: "/app/corbeille", label: t("trash"), icon: Trash2 }] : []),
     { href: "/app/espace", label: t("workspace"), icon: Users },
     { href: "/app/facturation", label: t("billing"), icon: CreditCard },
     { href: "/app/notifications", label: t("notifications"), icon: Bell },

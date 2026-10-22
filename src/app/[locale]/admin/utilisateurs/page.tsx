@@ -12,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Field } from "@/components/common/field";
 import { useApiErrorToast } from "@/hooks/use-api-error";
 import { api } from "@/lib/api";
-import { canAccessAdmin } from "@/lib/permissions";
+import { canAdmin, outranks } from "@/lib/permissions";
+import type { CreditRequest } from "@/lib/types";
 import { qk } from "@/lib/query-keys";
 import { useSessionStore } from "@/stores/session";
 
@@ -28,7 +29,11 @@ export default function AdminUsersPage() {
   const [workspaceId, setWorkspaceId] = useState("");
   const [delta, setDelta] = useState("");
   const [reason, setReason] = useState("");
-  const isAdmin = canAccessAdmin(role, "library"); // Admin ou Super admin
+  const actorId = useSessionStore((s) => s.user?.id);
+  // Suspension et 2FA : admin, sur un rang inférieur. Crédits : l'admin applique, le support propose.
+  const canManage = canAdmin("users.manage", role);
+  const canAdjust = canAdmin("credits.adjust", role);
+  const canRequest = canAdmin("credits.request", role);
 
   const { data: users = [] } = useQuery({ queryKey: qk.admin("users", query), queryFn: () => api.admin.users(query) });
   const update = useMutation({
@@ -39,12 +44,26 @@ export default function AdminUsersPage() {
     },
     onError,
   });
+  const { data: requests = [] } = useQuery({ queryKey: qk.admin("credit-requests"), queryFn: () => api.admin.creditRequests(), enabled: canRequest });
+  const refreshRequests = () => queryClient.invalidateQueries({ queryKey: qk.admin("credit-requests") });
   const adjust = useMutation({
-    mutationFn: () => api.admin.adjustCredits({ workspaceId: workspaceId.trim(), delta: Number(delta), reason }),
+    mutationFn: () => {
+      const input = { workspaceId: workspaceId.trim(), delta: Number(delta), reason };
+      return canAdjust ? api.admin.adjustCredits(input) : api.admin.requestCredits(input).then(() => undefined);
+    },
     onSuccess: () => {
-      toast.success(t("adjusted"));
+      toast.success(canAdjust ? t("adjusted") : t("requested"));
       setDelta("");
       setReason("");
+      refreshRequests();
+    },
+    onError,
+  });
+  const decide = useMutation({
+    mutationFn: ({ id, approve }: { id: string; approve: boolean }) => api.admin.decideCreditRequest(id, approve),
+    onSuccess: (request: CreditRequest) => {
+      toast.success(request.status === "APPROVED" ? t("approved") : t("rejected"));
+      refreshRequests();
     },
     onError,
   });
@@ -78,13 +97,17 @@ export default function AdminUsersPage() {
                   <Badge variant={user.suspendedAt ? "destructive" : "secondary"}>{user.suspendedAt ? t("suspended") : t("active")}</Badge>
                 </TableCell>
                 <TableCell className="text-right whitespace-nowrap">
-                  <Button variant="ghost" size="sm" onClick={() => update.mutate({ uid: user.id, patch: { suspended: !user.suspendedAt } })}>
-                    {user.suspendedAt ? t("reactivate") : t("suspend")}
-                  </Button>
-                  {user.totpEnabled && (
-                    <Button variant="ghost" size="sm" onClick={() => update.mutate({ uid: user.id, patch: { reset2fa: true } })}>
-                      {t("reset2fa")}
-                    </Button>
+                  {canManage && user.id !== actorId && outranks(role, user.role) && (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={() => update.mutate({ uid: user.id, patch: { suspended: !user.suspendedAt } })}>
+                        {user.suspendedAt ? t("reactivate") : t("suspend")}
+                      </Button>
+                      {user.totpEnabled && (
+                        <Button variant="ghost" size="sm" onClick={() => update.mutate({ uid: user.id, patch: { reset2fa: true } })}>
+                          {t("reset2fa")}
+                        </Button>
+                      )}
+                    </>
                   )}
                 </TableCell>
               </TableRow>
@@ -93,10 +116,11 @@ export default function AdminUsersPage() {
         </Table>
       </div>
 
-      {isAdmin && (
+      {canRequest && (
         <Card className="max-w-lg">
           <CardHeader>
-            <CardTitle className="text-sm">{t("credits")}</CardTitle>
+            <CardTitle className="text-sm">{canAdjust ? t("credits") : t("requestCredits")}</CardTitle>
+            {!canAdjust && <p className="text-xs text-muted-foreground">{t("requestHelp")}</p>}
           </CardHeader>
           <CardContent>
             <form
@@ -115,10 +139,63 @@ export default function AdminUsersPage() {
               <Field label={t("reason")} htmlFor="adj-reason">
                 <Input id="adj-reason" value={reason} onChange={(e) => setReason(e.target.value)} />
               </Field>
-              <Button type="submit" disabled={!workspaceId.trim() || !Number(delta) || !reason.trim() || adjust.isPending}>
-                {t("adjust")}
+              <Button type="submit" disabled={!workspaceId.trim() || !Number(delta) || reason.trim().length < 5 || adjust.isPending}>
+                {canAdjust ? t("adjust") : t("request")}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {canRequest && requests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">{t("requests")}</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("workspace")}</TableHead>
+                  <TableHead>{t("delta")}</TableHead>
+                  <TableHead>{t("reason")}</TableHead>
+                  <TableHead>{t("requestedBy")}</TableHead>
+                  <TableHead>{t("status")}</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {requests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell className="font-medium">{request.workspaceName}</TableCell>
+                    <TableCell className="tabular-nums">{request.delta > 0 ? `+${request.delta}` : request.delta}</TableCell>
+                    <TableCell className="max-w-64 truncate" title={request.reason}>
+                      {request.reason}
+                    </TableCell>
+                    <TableCell>
+                      {request.requestedBy}
+                      <span className="block text-xs text-muted-foreground">{format.dateTime(new Date(request.createdAt), { dateStyle: "medium" })}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={request.status === "PENDING" ? "outline" : request.status === "APPROVED" ? "secondary" : "destructive"}>{t(`requestStatus.${request.status}`)}</Badge>
+                      {request.decidedBy && <span className="block text-xs text-muted-foreground">{request.decidedBy}</span>}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      {canAdjust && request.status === "PENDING" && (
+                        <>
+                          <Button size="sm" onClick={() => decide.mutate({ id: request.id, approve: true })} disabled={decide.isPending}>
+                            {t("approve")}
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => decide.mutate({ id: request.id, approve: false })} disabled={decide.isPending}>
+                            {t("reject")}
+                          </Button>
+                        </>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}

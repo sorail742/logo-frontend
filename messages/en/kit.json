@@ -54,7 +54,13 @@
     "notFound": "This share link does not exist or has expired.",
     "madeWith": "Kit made with Marka",
     "passwordInvalid": "Wrong password.",
-    "downloads": "Downloads"
+    "downloads": "Downloads",
+    "share": "Share this page",
+    "shareBody": "Scan the code with a phone or copy the link to send it to a printer, a partner or a team member.",
+    "qr": "QR code for this page",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "copyFailed": "Copy failed: copy the page address."
   },
   "charter": {
     "title": "Brand guide",
@@ -89,5 +95,29 @@
   "regenerate": "Update",
   "zipFree": "Free plan: the archive contains watermarked 512 px PNG logos. Vector formats, the brand guide and print templates come with paid plans.",
   "guideFree": "The brand guide is included in the Identity Pack and paid plans.",
-  "jobQueued": "Started: you will be notified when the file is ready."
+  "jobQueued": "Started: you will be notified when the file is ready.",
+  "social": {
+    "title": "Social media kit",
+    "body": "Profile pictures and banners sized for each network, with the logo inside the area visible on both mobile and desktop. Included in the ZIP archive.",
+    "free": "Preview of your social media visuals. Downloads are included in paid plans.",
+    "download": "Download as PNG",
+    "done": "Visual downloaded"
+  },
+  "texts": {
+    "title": "Brand copy",
+    "body": "Bios and descriptions ready to publish, at the right length for each platform, written from your brief and kit. Adjust them, then copy.",
+    "copy": "Copy",
+    "copied": "Text copied",
+    "copyFailed": "Copy failed: select the text manually.",
+    "count": "{count} / {limit}",
+    "items": {
+      "instagram": "Instagram and TikTok bio",
+      "whatsapp": "WhatsApp Business description",
+      "facebook": "Facebook short description",
+      "linkedin": "LinkedIn page tagline",
+      "google": "Google Business profile",
+      "pitch": "30-second pitch",
+      "hashtags": "Hashtags"
+    }
+  }
 }

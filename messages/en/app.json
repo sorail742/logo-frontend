@@ -61,7 +61,8 @@
     "description": "Deleted projects can be restored for 30 days.",
     "empty": "The trash is empty.",
     "deletedOn": "Deleted {date}",
-    "restored": "Project restored"
+    "restored": "Project restored",
+    "ownerOnly": "The trash is reserved for the workspace owner."
   },
   "steps": {
     "overview": "Overview",
@@ -178,7 +179,21 @@
     "createBody": "One workspace per organisation or per client (agencies). Credits and subscription belong to each workspace.",
     "create": "Create workspace",
     "created": "Workspace created",
-    "linkInvitation": "Invitation link"
+    "linkInvitation": "Invitation link",
+    "settings": "Workspace settings",
+    "settingsSaved": "Setting saved",
+    "viewerDownloads": "Viewers can download",
+    "viewerDownloadsBody": "They can then get the kit files and export logos and designs, without editing anything or using credits.",
+    "leaveTitle": "Leave workspace",
+    "leaveBody": "You will lose access to its projects. An owner can invite you again.",
+    "leave": "Leave workspace",
+    "leaveConfirm": "Leave this workspace? You will lose access to its projects.",
+    "left": "You left the workspace",
+    "deleteTitle": "Delete workspace",
+    "deleteBody": "The workspace disappears for all its members and its projects move to the trash (permanently purged after 30 days). Invoices and credit history are kept.",
+    "deleteConfirm": "Type “{name}” to confirm",
+    "delete": "Delete workspace permanently",
+    "deleted": "Workspace deleted"
   },
   "profile": {
     "title": "Profile",
