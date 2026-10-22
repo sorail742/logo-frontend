@@ -96,5 +96,22 @@
     "free": "Preview of your social media visuals. Downloads are included in paid plans.",
     "download": "Download as PNG",
     "done": "Visual downloaded"
+  },
+  "texts": {
+    "title": "Brand copy",
+    "body": "Bios and descriptions ready to publish, at the right length for each platform, written from your brief and kit. Adjust them, then copy.",
+    "copy": "Copy",
+    "copied": "Text copied",
+    "copyFailed": "Copy failed: select the text manually.",
+    "count": "{count} / {limit}",
+    "items": {
+      "instagram": "Instagram and TikTok bio",
+      "whatsapp": "WhatsApp Business description",
+      "facebook": "Facebook short description",
+      "linkedin": "LinkedIn page tagline",
+      "google": "Google Business profile",
+      "pitch": "30-second pitch",
+      "hashtags": "Hashtags"
+    }
   }
 }

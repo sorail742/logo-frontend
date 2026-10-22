@@ -96,5 +96,22 @@
     "free": "Aperçu de vos visuels réseaux sociaux. Le téléchargement est inclus dans les offres payantes.",
     "download": "Télécharger en PNG",
     "done": "Visuel téléchargé"
+  },
+  "texts": {
+    "title": "Textes de marque",
+    "body": "Bios et descriptions prêtes à publier, à la bonne longueur pour chaque plateforme, composées à partir de votre brief et de votre kit. Ajustez-les puis copiez-les.",
+    "copy": "Copier",
+    "copied": "Texte copié",
+    "copyFailed": "Copie impossible : sélectionnez le texte manuellement.",
+    "count": "{count} / {limit}",
+    "items": {
+      "instagram": "Bio Instagram et TikTok",
+      "whatsapp": "Description WhatsApp Business",
+      "facebook": "Facebook : description courte",
+      "linkedin": "LinkedIn : slogan de la page",
+      "google": "Fiche Google Business",
+      "pitch": "Présentation en 30 secondes",
+      "hashtags": "Mots-dièses"
+    }
   }
 }
