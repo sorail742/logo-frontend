@@ -54,7 +54,13 @@
     "notFound": "This share link does not exist or has expired.",
     "madeWith": "Kit made with Marka",
     "passwordInvalid": "Wrong password.",
-    "downloads": "Downloads"
+    "downloads": "Downloads",
+    "share": "Share this page",
+    "shareBody": "Scan the code with a phone or copy the link to send it to a printer, a partner or a team member.",
+    "qr": "QR code for this page",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "copyFailed": "Copy failed: copy the page address."
   },
   "charter": {
     "title": "Brand guide",

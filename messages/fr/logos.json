@@ -159,7 +159,8 @@
       "van": "Véhicule de livraison",
       "bags": "Sacs",
       "stand": "Stand et kakemono"
-    }
+    },
+    "showcase": "La marque en situation : devanture, t-shirt, mugs, cartes de visite, téléphone, véhicule, sacs et stand."
   },
   "animation": {
     "title": "Logo animé",

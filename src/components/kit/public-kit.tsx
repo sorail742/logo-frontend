@@ -1,17 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { FileArchive, FileText, Lock, SearchX } from "lucide-react";
+import { Check, Copy, FileArchive, FileText, Lock, SearchX } from "lucide-react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/empty-state";
+import { SvgView } from "@/components/brand/svg-view";
+import { MockupGallery } from "@/components/logos/mockup-gallery";
 import { ApiError, api } from "@/lib/api";
+import { qrSvg } from "@/lib/render/qr";
 import { KitView } from "./kit-view";
 import { ComingSoon } from "@/components/common/coming-soon";
+
+/** Partage de la page : QR code à scanner et lien à copier. */
+function SharePage({ color }: { color: string }) {
+  const t = useTranslations("kit.public");
+  // Rendu après le chargement du kit, côté navigateur seulement : l'adresse est connue.
+  const [url] = useState(() => (typeof window === "undefined" ? null : window.location.href));
+  const [copied, setCopied] = useState(false);
+  const svg = useMemo(() => (url ? qrSvg(url, { color, margin: 2 }) : null), [url, color]);
+  if (!url || !svg) return null;
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success(t("linkCopied"));
+    } catch {
+      toast.error(t("copyFailed"));
+    }
+  };
+  return (
+    <section className="flex flex-wrap items-center gap-4 rounded-xl border p-4" aria-label={t("share")}>
+      <SvgView svg={svg} label={t("qr")} className="size-28 shrink-0 rounded-lg bg-white" />
+      <div className="grid min-w-0 flex-1 gap-2">
+        <p className="text-sm font-medium">{t("share")}</p>
+        <p className="text-xs text-muted-foreground">{t("shareBody")}</p>
+        <Button variant="outline" size="sm" className="w-fit" onClick={copy}>
+          {copied ? <Check /> : <Copy />}
+          {t("copyLink")}
+        </Button>
+      </div>
+    </section>
+  );
+}
 
 export function PublicKit() {
   return api.isAvailable("brandKits") ? <PublicKitContent /> : <ComingSoon feature="brandKits" />;
@@ -67,6 +103,7 @@ function PublicKitContent() {
     <div className="grid gap-6">
       <h1 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">{t("title")}</h1>
       <KitView kit={data} projectName={data.projectName} acronym={data.acronym} meaning={data.meaning} />
+      {data.logoSpec && !data.logoSvg && <MockupGallery spec={data.logoSpec} canDownload={false} isFree={false} showcase />}
       {(data.guidePdfUrl || data.zipUrl) && (
         <section className="flex flex-wrap items-center gap-2" aria-label={t("downloads")}>
           {data.guidePdfUrl && /^https?:\/\//.test(data.guidePdfUrl) && (
@@ -83,6 +120,7 @@ function PublicKitContent() {
           )}
         </section>
       )}
+      <SharePage color={data.logoSpec?.colors.text ?? "#111111"} />
       <p className="text-center text-xs text-muted-foreground">{t("madeWith")}</p>
     </div>
   );

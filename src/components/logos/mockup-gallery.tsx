@@ -7,8 +7,11 @@ import { slugify } from "@/lib/format";
 import { brandAssets, MOCKUP_HEIGHT, MOCKUP_SCENES, MOCKUP_WIDTH, mockupSceneSvg } from "@/lib/render/logo-assets";
 import type { LogoSpec } from "@/lib/types";
 
-/** Mises en situation : devanture, t-shirt, mugs, cartes, téléphone, véhicule, sacs, stand. */
-export function MockupGallery({ spec, canDownload, isFree }: { spec: LogoSpec; canDownload: boolean; isFree: boolean }) {
+/**
+ * Mises en situation : devanture, t-shirt, mugs, cartes, téléphone, véhicule, sacs, stand.
+ * `showcase` : page publique du kit, en consultation seule.
+ */
+export function MockupGallery({ spec, canDownload, isFree, showcase = false }: { spec: LogoSpec; canDownload: boolean; isFree: boolean; showcase?: boolean }) {
   const t = useTranslations("logos.scenes");
   const base = slugify(spec.text) || "logo";
   const assets = useMemo(() => brandAssets(spec), [spec]);
@@ -24,7 +27,7 @@ export function MockupGallery({ spec, canDownload, isFree }: { spec: LogoSpec; c
   return (
     <VisualGallery
       title={t("title")}
-      description={isFree ? t("free") : t("body")}
+      description={showcase ? t("showcase") : isFree ? t("free") : t("body")}
       visuals={visuals}
       source={spec}
       canDownload={canDownload && !isFree}
