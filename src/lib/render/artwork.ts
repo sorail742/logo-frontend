@@ -29,8 +29,9 @@ const n = (v: number) => Math.round(v * 10) / 10;
 /** Graine stable d'un texte (FNV-1a). */
 export function hashSeed(text: string) {
   let h = 0x811c9dc5;
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i);
+  // Par point de code : identique à l'ancien calcul pour tout caractère hors emoji.
+  for (const char of text) {
+    h ^= char.codePointAt(0) ?? 0;
     h = Math.imul(h, 0x01000193);
   }
   return h >>> 0;
