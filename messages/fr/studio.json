@@ -488,6 +488,7 @@
     "elements": "Éléments",
     "text": "Texte",
     "brand": "Marque",
+    "qr": "QR code",
     "uploads": "Importer",
     "layers": "Calques",
     "check": "Vérifier",
@@ -837,5 +838,40 @@
     "importOwn": "Importer mes photos",
     "error": "La banque de photos ne répond pas. Réessayez dans un instant.",
     "retry": "Réessayer"
+  },
+  "qr": {
+    "help": "Un code à scanner sur vos affiches, menus, cartes et flyers : il ouvre votre site, une conversation WhatsApp, enregistre votre contact ou connecte au Wi-Fi.",
+    "kinds": {
+      "link": "Lien",
+      "whatsapp": "WhatsApp",
+      "contact": "Contact",
+      "wifi": "Wi-Fi"
+    },
+    "fields": {
+      "url": "Adresse du site",
+      "phone": "Numéro (format international)",
+      "message": "Message prérempli",
+      "name": "Nom complet",
+      "organization": "Organisation",
+      "email": "E-mail",
+      "website": "Site web",
+      "ssid": "Nom du réseau",
+      "password": "Mot de passe"
+    },
+    "placeholders": {
+      "url": "www.exemple.gn",
+      "phone": "+224 620 00 00 00",
+      "message": "Bonjour, je souhaite commander…",
+      "name": "Aminata Diallo",
+      "organization": "",
+      "email": "contact@exemple.gn",
+      "website": "www.exemple.gn",
+      "ssid": "Boutique-Invités",
+      "password": "Laisser vide si réseau ouvert"
+    },
+    "brandColor": "Aux couleurs de la marque",
+    "preview": "Aperçu du QR code",
+    "add": "Ajouter à la création",
+    "printTip": "À l'impression, gardez au moins 2 cm de côté et testez le scan avec votre téléphone avant de tirer."
   }
 }
