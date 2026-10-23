@@ -23,8 +23,16 @@ import { findOfficialTerms, renderStampSvg } from "@/lib/render/stamp";
 import { DEFAULT_SPEC, LOGO_VARIANTS, renderLogoSvg } from "@/lib/render/logo";
 import { hashSeed, renderArtwork, styleFromPrompt } from "@/lib/render/artwork";
 import type { StudioDesign } from "@/lib/studio/types";
+import { slugify } from "@/lib/format";
+import { brandAssets } from "@/lib/render/logo-assets";
+import { resolveFontVars } from "@/lib/render/export";
+import { defaultSiteContent, siteMediaIds } from "@/lib/render/site";
+import { brandStyle, sectorIcons, socialsOf } from "@/lib/site-defaults";
 import type {
   BrandKit,
+  EmailSignatureData,
+  Website,
+  WebsiteMessage,
   CreditRequest,
   JobEvent,
   JobKind,
@@ -123,6 +131,65 @@ function studioDesign(sdid: string) {
   return design;
 }
 
+// Sites web : rangés à part (images téléversées en data URL), sous une clé dédiée du navigateur.
+const SITES_KEY = "identite:mock-sites:v1";
+type MockSite = Omit<Website, "dirty" | "url" | "formUrl" | "assetsUrl" | "unreadMessages" | "displayedLogoId" | "free"> & {
+  messages: WebsiteMessage[];
+};
+let sitesCache: MockSite[] | null = null;
+
+function mockSites(): MockSite[] {
+  if (sitesCache) return sitesCache;
+  try {
+    sitesCache = JSON.parse(window.localStorage.getItem(SITES_KEY) ?? "[]") as MockSite[];
+  } catch {
+    sitesCache = [];
+  }
+  return sitesCache;
+}
+
+function saveMockSites(sites: MockSite[]) {
+  try {
+    window.localStorage.setItem(SITES_KEY, JSON.stringify(sites));
+    sitesCache = sites;
+  } catch {
+    sitesCache = null;
+    throw problem(413, "Site trop lourd", "PAYLOAD_TOO_LARGE", "Le stockage du navigateur est plein : retirez des images du site.");
+  }
+}
+
+function mockSite(webid: string) {
+  const site = mockSites().find((s) => s.id === webid);
+  if (!site) throw problem(404, "Site introuvable", "NOT_FOUND");
+  return site;
+}
+
+/** Logo du site : le choisi, sinon le favori ou le plus récent du projet. */
+function siteLogo(projectId: string, logoId: string | null) {
+  const logos = db().logos.filter((l) => l.projectId === projectId);
+  return (
+    logos.find((l) => l.id === logoId) ??
+    logos.find((l) => l.isFavorite) ??
+    [...logos].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+  );
+}
+
+function siteDto(site: MockSite): Website {
+  const project = projectOr404(site.projectId);
+  const workspace = db().workspaces.find((w) => w.id === project.workspaceId);
+  const { messages, ...rest } = site;
+  return structuredClone({
+    ...rest,
+    dirty: site.published && !!site.publishedAt && site.updatedAt > site.publishedAt,
+    url: `${typeof window === "undefined" ? "" : window.location.origin}/site/${site.slug}`,
+    formUrl: "",
+    assetsUrl: "",
+    unreadMessages: messages.filter((m) => !m.readAt).length,
+    displayedLogoId: siteLogo(site.projectId, site.logoId)?.id ?? null,
+    free: workspace?.planCode === "FREE",
+  });
+}
+
 function toLogo(logo: ReturnType<typeof db>["logos"][number]): Logo {
   const { jobId: _jobId, ...rest } = logo;
   const current = latestVersion(logo.id);
@@ -153,6 +220,7 @@ function toProject(project: DbProject): Project {
       logo: logos.length > 0,
       signatures: data.signatures.some((s) => s.projectId === project.id) || data.slogans.some((s) => s.projectId === project.id && s.isChosen),
       kit: data.brandKits.some((k) => k.projectId === project.id),
+      site: typeof window !== "undefined" && mockSites().some((site) => site.projectId === project.id && site.published),
     },
     previewSpec: favorite ? latestVersion(favorite.id).spec : null,
   };
@@ -1078,6 +1146,177 @@ export const mockClient: ApiClient = {
       const name = data.names.find((n) => n.id === project.chosenNameId);
       const dto: PublicKit = { ...kitToDto(kit), projectName: projectName(project), acronym: name?.acronym ?? null, meaning: name?.meaning ?? null, entityType: project.entityType };
       return dto;
+    },
+  },
+
+  websites: {
+    async get(pid) {
+      requireRole(projectOr404(pid).workspaceId, "VIEWER");
+      const site = mockSites().find((s) => s.projectId === pid);
+      return site ? siteDto(site) : null;
+    },
+    async create(pid) {
+      await wait();
+      const project = projectOr404(pid);
+      requireRole(project.workspaceId, "EDITOR");
+      if (mockSites().some((s) => s.projectId === pid)) throw problem(409, "Ce projet a déjà un site web", "SITE_EXISTS");
+      const logo = siteLogo(pid, null);
+      if (!logo) throw problem(400, "Créez d’abord un logo : le site reprend votre identité visuelle", "NO_LOGO");
+      const data = db();
+      const name = projectName(project);
+      const chosen = (kind: string) => data.slogans.find((s) => s.projectId === pid && s.isChosen && s.kind === kind)?.text ?? null;
+      const card = data.signatures.find((s) => s.projectId === pid && s.kind === "EMAIL")?.data as EmailSignatureData | undefined;
+      const brief = project.brief;
+      const content = defaultSiteContent({
+        name,
+        slogan: chosen("SLOGAN"),
+        mission: chosen("MISSION") ?? brief?.mission ?? null,
+        sector: brief?.sector ?? null,
+        values: brief?.values ?? [],
+        audience: brief?.audience ?? null,
+        language: brief?.languages?.[0] === "en" ? "en" : "fr",
+        ...brandStyle(latestVersion(logo.id).spec),
+        contact: { phone: card?.phones.find(Boolean) ?? "", email: card?.email ?? "", address: card?.address ?? "" },
+        social: card ? socialsOf(card.socials) : {},
+        icons: sectorIcons(brief?.sector ?? ""),
+      });
+      const stem = slugify(name).slice(0, 40);
+      const base = stem.length >= 3 ? stem : `${stem || "mon"}-site`;
+      const taken = new Set(mockSites().map((s) => s.slug));
+      const slug = taken.has(base) ? `${base}-${id().slice(0, 4)}` : base;
+      const site: MockSite = {
+        id: id("site"),
+        projectId: pid,
+        slug,
+        logoId: null,
+        content,
+        published: false,
+        publishedAt: null,
+        views: 0,
+        media: [],
+        messages: [],
+        createdAt: now(),
+        updatedAt: now(),
+      };
+      saveMockSites([...mockSites(), site]);
+      logActivity(pid, "a créé le site web");
+      save();
+      return siteDto(site);
+    },
+    async update(webid, input) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      if (input.content) {
+        const owned = new Set(site.media.map((m) => m.id));
+        if (siteMediaIds(input.content).some((mid) => !owned.has(mid))) throw problem(400, "Image inconnue dans le contenu du site", "BAD_REQUEST");
+        site.content = structuredClone(input.content);
+      }
+      if (input.slug !== undefined && input.slug !== site.slug) {
+        const slug = input.slug.trim().toLowerCase();
+        if (!/^[a-z0-9](?:[a-z0-9-]{1,46}[a-z0-9])$/.test(slug) || ["admin", "api", "app", "site", "sites", "www", "aide", "support"].includes(slug)) {
+          throw problem(400, "Adresse invalide : 3 à 48 lettres minuscules, chiffres ou tirets", "SLUG_INVALID");
+        }
+        if (mockSites().some((s) => s.slug === slug && s.id !== webid)) throw problem(409, "Cette adresse est déjà prise", "SLUG_TAKEN");
+        site.slug = slug;
+      }
+      if (input.logoId !== undefined) site.logoId = input.logoId;
+      site.updatedAt = now();
+      saveMockSites(mockSites());
+      return siteDto(site);
+    },
+    async brand(webid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "VIEWER");
+      const logo = siteLogo(site.projectId, site.logoId);
+      if (!logo) throw problem(400, "Le projet n’a plus de logo", "NO_LOGO");
+      // Rendu du navigateur : polices nommées (l'API vectorise le texte).
+      const assets = brandAssets(latestVersion(logo.id).spec);
+      for (const group of [assets.logo, assets.mark]) {
+        for (const asset of Object.values(group)) asset.svg = resolveFontVars(asset.svg);
+      }
+      return { name: projectName(projectOr404(site.projectId)), logoId: logo.id, assets };
+    },
+    async publish(webid) {
+      await wait(400);
+      const site = mockSite(webid);
+      const project = projectOr404(site.projectId);
+      requireRole(project.workspaceId, "EDITOR");
+      if (!siteLogo(site.projectId, site.logoId)) throw problem(400, "Le projet n’a plus de logo", "NO_LOGO");
+      const stamp = now();
+      Object.assign(site, { published: true, publishedAt: stamp, updatedAt: stamp });
+      saveMockSites(mockSites());
+      logActivity(site.projectId, `a publié le site web (/site/${site.slug})`);
+      save();
+      return siteDto(site);
+    },
+    async unpublish(webid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      site.published = false;
+      saveMockSites(mockSites());
+      logActivity(site.projectId, "a dépublié le site web");
+      save();
+      return siteDto(site);
+    },
+    async remove(webid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "OWNER");
+      saveMockSites(mockSites().filter((s) => s.id !== webid));
+      logActivity(site.projectId, "a supprimé le site web");
+      save();
+    },
+    async addMedia(webid, input) {
+      await wait();
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      if (site.media.length >= 24) throw problem(400, "24 images au plus par site", "BAD_REQUEST");
+      const match = /^data:(image\/(?:png|jpeg|webp));base64,/.exec(input.dataUrl);
+      if (!match) throw problem(400, "Image JPEG, PNG ou WebP attendue", "BAD_REQUEST");
+      const sizeBytes = Math.floor(((input.dataUrl.length - match[0].length) * 3) / 4);
+      if (sizeBytes > 4 * 1024 * 1024) throw problem(400, "Image de 4 Mo au plus", "BAD_REQUEST");
+      const media = { id: id("media"), url: input.dataUrl, alt: input.alt?.trim() ?? "", mimeType: match[1]!, sizeBytes };
+      site.media.push(media);
+      saveMockSites(mockSites());
+      return { id: media.id, url: media.url, alt: media.alt };
+    },
+    async removeMedia(webid, mid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      if (!site.media.some((m) => m.id === mid)) throw problem(404, "Image introuvable", "NOT_FOUND");
+      site.media = site.media.filter((m) => m.id !== mid);
+      if (siteMediaIds(site.content).includes(mid)) {
+        site.content.sections = site.content.sections.map((section) => {
+          if (section.type === "hero" && section.image?.kind === "media" && section.image.id === mid) return { ...section, image: null };
+          if (section.type === "gallery") return { ...section, images: section.images.filter((img) => img.kind !== "media" || img.id !== mid) };
+          return section;
+        });
+        site.updatedAt = now();
+      }
+      saveMockSites(mockSites());
+      return siteDto(site);
+    },
+    async messages(webid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      return structuredClone(site.messages);
+    },
+    async markMessage(webid, msgid, read) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      const message = site.messages.find((m) => m.id === msgid);
+      if (!message) throw problem(404, "Message introuvable", "NOT_FOUND");
+      message.readAt = read ? now() : null;
+      saveMockSites(mockSites());
+      return structuredClone(message);
+    },
+    async removeMessage(webid, msgid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      site.messages = site.messages.filter((m) => m.id !== msgid);
+      saveMockSites(mockSites());
+    },
+    async exportZip() {
+      throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "L’archive du site est produite par le serveur de la plateforme.");
     },
   },
 
