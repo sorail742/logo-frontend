@@ -3,7 +3,7 @@
 // Lettres absentes d'une police : même repli que le rendu serveur (assets/fonts du back) — le
 // latin étendu de la police, puis Montserrat, puis Noto Sans NKo pour l'écriture N'Ko.
 
-export type FontCategory = "sans" | "serif" | "display" | "script" | "sport";
+export type FontCategory = "sans" | "serif" | "display" | "script" | "sport" | "festive";
 
 export interface LibraryFontDef {
   id: string;
@@ -107,12 +107,98 @@ export const FONTS: LibraryFontDef[] = [
   { id: "passion-one", name: "Passion One", cssVar: "--font-passion-one", category: "sport", license: "OFL", weights: [400, 700, 900], widthFactor: 0.5, ascent: 0.835, descent: 0.266 },
   { id: "fugaz-one", name: "Fugaz One", cssVar: "--font-fugaz-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.61, ascent: 1.046, descent: 0.422 },
   { id: "days-one", name: "Days One", cssVar: "--font-days-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.7, ascent: 0.996, descent: 0.277 },
+  // Les plus utilisées au monde (vues Google Fonts), fêtes et événements, manuscrites.
+  { id: "roboto", name: "Roboto", cssVar: "--font-roboto", category: "sans", license: "OFL", weights: [400, 500, 700, 900], widthFactor: 0.57, ascent: 0.928, descent: 0.244 },
+  { id: "open-sans", name: "Open Sans", cssVar: "--font-open-sans", category: "sans", license: "OFL", weights: [400, 600, 700, 800], widthFactor: 0.61, ascent: 1.069, descent: 0.293 },
+  { id: "lato", name: "Lato", cssVar: "--font-lato", category: "sans", license: "OFL", weights: [400, 700, 900], widthFactor: 0.59, ascent: 0.987, descent: 0.213 },
+  { id: "roboto-condensed", name: "Roboto Condensed", cssVar: "--font-roboto-condensed", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.5, ascent: 0.928, descent: 0.244 },
+  { id: "noto-sans", name: "Noto Sans", cssVar: "--font-noto-sans", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.61, ascent: 1.069, descent: 0.293 },
+  { id: "source-sans-3", name: "Source Sans 3", cssVar: "--font-source-sans-3", category: "sans", license: "OFL", weights: [400, 600, 700], widthFactor: 0.55, ascent: 1.024, descent: 0.4 },
+  { id: "nunito-sans", name: "Nunito Sans", cssVar: "--font-nunito-sans", category: "sans", license: "OFL", weights: [400, 700, 900], widthFactor: 0.6, ascent: 1.011, descent: 0.353 },
+  { id: "pt-sans", name: "PT Sans", cssVar: "--font-pt-sans", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.54, ascent: 1.018, descent: 0.276 },
+  { id: "mukta", name: "Mukta", cssVar: "--font-mukta", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.54, ascent: 1.13, descent: 0.532 },
+  { id: "fira-sans", name: "Fira Sans", cssVar: "--font-fira-sans", category: "sans", license: "OFL", weights: [400, 600, 800], widthFactor: 0.56, ascent: 0.935, descent: 0.265 },
+  { id: "barlow", name: "Barlow", cssVar: "--font-barlow", category: "sans", license: "OFL", weights: [400, 600, 800], widthFactor: 0.56, ascent: 1, descent: 0.2 },
+  { id: "titillium-web", name: "Titillium Web", cssVar: "--font-titillium-web", category: "sans", license: "OFL", weights: [400, 600, 700], widthFactor: 0.54, ascent: 1.133, descent: 0.388 },
+  { id: "heebo", name: "Heebo", cssVar: "--font-heebo", category: "sans", license: "OFL", weights: [400, 700, 900], widthFactor: 0.57, ascent: 1.048, descent: 0.421 },
+  { id: "ibm-plex-sans", name: "IBM Plex Sans", cssVar: "--font-ibm-plex-sans", category: "sans", license: "OFL", weights: [400, 600, 700], widthFactor: 0.6, ascent: 1.025, descent: 0.275 },
+  { id: "karla", name: "Karla", cssVar: "--font-karla", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.59, ascent: 0.917, descent: 0.252 },
+  { id: "libre-franklin", name: "Libre Franklin", cssVar: "--font-libre-franklin", category: "sans", license: "OFL", weights: [400, 700, 900], widthFactor: 0.64, ascent: 0.966, descent: 0.246 },
+  { id: "mulish", name: "Mulish", cssVar: "--font-mulish", category: "sans", license: "OFL", weights: [400, 700, 900], widthFactor: 0.61, ascent: 1.005, descent: 0.25 },
+  { id: "hind", name: "Hind", cssVar: "--font-hind", category: "sans", license: "OFL", weights: [400, 600, 700], widthFactor: 0.56, ascent: 1.055, descent: 0.546 },
+  { id: "arimo", name: "Arimo", cssVar: "--font-arimo", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.6, ascent: 0.905, descent: 0.212 },
+  { id: "dosis", name: "Dosis", cssVar: "--font-dosis", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.51, ascent: 1.027, descent: 0.237 },
+  { id: "cabin", name: "Cabin", cssVar: "--font-cabin", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.56, ascent: 0.965, descent: 0.25 },
+  { id: "oxygen", name: "Oxygen", cssVar: "--font-oxygen", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.59, ascent: 1.027, descent: 0.236 },
+  { id: "lexend", name: "Lexend", cssVar: "--font-lexend", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.64, ascent: 1, descent: 0.25 },
+  { id: "abel", name: "Abel", cssVar: "--font-abel", category: "sans", license: "OFL", weights: [400], widthFactor: 0.47, ascent: 0.979, descent: 0.295 },
+  { id: "cairo", name: "Cairo", cssVar: "--font-cairo", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.54, ascent: 1.303, descent: 0.571 },
+  { id: "fjalla-one", name: "Fjalla One", cssVar: "--font-fjalla-one", category: "display", license: "OFL", weights: [400], widthFactor: 0.46, ascent: 1.009, descent: 0.248 },
+  { id: "signika", name: "Signika", cssVar: "--font-signika", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.55, ascent: 0.94, descent: 0.292 },
+  { id: "prompt", name: "Prompt", cssVar: "--font-prompt", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.62, ascent: 1.09, descent: 0.422 },
+  { id: "varela-round", name: "Varela Round", cssVar: "--font-varela-round", category: "sans", license: "OFL", weights: [400], widthFactor: 0.62, ascent: 0.918, descent: 0.286 },
+  { id: "overpass", name: "Overpass", cssVar: "--font-overpass", category: "sans", license: "OFL", weights: [400, 800], widthFactor: 0.6, ascent: 0.883, descent: 0.383 },
+  { id: "asap", name: "Asap", cssVar: "--font-asap", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.55, ascent: 0.934, descent: 0.212 },
+  { id: "maven-pro", name: "Maven Pro", cssVar: "--font-maven-pro", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.61, ascent: 0.965, descent: 0.21 },
+  { id: "questrial", name: "Questrial", cssVar: "--font-questrial", category: "sans", license: "OFL", weights: [400], widthFactor: 0.57, ascent: 0.82, descent: 0.21 },
+  { id: "sora", name: "Sora", cssVar: "--font-sora", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.66, ascent: 0.97, descent: 0.29 },
+  { id: "figtree", name: "Figtree", cssVar: "--font-figtree", category: "sans", license: "OFL", weights: [400, 700, 900], widthFactor: 0.6, ascent: 0.95, descent: 0.25 },
+  { id: "urbanist", name: "Urbanist", cssVar: "--font-urbanist", category: "sans", license: "OFL", weights: [400, 700, 900], widthFactor: 0.58, ascent: 0.95, descent: 0.25 },
+  { id: "jost", name: "Jost", cssVar: "--font-jost", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.61, ascent: 1.07, descent: 0.375 },
+  { id: "red-hat-display", name: "Red Hat Display", cssVar: "--font-red-hat-display", category: "sans", license: "OFL", weights: [400, 700, 900], widthFactor: 0.61, ascent: 1.018, descent: 0.305 },
+  { id: "archivo-narrow", name: "Archivo Narrow", cssVar: "--font-archivo-narrow", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.5, ascent: 1.035, descent: 0.312 },
+  { id: "pt-sans-narrow", name: "PT Sans Narrow", cssVar: "--font-pt-sans-narrow", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.45, ascent: 1.018, descent: 0.276 },
+  { id: "public-sans", name: "Public Sans", cssVar: "--font-public-sans", category: "sans", license: "OFL", weights: [400, 700], widthFactor: 0.62, ascent: 0.95, descent: 0.225 },
+  { id: "noto-serif", name: "Noto Serif", cssVar: "--font-noto-serif", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.63, ascent: 1.069, descent: 0.293 },
+  { id: "pt-serif", name: "PT Serif", cssVar: "--font-pt-serif", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.6, ascent: 1.039, descent: 0.286 },
+  { id: "eb-garamond", name: "EB Garamond", cssVar: "--font-eb-garamond", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.57, ascent: 1.007, descent: 0.298 },
+  { id: "crimson-text", name: "Crimson Text", cssVar: "--font-crimson-text", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.56, ascent: 0.949, descent: 0.351 },
+  { id: "bitter", name: "Bitter", cssVar: "--font-bitter", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.6, ascent: 0.935, descent: 0.265 },
+  { id: "zilla-slab", name: "Zilla Slab", cssVar: "--font-zilla-slab", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.58, ascent: 0.944, descent: 0.256 },
+  { id: "alegreya", name: "Alegreya", cssVar: "--font-alegreya", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.54, ascent: 1.016, descent: 0.345 },
+  { id: "cinzel", name: "Cinzel", cssVar: "--font-cinzel", category: "serif", license: "OFL", weights: [400, 700, 900], widthFactor: 0.67, ascent: 0.976, descent: 0.372 },
+  { id: "arvo", name: "Arvo", cssVar: "--font-arvo", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.65, ascent: 0.961, descent: 0.247 },
+  { id: "domine", name: "Domine", cssVar: "--font-domine", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.64, ascent: 0.9, descent: 0.24 },
+  { id: "patua-one", name: "Patua One", cssVar: "--font-patua-one", category: "serif", license: "OFL", weights: [400], widthFactor: 0.55, ascent: 0.972, descent: 0.247 },
+  { id: "courier-prime", name: "Courier Prime", cssVar: "--font-courier-prime", category: "serif", license: "OFL", weights: [400, 700], widthFactor: 0.6, ascent: 0.781, descent: 0.342 },
+  { id: "bangers", name: "Bangers", cssVar: "--font-bangers", category: "festive", license: "OFL", weights: [400], widthFactor: 0.42, ascent: 0.883, descent: 0.181 },
+  { id: "fredoka", name: "Fredoka", cssVar: "--font-fredoka", category: "festive", license: "OFL", weights: [400, 600, 700], widthFactor: 0.57, ascent: 0.974, descent: 0.236 },
+  { id: "lilita-one", name: "Lilita One", cssVar: "--font-lilita-one", category: "festive", license: "OFL", weights: [400], widthFactor: 0.55, ascent: 0.923, descent: 0.22 },
+  { id: "carter-one", name: "Carter One", cssVar: "--font-carter-one", category: "festive", license: "OFL", weights: [400], widthFactor: 0.6, ascent: 1.105, descent: 0.435 },
+  { id: "concert-one", name: "Concert One", cssVar: "--font-concert-one", category: "festive", license: "OFL", weights: [400], widthFactor: 0.51, ascent: 0.979, descent: 0.2 },
+  { id: "paytone-one", name: "Paytone One", cssVar: "--font-paytone-one", category: "festive", license: "OFL", weights: [400], widthFactor: 0.62, ascent: 1.113, descent: 0.283 },
+  { id: "bubblegum-sans", name: "Bubblegum Sans", cssVar: "--font-bubblegum-sans", category: "festive", license: "OFL", weights: [400], widthFactor: 0.51, ascent: 0.852, descent: 0.311 },
+  { id: "henny-penny", name: "Henny Penny", cssVar: "--font-henny-penny", category: "festive", license: "OFL", weights: [400], widthFactor: 0.62, ascent: 1.135, descent: 0.637 },
+  { id: "emilys-candy", name: "Emilys Candy", cssVar: "--font-emilys-candy", category: "festive", license: "OFL", weights: [400], widthFactor: 0.57, ascent: 0.973, descent: 0.279 },
+  { id: "press-start-2p", name: "Press Start 2P", cssVar: "--font-press-start-2p", category: "festive", license: "OFL", weights: [400], widthFactor: 1, ascent: 1, descent: 0 },
+  { id: "baloo-2", name: "Baloo 2", cssVar: "--font-baloo-2", category: "festive", license: "OFL", weights: [400, 700, 800], widthFactor: 0.56, ascent: 1.078, descent: 0.524 },
+  { id: "lobster-two", name: "Lobster Two", cssVar: "--font-lobster-two", category: "festive", license: "OFL", weights: [400, 700], widthFactor: 0.53, ascent: 1, descent: 0.25 },
+  { id: "rye", name: "Rye", cssVar: "--font-rye", category: "festive", license: "OFL", weights: [400], widthFactor: 0.66, ascent: 0.986, descent: 0.264 },
+  { id: "cinzel-decorative", name: "Cinzel Decorative", cssVar: "--font-cinzel-decorative", category: "festive", license: "OFL", weights: [400, 700, 900], widthFactor: 0.71, ascent: 0.976, descent: 0.372 },
+  { id: "creepster", name: "Creepster", cssVar: "--font-creepster", category: "festive", license: "OFL", weights: [400], widthFactor: 0.44, ascent: 0.951, descent: 0.218 },
+  { id: "titan-one", name: "Titan One", cssVar: "--font-titan-one", category: "festive", license: "OFL", weights: [400], widthFactor: 0.65, ascent: 0.97, descent: 0.175 },
+  { id: "sniglet", name: "Sniglet", cssVar: "--font-sniglet", category: "festive", license: "OFL", weights: [400, 800], widthFactor: 0.67, ascent: 0.956, descent: 0.289 },
+  { id: "berkshire-swash", name: "Berkshire Swash", cssVar: "--font-berkshire-swash", category: "festive", license: "OFL", weights: [400], widthFactor: 0.58, ascent: 0.98, descent: 0.262 },
+  { id: "bowlby-one", name: "Bowlby One", cssVar: "--font-bowlby-one", category: "festive", license: "OFL", weights: [400], widthFactor: 0.73, ascent: 1.111, descent: 0.455 },
+  { id: "shadows-into-light", name: "Shadows Into Light", cssVar: "--font-shadows-into-light", category: "script", license: "OFL", weights: [400], widthFactor: 0.44, ascent: 1.175, descent: 0.432 },
+  { id: "indie-flower", name: "Indie Flower", cssVar: "--font-indie-flower", category: "script", license: "OFL", weights: [400], widthFactor: 0.48, ascent: 0.971, descent: 0.488 },
+  { id: "amatic-sc", name: "Amatic SC", cssVar: "--font-amatic-sc", category: "script", license: "OFL", weights: [400, 700], widthFactor: 0.32, ascent: 1.016, descent: 0.245 },
+  { id: "kalam", name: "Kalam", cssVar: "--font-kalam", category: "script", license: "OFL", weights: [400, 700], widthFactor: 0.53, ascent: 1.063, descent: 0.531 },
+  { id: "courgette", name: "Courgette", cssVar: "--font-courgette", category: "script", license: "OFL", weights: [400], widthFactor: 0.54, ascent: 0.977, descent: 0.273 },
+  { id: "damion", name: "Damion", cssVar: "--font-damion", category: "script", license: "OFL", weights: [400], widthFactor: 0.5, ascent: 1.01, descent: 0.364 },
+  { id: "cookie", name: "Cookie", cssVar: "--font-cookie", category: "script", license: "OFL", weights: [400], widthFactor: 0.42, ascent: 0.789, descent: 0.32 },
+  { id: "playball", name: "Playball", cssVar: "--font-playball", category: "script", license: "OFL", weights: [400], widthFactor: 0.52, ascent: 0.95, descent: 0.3 },
+  { id: "parisienne", name: "Parisienne", cssVar: "--font-parisienne", category: "script", license: "OFL", weights: [400], widthFactor: 0.65, ascent: 0.916, descent: 0.447 },
+  { id: "alex-brush", name: "Alex Brush", cssVar: "--font-alex-brush", category: "script", license: "OFL", weights: [400], widthFactor: 0.59, ascent: 0.825, descent: 0.425 },
+  { id: "pinyon-script", name: "Pinyon Script", cssVar: "--font-pinyon-script", category: "script", license: "OFL", weights: [400], widthFactor: 0.54, ascent: 0.863, descent: 0.384 },
+  { id: "tangerine", name: "Tangerine", cssVar: "--font-tangerine", category: "script", license: "OFL", weights: [400, 700], widthFactor: 0.48, ascent: 0.75, descent: 0.25 },
+  { id: "grand-hotel", name: "Grand Hotel", cssVar: "--font-grand-hotel", category: "script", license: "OFL", weights: [400], widthFactor: 0.42, ascent: 0.946, descent: 0.412 },
 ];
 
 /** Polices qui écrivent tout le pular (ɓ ɗ ŋ ƴ et capitales), d'après le manifeste de l'API. */
-export const PULAR_FONTS = new Set(["montserrat", "nunito", "merriweather", "great-vibes", "inter", "anton", "unbounded", "libre-baskerville", "tektur"]);
+export const PULAR_FONTS = new Set(["montserrat", "nunito", "merriweather", "great-vibes", "inter", "anton", "unbounded", "libre-baskerville", "tektur", "noto-sans", "nunito-sans", "fira-sans", "mulish", "arimo", "overpass", "questrial", "noto-serif", "eb-garamond", "pinyon-script"]);
 /** Polices sans sous-ensemble latin étendu (pas de variable « -ext »). */
-const LATIN_ONLY = new Set(["satisfy", "permanent-marker", "graduate", "squada-one", "orbitron", "changa-one", "fugaz-one", "days-one"]);
+const LATIN_ONLY = new Set(["satisfy", "permanent-marker", "graduate", "squada-one", "orbitron", "changa-one", "fugaz-one", "days-one", "abel", "arvo", "patua-one", "carter-one", "henny-penny", "lobster-two", "creepster", "bowlby-one", "cookie", "tangerine"]);
 
 /** Lettres pular (fula) hors de l'alphabet latin de base. */
 export const PULAR_LETTERS = /[ɓɗŋƴƁƊŊƳ]/gu;

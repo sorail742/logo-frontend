@@ -59,7 +59,7 @@ export function EditorControls({ spec }: Readonly<{ spec: LogoSpec }>) {
         <div className="grid grid-cols-2 gap-3">
           <Field label={t("editor.font")} htmlFor="logo-font">
             <NativeSelect id="logo-font" value={spec.fontId} onChange={(e) => update({ fontId: e.target.value })}>
-              {(["sans", "serif", "display", "sport"] as const).map((category) => (
+              {(["sans", "serif", "display", "sport", "festive"] as const).map((category) => (
                 <optgroup key={category} label={tc(`fontCategories.${category}`)}>
                   {LOGO_FONTS.filter((f) => f.category === category).map((f) => (
                     <option key={f.id} value={f.id}>
