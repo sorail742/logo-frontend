@@ -1,5 +1,6 @@
 import type { IconNode } from "@/lib/render/icons";
 import type { PhotoAdjust, PhotoCrop, PhotoGlow, PhotoOutline } from "@/lib/render/photo";
+import type { TextEffects } from "./lettering";
 
 // Document du Studio de création : pages, éléments positionnés en px dans le repère de la page
 // (origine en haut à gauche, rotation autour du centre). Même contrat que l'API (render/design.ts),
@@ -95,6 +96,8 @@ export interface TextElement extends ElementBase {
   highlight?: { color: string; padding: number; radius: number } | null;
   /** Lignes calculées par l'éditeur : le serveur les reprend telles quelles. */
   lines?: string[];
+  /** Effets de lettrage (maillots, affiches) : second contour, liseré, relief, trame. */
+  effects?: TextEffects | null;
 }
 
 export type ShapeKind = "rect" | "ellipse" | "triangle" | "polygon" | "star" | "line" | "arrow" | "blob" | "arch";

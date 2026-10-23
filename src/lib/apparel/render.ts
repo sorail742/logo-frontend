@@ -96,6 +96,7 @@ export function toStudioElement(el: ApparelElement, zone: PrintZone, id: string)
         c.textOutline && c.textOutline.widthMm > 0
           ? { color: c.textOutline.color, width: c.textOutline.widthMm }
           : null,
+      effects: c.effects ?? null,
     });
   }
   return null;

@@ -5,6 +5,7 @@ import { svgParts } from "@/lib/studio/render";
 import { measureText } from "@/lib/studio/text";
 import { arcSagitta, type EditorElement } from "./render";
 import type { ApparelContent, ApparelPhoto, ElementKind, PrintZone } from "./types";
+import { effectColors, type TextEffects } from "@/lib/studio/lettering";
 
 // Création des éléments d'une tenue : texte, nom et numéro de joueur, logo, image. Chaque
 // élément est dimensionné pour sa zone et porte les informations lues par les contrôles
@@ -34,7 +35,23 @@ export function textWidthMm(content: ApparelContent, heightMm: number) {
     fontSize,
     letterSpacing: content.letterSpacing ?? 0,
   });
-  return Math.max(4, width + fontSize * 0.06 + (content.textOutline?.widthMm ?? 0) * 2);
+  return Math.max(4, width + fontSize * 0.06 + (content.textOutline?.widthMm ?? 0) * 2 + effectsWidthMm(content.effects));
+}
+
+/** Largeur ajoutée par les effets : second contour des deux côtés, relief vers la droite ou la gauche. */
+function effectsWidthMm(effects: TextEffects | null | undefined) {
+  if (!effects) return 0;
+  const extrude = effects.extrude ? Math.abs(Math.cos((effects.extrude.angle * Math.PI) / 180)) * effects.extrude.depth : 0;
+  return (effects.outline2?.width ?? 0) * 2 + extrude;
+}
+
+/** Famille de style des règles d'impression (STYLE_TECHNIQUES de l'API) d'après la forme du lettrage. */
+export function letteringFamily(stroke: unknown, effects: TextEffects | null | undefined) {
+  if (effects?.halftone) return "HALFTONE";
+  if (effects?.extrude) return "RIBBON_3D";
+  if (effects?.inline) return "GEOMETRIC_INLINE";
+  if (effects?.outline2 || stroke) return "CLASSIC_OUTLINE";
+  return undefined;
 }
 
 /** Épaisseur du fût des lettres, en proportion du corps, selon la graisse. */
@@ -50,8 +67,9 @@ export function textStrokeMm(content: ApparelContent, heightMm: number) {
   const font = getFont(content.fontId ?? "montserrat");
   const ratio = stemRatio(content.fontWeight ?? 700) * (font.category === "script" ? 0.5 : 1);
   const stem = plainFontSize(content, heightMm) * ratio;
-  const outline = content.textOutline?.widthMm;
-  return round(outline && outline > 0 ? Math.min(stem, outline) : stem);
+  // Traits imprimés les plus fins : fût, contours, liseré.
+  const lines = [content.textOutline?.widthMm, content.effects?.outline2?.width, content.effects?.inline?.width].filter((w): w is number => Boolean(w && w > 0));
+  return round(Math.min(stem, ...lines));
 }
 
 /** Couleurs HEX d'un SVG (remplissages, contours, dégradés). */
@@ -68,9 +86,13 @@ export function svgColors(svg: string) {
 export function textChecks(content: ApparelContent, heightMm: number, widthMm = 0): Partial<ApparelContent> {
   const colors = [content.fill ?? "#111111"];
   if (content.textOutline && content.textOutline.widthMm > 0) colors.push(content.textOutline.color);
+  colors.push(...effectColors(content.effects));
+  const outline = content.textOutline && content.textOutline.widthMm > 0 ? content.textOutline.color : null;
+  const edge = [content.effects?.outline2?.color ?? outline ?? content.fill ?? "#111111", content.effects?.extrude?.color].filter((c): c is string => Boolean(c));
   const glyphHeight = Math.max(1, heightMm - arcSagitta(widthMm, content.curve));
   return {
     colors: [...new Set(colors.map((c) => c.toLowerCase()))],
+    edgeColors: [...new Set(edge.map((c) => c.toLowerCase()))],
     strokeMm: textStrokeMm(content, glyphHeight),
     gradient: false,
   };

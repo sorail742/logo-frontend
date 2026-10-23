@@ -1033,5 +1033,27 @@
     "exit": "Quitter la présentation",
     "blank": "Écran masqué",
     "hint": "← → pour naviguer · G vue d'ensemble · B écran noir · Échap pour quitter"
+  },
+  "lettering": {
+    "title": "Forme du lettrage",
+    "presets": {
+      "plain": "Plein",
+      "outline": "Contour",
+      "college": "Universitaire",
+      "inline": "Liseré",
+      "relief": "Relief 3D",
+      "halftone": "Trame",
+      "shadow": "Ombre"
+    },
+    "outline": "Contour",
+    "outline2": "Second contour",
+    "inline": "Liseré intérieur",
+    "extrude": "Relief",
+    "halftone": "Trame de points",
+    "width": "Épaisseur",
+    "inset": "Retrait du bord",
+    "depth": "Profondeur",
+    "angle": "Angle",
+    "dotSize": "Taille des points"
   }
 }

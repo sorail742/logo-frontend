@@ -1033,5 +1033,27 @@
     "exit": "Exit presentation",
     "blank": "Screen hidden",
     "hint": "← → to navigate · G overview · B black screen · Esc to exit"
+  },
+  "lettering": {
+    "title": "Lettering style",
+    "presets": {
+      "plain": "Solid",
+      "outline": "Outline",
+      "college": "College",
+      "inline": "Inline",
+      "relief": "3D relief",
+      "halftone": "Halftone",
+      "shadow": "Shadow"
+    },
+    "outline": "Outline",
+    "outline2": "Second outline",
+    "inline": "Inline stripe",
+    "extrude": "Relief",
+    "halftone": "Halftone dots",
+    "width": "Thickness",
+    "inset": "Distance from edge",
+    "depth": "Depth",
+    "angle": "Angle",
+    "dotSize": "Dot size"
   }
 }

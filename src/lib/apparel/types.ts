@@ -1,4 +1,5 @@
 import type { PhotoAdjust, PhotoCrop, PhotoGlow, PhotoOutline } from "@/lib/render/photo";
+import type { TextEffects } from "@/lib/studio/lettering";
 
 // Module textile (Module 5, §16 du cahier des charges) : supports (vêtements), zones
 // d'impression en mm, tenues et leurs éléments. Mêmes formes que l'API (apparel.service.ts).
@@ -73,6 +74,8 @@ export interface ApparelPhoto {
 export interface ApparelContent {
   /** Couleurs imprimées (HEX) : contraste avec le tissu, nombre d'écrans en sérigraphie. */
   colors?: string[];
+  /** Couleurs au contact du tissu (contour extérieur) pour le contrôle de contraste ; sinon `colors`. */
+  edgeColors?: string[];
   source?: "library" | "brand-kit" | "upload";
   rightsAttested?: boolean;
   /** Trait le plus fin, en mm. */
@@ -96,6 +99,8 @@ export interface ApparelContent {
   curve?: number;
   /** Espacement des lettres, en em. */
   letterSpacing?: number;
+  /** Forme du lettrage (second contour, liseré, relief, trame), en mm. */
+  effects?: TextEffects | null;
   /** Image. */
   photo?: ApparelPhoto;
   /** Séparation en tons directs (sérigraphie) appliquée à l'image. */

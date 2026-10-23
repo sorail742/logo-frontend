@@ -5,6 +5,7 @@ import { createImage, newId, scaleElement } from "./doc";
 import { aabb, union, type Box } from "./geometry";
 import { naturalWidth, relayout } from "./text";
 import type { DesignDoc, DesignElement, DesignPage, ImageElement, Paint, PrintSpec, ShapeElement, TextElement } from "./types";
+import { mapEffectColors } from "./lettering";
 
 // Fonctions « intelligentes » du Studio : redimensionnement magique vers un autre format,
 // variations à la marque d'une page, et cadre photo rempli par une image.
@@ -218,6 +219,7 @@ function recolor(page: DesignPage, map: ColorMap): DesignPage {
             fill: mapPaint(el.fill, m),
             stroke: el.stroke ? { ...el.stroke, color: m(el.stroke.color) } : el.stroke,
             highlight: el.highlight ? { ...el.highlight, color: m(el.highlight.color) } : el.highlight,
+            effects: mapEffectColors(el.effects, m),
           };
         case "shape":
           return { ...el, fill: mapPaint(el.fill, m), stroke: el.stroke ? { ...el.stroke, color: m(el.stroke.color) } : el.stroke };

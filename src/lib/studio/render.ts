@@ -1,6 +1,7 @@
 import { cssFontFamily, getFont } from "@/lib/render/fonts";
 import { adjustFilter, effectsFilter, photoPlacement, vignetteGradient } from "@/lib/render/photo";
 import { escapeXml } from "@/lib/render/svg";
+import { hasEffects, letteringLayers } from "./lettering";
 import type {
   DesignDoc,
   DesignElement,
@@ -188,7 +189,15 @@ function renderText(el: TextElement, pid: string, defs: string[]) {
   const fill = paintValue(el.fill, `${pid}-f`, defs);
   // Police par variable CSS (style) : résolue en nom réel et intégrée à l'export.
   const stroke = el.stroke && el.stroke.width > 0 ? `${strokeAttrs(el.stroke, 2)} paint-order="stroke"` : "";
-  const attrs = `style="font-family:${cssFontFamily(el.fontId)}" font-size="${n(size)}" font-weight="${el.fontWeight}"${spacing ? ` letter-spacing="${n(spacing)}"` : ""} fill="${fill}"${stroke} xml:space="preserve"`;
+  const effects = hasEffects(el.effects) ? el.effects : null;
+  const letterSpacing = spacing ? ` letter-spacing="${n(spacing)}"` : "";
+  const fontAttrs = `style="font-family:${cssFontFamily(el.fontId)}" font-size="${n(size)}" font-weight="${el.fontWeight}"${letterSpacing}`;
+  // Avec effets, les glyphes restent sans peinture : chaque calque les peint (lettering.ts).
+  const attrs = effects ? `${fontAttrs} xml:space="preserve"` : `${fontAttrs} fill="${fill}"${stroke} xml:space="preserve"`;
+  const paint = (glyphs: string) =>
+    effects
+      ? letteringLayers({ pid, glyphs, fill, effects, size, defs, stroke: el.stroke, box: { x: 0, y: 0, width: el.width, height: el.height } })
+      : glyphs;
   const { box, baseline } = lineMetrics(el);
   const parts: string[] = [];
 
@@ -203,7 +212,7 @@ function renderText(el: TextElement, pid: string, defs: string[]) {
     const y = bend > 0 ? baseline + sagitta : baseline;
     const sweep = bend > 0 ? 1 : 0;
     defs.push(`<path id="${pid}-arc" d="M0 ${n(y)}A${n(radius)} ${n(radius)} 0 0 ${sweep} ${n(el.width)} ${n(y)}"/>`);
-    parts.push(`<text ${attrs} text-anchor="middle"><textPath href="#${pid}-arc" startOffset="50%">${escapeXml(line)}</textPath></text>`);
+    parts.push(paint(`<text ${attrs} text-anchor="middle"><textPath href="#${pid}-arc" startOffset="50%">${escapeXml(line)}</textPath></text>`));
     return parts.join("");
   }
 
@@ -213,7 +222,7 @@ function renderText(el: TextElement, pid: string, defs: string[]) {
   const tspans = textLines(el)
     .map((line, i) => `<tspan x="${n(x)}" y="${n(i * box + baseline)}">${escapeXml(line) || " "}</tspan>`)
     .join("");
-  parts.push(`<text ${attrs} text-anchor="${anchor}">${tspans}</text>`);
+  parts.push(paint(`<text ${attrs} text-anchor="${anchor}">${tspans}</text>`));
   return parts.join("");
 }
 

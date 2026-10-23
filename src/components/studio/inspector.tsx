@@ -35,6 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { NativeSelect } from "@/components/common/native-select";
 import { closestWeight, getFont } from "@/lib/render/fonts";
+import { paintColor } from "@/lib/studio/color";
 import { documentColors } from "@/lib/studio/doc";
 import { aabb, union } from "@/lib/studio/geometry";
 import { relayout } from "@/lib/studio/text";
@@ -46,6 +47,7 @@ import { selectedElements, useStudio } from "@/stores/studio";
 import { useStudioContext } from "./context";
 import { NumberField, Section, SliderField, ToggleButtons } from "./fields";
 import { FontCoverageNotice } from "./font-coverage";
+import { LetteringControls } from "./lettering-controls";
 import { FontPicker } from "./font-picker";
 import { ColorPicker, PaintPicker } from "./paint-picker";
 import { PhotoEditor, type PhotoTab } from "./photo/photo-editor";
@@ -329,22 +331,15 @@ function TextSection({ el, update, colorProps }: Readonly<{ el: TextElement; upd
           <PaintPicker value={el.fill} onChange={(fill) => update((e) => (e.type === "text" ? { ...e, fill } : e), "text-fill")} label={t("fill")} {...colorProps} />
         </Row>
       </Section>
-      <Section title={t("textEffects")} defaultOpen={Boolean(el.stroke || el.curve || el.highlight)}>
-        <Row label={t("outline")}>
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={Boolean(el.stroke)}
-              onCheckedChange={(on) => update((e) => (e.type === "text" ? { ...e, stroke: on ? { color: "#111827", width: Math.max(1, e.fontSize * 0.04) } : null } : e))}
-              aria-label={t("outline")}
-            />
-            {el.stroke && (
-              <>
-                <ColorPicker value={el.stroke.color} onChange={(color) => update((e) => (e.type === "text" && e.stroke ? { ...e, stroke: { ...e.stroke, color } } : e), "text-stroke")} label={t("outlineColor")} {...colorProps} />
-                <NumberField label="⌀" className="w-20 shrink-0" value={el.stroke.width} min={0.5} max={200} precision={1} onChange={(v) => update((e) => (e.type === "text" && e.stroke ? { ...e, stroke: { ...e.stroke, width: v } } : e), "text-stroke-w")} />
-              </>
-            )}
-          </div>
-        </Row>
+      <Section title={t("textEffects")} defaultOpen={[el.stroke, el.effects, el.curve, el.highlight].some(Boolean)}>
+        <LetteringControls
+          value={{ stroke: el.stroke ?? null, effects: el.effects ?? null }}
+          onChange={({ stroke, effects }, key) => update((e) => (e.type === "text" ? { ...e, stroke, effects } : e), key)}
+          size={el.fontSize}
+          fill={paintColor(el.fill) ?? "#111111"}
+          unit="px"
+          {...colorProps}
+        />
         <SliderField label={t("curve")} value={el.curve ?? 0} min={-100} max={100} onChange={(v) => text((x) => ({ ...x, curve: v || undefined }), "curve")} />
         <Row label={t("highlight")}>
           <div className="flex items-center gap-2">

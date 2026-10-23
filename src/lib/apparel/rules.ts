@@ -27,6 +27,24 @@ export const MIN_RASTER_DPI = 300;
 export const MIN_EMBROIDERY_TEXT_MM = 5;
 export const MIN_GARMENT_CONTRAST = 3;
 const CUT_TECHNIQUES = new Set<PrintTechnique>(["HEAT_TRANSFER_VINYL", "FLOCK"]);
+
+/** Techniques compatibles par famille de forme de lettrage (STYLE_TECHNIQUES de l'API). */
+const STYLE_TECHNIQUES: Record<string, PrintTechnique[]> = {
+  CLASSIC_OUTLINE: ["HEAT_TRANSFER_VINYL", "SCREEN_PRINT", "DTF", "SUBLIMATION"],
+  GEOMETRIC_INLINE: ["HEAT_TRANSFER_VINYL", "SCREEN_PRINT", "DTF", "SUBLIMATION"],
+  NOTCHED: ["HEAT_TRANSFER_VINYL", "SCREEN_PRINT", "DTF", "SUBLIMATION"],
+  RIBBON_3D: ["SUBLIMATION", "DTF", "DTG"],
+  HALFTONE: ["SCREEN_PRINT", "DTF", "DTG", "SUBLIMATION"],
+};
+
+/** Nom affiché des familles de style. */
+const STYLE_LABELS: Record<string, string> = {
+  CLASSIC_OUTLINE: "contour",
+  GEOMETRIC_INLINE: "liseré",
+  NOTCHED: "crans",
+  RIBBON_3D: "relief 3D",
+  HALFTONE: "trame de points",
+};
 const AD_KINDS = new Set<ElementKind>(["LOGO", "SPONSOR", "IMAGE"]);
 const TEXT_KINDS = new Set<ElementKind>(["TEXT", "PLAYER_NAME", "PLAYER_NUMBER"]);
 
@@ -100,7 +118,8 @@ function elementIssues(
       message: "Logo ou image importé : attestez détenir les droits ou l'autorisation de son titulaire",
     });
   }
-  for (const color of c.colors ?? []) {
+  // Couleurs au bord des lettres : le liseré ou la trame, à l'intérieur, ne touchent pas le tissu.
+  for (const color of c.edgeColors?.length ? c.edgeColors : (c.colors ?? [])) {
     const ratio = contrastRatio(color, garmentColor);
     if (ratio < MIN_GARMENT_CONTRAST) {
       issues.push({
@@ -126,6 +145,16 @@ function elementIssues(
       code: "NOT_CUTTABLE",
       severity: "error",
       message: "Le flex et le flocage ne permettent ni image, ni motif, ni dégradé",
+    });
+  }
+  const style = c.style;
+  const styleTechniques = style ? STYLE_TECHNIQUES[style] : undefined;
+  if (style && styleTechniques && !styleTechniques.includes(technique)) {
+    issues.push({
+      ...ref,
+      code: "STYLE_TECHNIQUE",
+      severity: "error",
+      message: `La forme « ${STYLE_LABELS[style] ?? style} » n'est pas réalisable avec cette technique`,
     });
   }
   if (technique === "EMBROIDERY" && TEXT_KINDS.has(el.kind) && el.heightMm < MIN_EMBROIDERY_TEXT_MM) {

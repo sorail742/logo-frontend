@@ -29,18 +29,20 @@ import { Input } from "@/components/ui/input";
 import { NumberField, Section, SliderField } from "@/components/studio/fields";
 import { FontCoverageNotice } from "@/components/studio/font-coverage";
 import { FontPicker } from "@/components/studio/font-picker";
+import { LetteringControls } from "@/components/studio/lettering-controls";
 import { ColorPicker } from "@/components/studio/paint-picker";
 import { PhotoEditor, type PhotoTab } from "@/components/studio/photo/photo-editor";
 import { errorMessage } from "@/lib/api/errors";
 import {
   fitInZone,
   isTextKind,
+  letteringFamily,
   photoPixelWidth,
   refitText,
   svgColors,
   textChecks,
 } from "@/lib/apparel/elements";
-import { toStudioElement, type EditorElement } from "@/lib/apparel/render";
+import { textFontSize, toStudioElement, type EditorElement } from "@/lib/apparel/render";
 import { MIN_RASTER_DPI, printDpi } from "@/lib/apparel/rules";
 import { separateInks } from "@/lib/apparel/separation";
 import type { ApparelContent, ApparelPhoto, PrintZone } from "@/lib/apparel/types";
@@ -309,30 +311,26 @@ function TextSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone
         onChange={(fill) => void write({ fill }, "fill")}
         brandColors={brandColors}
       />
-      <SliderField
-        label={t("outline")}
-        value={c.textOutline?.widthMm ?? 0}
-        min={0}
-        max={8}
-        step={0.5}
-        format={(v) => `${v} mm`}
-        onChange={(widthMm) =>
+      <LetteringControls
+        value={{
+          stroke: c.textOutline && c.textOutline.widthMm > 0 ? { color: c.textOutline.color, width: c.textOutline.widthMm } : null,
+          effects: c.effects ?? null,
+        }}
+        onChange={({ stroke, effects }, key) =>
           void write(
-            { textOutline: widthMm ? { color: c.textOutline?.color ?? "#ffffff", widthMm } : null },
-            "outline",
+            {
+              effects,
+              textOutline: stroke ? { color: stroke.color, widthMm: stroke.width } : null,
+              style: letteringFamily(stroke, effects),
+            },
+            key ?? "lettering",
           )
         }
+        size={textFontSize(el)}
+        fill={c.fill ?? "#111111"}
+        unit="mm"
+        brandColors={brandColors}
       />
-      {(c.textOutline?.widthMm ?? 0) > 0 && (
-        <ColorPicker
-          label={t("outlineColor")}
-          value={c.textOutline!.color}
-          onChange={(color) =>
-            void write({ textOutline: { widthMm: c.textOutline!.widthMm, color } }, "outline-color")
-          }
-          brandColors={brandColors}
-        />
-      )}
       <SliderField
         label={t("spacing")}
         value={c.letterSpacing ?? 0}

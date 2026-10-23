@@ -8,6 +8,7 @@ import { photoPlacement } from "@/lib/render/photo";
 import { backdropColor } from "./smart";
 import { relayout } from "./text";
 import type { DesignDoc, DesignElement, DesignPage, Paint, TextElement } from "./types";
+import { effectColors, mapEffectColors } from "./lettering";
 
 // Contrôle qualité d'une création, avant export : lisibilité (contraste WCAG, corps minimal),
 // impression (zone de sécurité, fond perdu, résolution des photos), cohérence de marque
@@ -90,7 +91,7 @@ function mapPaint(paint: Paint, fn: (c: string) => string): Paint {
 function elementColors(el: DesignElement): string[] {
   switch (el.type) {
     case "text":
-      return [...paintColors(el.fill), ...(el.stroke ? [el.stroke.color] : []), ...(el.highlight ? [el.highlight.color] : [])];
+      return [...paintColors(el.fill), ...(el.stroke ? [el.stroke.color] : []), ...(el.highlight ? [el.highlight.color] : []), ...effectColors(el.effects)];
     case "shape":
       return [...paintColors(el.fill), ...(el.stroke ? [el.stroke.color] : [])];
     case "icon":
@@ -109,6 +110,7 @@ function snapColors(el: DesignElement, palette: string[]): DesignElement {
         fill: mapPaint(el.fill, snap),
         stroke: el.stroke ? { ...el.stroke, color: snap(el.stroke.color) } : el.stroke,
         highlight: el.highlight ? { ...el.highlight, color: snap(el.highlight.color) } : el.highlight,
+        effects: mapEffectColors(el.effects, snap),
       };
     case "shape":
       return { ...el, fill: mapPaint(el.fill, snap), stroke: el.stroke ? { ...el.stroke, color: snap(el.stroke.color) } : el.stroke };
