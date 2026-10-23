@@ -51,6 +51,19 @@ import type {
 import type { ArtworkStyle } from "@/lib/render/artwork";
 import type { SiteContent } from "@/lib/render/site";
 import type { DesignDoc, StudioDesign, StudioDesignSummary } from "@/lib/studio/types";
+import type {
+  ApparelCheck,
+  ApparelDesign,
+  ApparelDesignInput,
+  ApparelDesignSummary,
+  ApparelElement,
+  ApparelRoster,
+  ApparelStatus,
+  ApparelTemplate,
+  PublicProof,
+  RosterSummary,
+  RulePreset,
+} from "@/lib/apparel/types";
 
 // Contrat du client API : une méthode par route REST (§13). Deux implémentations :
 // http.ts (API NestJS réelle) et mock/ (simulation locale).
@@ -288,6 +301,31 @@ export interface ApiClient {
     requestExport(sdid: string, input: StudioExportInput, idempotencyKey: string): Promise<JobAccepted>;
     /** Lot de 4 images (1 crédit), produit par le worker ; URL dans le résultat de la tâche. */
     generateImages(pid: string, input: StudioImagesInput, idempotencyKey: string): Promise<JobAccepted>;
+    /** Détourage par IA (1 crédit) : masque PNG en niveaux de gris, blanc = sujet conservé. */
+    cutout(pid: string, input: { image: string }, idempotencyKey: string): Promise<{ mask: string; costCredits: number }>;
+  };
+
+  /** Textile (Module 5) : t-shirts, polos, maillots ; BAT validé par le client sans compte. */
+  apparel: {
+    templates(): Promise<ApparelTemplate[]>;
+    rulePresets(): Promise<{ disclaimer: string; presets: RulePreset[] }>;
+    list(pid: string): Promise<ApparelDesignSummary[]>;
+    create(pid: string, input: ApparelDesignInput): Promise<ApparelDesign>;
+    get(did: string): Promise<ApparelDesign>;
+    /** Toute modification après l'envoi du BAT le révoque (nouvelle validation nécessaire). */
+    update(did: string, patch: Partial<Omit<ApparelDesignInput, "templateId">>): Promise<ApparelDesign>;
+    remove(did: string): Promise<void>;
+    /** Remplace tous les éléments (sauvegarde automatique de l'éditeur). */
+    saveElements(did: string, elements: ApparelElement[]): Promise<ApparelDesign>;
+    /** Contrôle complet : zones, technique, règlement sportif, effectif. */
+    check(did: string, input?: { printShopId?: string }): Promise<ApparelCheck>;
+    /** Effectif importé d'un CSV (nom, nom_imprime, numero, taille, poste, quantite). */
+    importRoster(did: string, csv: string, name?: string): Promise<{ roster: ApparelRoster; summary: RosterSummary }>;
+    /** Lien de BAT à envoyer au client (422 tant que des erreurs subsistent). */
+    proof(did: string): Promise<{ token: string; url: string }>;
+    revokeProof(did: string): Promise<{ revoked: true }>;
+    publicProof(token: string): Promise<PublicProof>;
+    approveProof(token: string, approverName: string): Promise<{ status: ApparelStatus; approvedAt: string | null }>;
   };
 
   websites: {

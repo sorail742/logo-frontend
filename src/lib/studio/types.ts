@@ -1,4 +1,5 @@
 import type { IconNode } from "@/lib/render/icons";
+import type { PhotoAdjust, PhotoCrop, PhotoGlow, PhotoOutline } from "@/lib/render/photo";
 
 // Document du Studio de création : pages, éléments positionnés en px dans le repère de la page
 // (origine en haut à gauche, rotation autour du centre). Même contrat que l'API (render/design.ts),
@@ -31,7 +32,26 @@ export interface Shadow {
   opacity: number;
 }
 
-export type BlendMode = "normal" | "multiply" | "screen" | "overlay" | "darken" | "lighten" | "soft-light";
+/** Modes de fusion des calques (mix-blend-mode CSS, rendus aussi par l'API). */
+export const BLEND_MODES = [
+  "normal",
+  "multiply",
+  "screen",
+  "overlay",
+  "darken",
+  "lighten",
+  "color-dodge",
+  "color-burn",
+  "hard-light",
+  "soft-light",
+  "difference",
+  "exclusion",
+  "hue",
+  "saturation",
+  "color",
+  "luminosity",
+] as const;
+export type BlendMode = (typeof BLEND_MODES)[number];
 
 /** Rôle sémantique d'un élément : redimensionnement magique, application de la marque, contrôles. */
 export type ElementRole = "background" | "title" | "subtitle" | "body" | "logo" | "cta" | "photo" | "decor" | "info";
@@ -122,7 +142,19 @@ export interface ImageElement extends ElementBase {
   focusY?: number;
   mask: "none" | "circle" | "rounded" | "arch" | "blob";
   radius?: number;
+  /** Anciens filtres simples (documents existants) ; remplacés par `adjust` à la première retouche. */
   filters?: ImageFilters;
+  /** Réglages de retouche non destructifs (src/lib/render/photo.ts). */
+  adjust?: PhotoAdjust;
+  /** Recadrage dans l'image d'origine, en proportions. */
+  crop?: PhotoCrop | null;
+  /** Redressement, en degrés (-45 à 45). */
+  straighten?: number;
+  /** Masque de détourage : PNG en niveaux de gris (blanc = visible) aligné sur l'image entière. */
+  cutout?: string | null;
+  /** Contour « autocollant » autour de la forme visible. */
+  outline?: PhotoOutline | null;
+  glow?: PhotoGlow | null;
 }
 
 /** SVG prêt à l'emploi : logo du projet, cachet, illustration (balisage nettoyé). */

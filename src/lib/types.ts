@@ -476,6 +476,8 @@ export type PhotoOrientation = "landscape" | "portrait" | "square";
 export interface LibraryCapabilities {
   aiImages: { provider: string; demo: boolean };
   photos: boolean;
+  /** Détourage automatique par IA (fournisseur configuré sur l'API). */
+  cutout?: boolean;
 }
 
 export interface LibraryFont {

@@ -5,7 +5,8 @@
     "lock": "Lock",
     "unlock": "Unlock",
     "delete": "Delete",
-    "cropHint": "Drag to frame the photo · Enter or Esc to finish"
+    "cropHint": "Drag to frame the photo · Enter or Esc to finish",
+    "editText": "Text being edited"
   },
   "paint": {
     "saturation": "Saturation and brightness",
@@ -98,7 +99,16 @@
       "overlay": "Overlay",
       "darken": "Darken",
       "lighten": "Lighten",
-      "soft-light": "Soft light"
+      "soft-light": "Soft light",
+      "color-dodge": "Color dodge",
+      "color-burn": "Color burn",
+      "hard-light": "Hard light",
+      "difference": "Difference",
+      "exclusion": "Exclusion",
+      "hue": "Hue",
+      "saturation": "Saturation",
+      "color": "Color",
+      "luminosity": "Luminosity"
     },
     "shadow": "Shadow",
     "shadows": {
@@ -168,17 +178,6 @@
       "blob": "Organic"
     },
     "filters": "Adjustments",
-    "filterPresets": {
-      "original": "Original",
-      "mono": "Black & white",
-      "vivid": "Vivid",
-      "soft": "Soft",
-      "dramatic": "Dramatic",
-      "dreamy": "Dreamy"
-    },
-    "brightness": "Brightness",
-    "contrast": "Contrast",
-    "saturation": "Saturation",
     "logoVariant": "Logo version",
     "logoVariants": {
       "color": "Color",
@@ -202,7 +201,9 @@
     "tipAlt": "Alt + drag creates a copy of the element.",
     "tipShift": "Shift constrains moves and proportions; Ctrl turns snapping off.",
     "tipSpace": "Space + drag pans the view; Ctrl + wheel zooms.",
-    "tipDouble": "Double-click a text to type, a photo to crop it."
+    "tipDouble": "Double-click a text to type, a photo to crop it.",
+    "reframe": "Reframe",
+    "reframeHint": "Move the photo inside its frame"
   },
   "templates": {
     "intro": "Layouts in your colors, with your logo and fonts, composed for this design's format.",
@@ -661,6 +662,7 @@
       "zoom": "Ctrl + wheel",
       "fit": "Ctrl 0 / 1",
       "export": "Ctrl E",
+      "present": "Ctrl Enter",
       "pages": "Page Up / Down",
       "comment": "C"
     },
@@ -684,6 +686,7 @@
       "zoom": "Zoom",
       "fit": "Fit to screen / actual size",
       "export": "Export",
+      "present": "Present full screen",
       "pages": "Previous / next page",
       "comment": "Comment mode"
     }
@@ -873,5 +876,159 @@
     "preview": "QR code preview",
     "add": "Add to design",
     "printTip": "When printing, keep it at least 2 cm wide and test the scan with your phone before printing."
+  },
+  "photo": {
+    "title": "Photo workshop",
+    "description": "Non-destructive edits: the original photo stays intact, the preview matches the export.",
+    "open": "Edit",
+    "auto": "Auto",
+    "autoDone": "Auto enhance applied",
+    "compare": "Before / after",
+    "compareHint": "Hold to see the original photo",
+    "resetAll": "Reset all",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "loading": "Loading the photo…",
+    "removeBackground": "Cut out / remove background",
+    "tabs": {
+      "adjust": "Adjust",
+      "curves": "Curves",
+      "presets": "Filters",
+      "crop": "Crop",
+      "cutout": "Cut out"
+    },
+    "groups": {
+      "light": "Light",
+      "color": "Colour",
+      "detail": "Detail",
+      "effects": "Effects",
+      "tone": "Toning"
+    },
+    "adjust": {
+      "exposure": "Exposure",
+      "contrast": "Contrast",
+      "highlights": "Highlights",
+      "shadows": "Shadows",
+      "whites": "Whites",
+      "blacks": "Blacks",
+      "brightness": "Midtones",
+      "temperature": "Temperature",
+      "tint": "Tint",
+      "vibrance": "Vibrance",
+      "saturation": "Saturation",
+      "hue": "Hue shift",
+      "clarity": "Clarity",
+      "sharpen": "Sharpen",
+      "blur": "Blur",
+      "vignette": "Vignette",
+      "grain": "Grain",
+      "fade": "Matte fade"
+    },
+    "tones": {
+      "color": "Colour",
+      "mono": "Black & white",
+      "sepia": "Sepia",
+      "duotone": "Duotone"
+    },
+    "duotoneDark": "Shadows",
+    "duotoneLight": "Highlights",
+    "invert": "Negative",
+    "resetGroup": "Reset group",
+    "whitePicker": "White balance picker",
+    "pickHint": "Click an area that should be white or grey",
+    "histogram": "Histogram",
+    "curves": "Tone curves",
+    "channel": "Channel",
+    "channels": {
+      "rgb": "RGB",
+      "r": "R",
+      "g": "G",
+      "b": "B"
+    },
+    "resetCurve": "Reset",
+    "curvesHint": "Click to add a point, drag to move it, double-click or drag it out of the box to remove it.",
+    "presets": {
+      "original": "Original",
+      "auto": "Auto",
+      "vivid": "Vivid",
+      "warm": "Warm",
+      "cool": "Cool",
+      "golden": "Golden hour",
+      "matte": "Matte",
+      "vintage": "Vintage",
+      "mono": "B&W",
+      "noir": "Noir",
+      "fade-mono": "Soft B&W",
+      "dramatic": "Dramatic",
+      "cinema": "Cinema",
+      "bright": "Bright",
+      "duotone-sunset": "Sunset",
+      "duotone-ocean": "Ocean"
+    },
+    "aspect": "Aspect ratio",
+    "aspects": {
+      "free": "Free",
+      "frame": "Frame",
+      "original": "Original"
+    },
+    "straighten": "Straighten",
+    "angle": "Angle",
+    "flipX": "Mirror",
+    "flipY": "Flip",
+    "resetCrop": "Reset",
+    "cropHint": "Drag the area or its handles. Choosing another ratio than the frame's resizes the frame when applying.",
+    "cutoutAuto": "Automatic cut-out",
+    "cutoutAi": "Cut out the subject (AI)",
+    "cutoutAiUnavailable": "AI cut-out is not enabled on this platform: use plain background, magic wand or brushes.",
+    "cutoutDone": "Subject cut out ({cost, plural, =0 {no credit} one {# credit} other {# credits}})",
+    "cutoutPlain": "Remove plain background",
+    "tolerance": "Tolerance",
+    "holes": "Inner areas too",
+    "tools": "Tools",
+    "cutoutTools": {
+      "erase": "Eraser",
+      "restore": "Restore",
+      "wand": "Wand"
+    },
+    "contiguous": "Contiguous area only",
+    "wandHint": "Click to remove an area of similar colour; Alt + click to bring it back.",
+    "brushSize": "Size",
+    "hardness": "Hardness",
+    "invertMask": "Invert",
+    "resetMask": "Restore all",
+    "showMask": "Show removed areas in red",
+    "edges": "Edges",
+    "feather": "Smooth",
+    "contract": "Contract",
+    "sticker": "Outline and glow",
+    "outline": "Outline",
+    "outlineColor": "Outline colour",
+    "glow": "Glow",
+    "glowColor": "Glow colour",
+    "resetValue": "Back to the default value",
+    "maskCanvas": "Cutout mask: paint to erase or restore"
+  },
+  "presentation": {
+    "present": "Present",
+    "title": "Presentation",
+    "slide": "Slide {number}",
+    "current": "{label}, slide {number} of {total}",
+    "counter": "{current} / {total}",
+    "previous": "Previous",
+    "next": "Next",
+    "controls": "Presentation controls",
+    "transition": "Transition",
+    "transitions": {
+      "fade": "Fade",
+      "slide": "Slide",
+      "zoom": "Zoom",
+      "none": "None"
+    },
+    "overview": "Overview",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen",
+    "exit": "Exit presentation",
+    "blank": "Screen hidden",
+    "hint": "← → to navigate · G overview · B black screen · Esc to exit"
   }
 }

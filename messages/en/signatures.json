@@ -119,6 +119,7 @@
     "officialWarning": "Official terms detected: {terms}. The stamp will go through manual review."
   },
   "inks": {
+    "label": "Ink colour",
     "blue": "Blue",
     "violet": "Purple",
     "red": "Red",

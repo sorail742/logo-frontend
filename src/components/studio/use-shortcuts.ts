@@ -10,7 +10,7 @@ function typing(target: EventTarget | null) {
   return target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
 }
 
-export function useStudioShortcuts(handlers: { onExport(): void; onHelp(): void }) {
+export function useStudioShortcuts(handlers: { onExport(): void; onHelp(): void; onPresent(): void }) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       // Saisie dans un champ, ou focus dans une fenêtre ou un menu ouvert : pas de raccourci.
@@ -42,6 +42,7 @@ export function useStudioShortcuts(handlers: { onExport(): void; onHelp(): void 
       });
       if (mod && key === "v" && state.clipboard.length) return run(() => state.paste());
       if (mod && key === "e") return run(() => handlers.onExport());
+      if (mod && key === "enter") return run(() => handlers.onPresent());
       if (mod && (key === "=" || key === "+")) return run(() => state.zoomAt(state.zoom * 1.25));
       if (mod && key === "-") return run(() => state.zoomAt(state.zoom / 1.25));
       if (mod && key === "0") return run(() => state.fit());

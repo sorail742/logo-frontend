@@ -5,7 +5,8 @@
     "lock": "Verrouiller",
     "unlock": "Déverrouiller",
     "delete": "Supprimer",
-    "cropHint": "Glissez pour cadrer la photo · Entrée ou Échap pour terminer"
+    "cropHint": "Glissez pour cadrer la photo · Entrée ou Échap pour terminer",
+    "editText": "Texte en cours de modification"
   },
   "paint": {
     "saturation": "Saturation et luminosité",
@@ -98,7 +99,16 @@
       "overlay": "Incrustation",
       "darken": "Obscurcir",
       "lighten": "Éclaircir",
-      "soft-light": "Lumière tamisée"
+      "soft-light": "Lumière tamisée",
+      "color-dodge": "Densité couleur −",
+      "color-burn": "Densité couleur +",
+      "hard-light": "Lumière crue",
+      "difference": "Différence",
+      "exclusion": "Exclusion",
+      "hue": "Teinte",
+      "saturation": "Saturation",
+      "color": "Couleur",
+      "luminosity": "Luminosité"
     },
     "shadow": "Ombre",
     "shadows": {
@@ -168,17 +178,6 @@
       "blob": "Forme libre"
     },
     "filters": "Retouches",
-    "filterPresets": {
-      "original": "Originale",
-      "mono": "Noir & blanc",
-      "vivid": "Éclatante",
-      "soft": "Douce",
-      "dramatic": "Dramatique",
-      "dreamy": "Rêveuse"
-    },
-    "brightness": "Luminosité",
-    "contrast": "Contraste",
-    "saturation": "Saturation",
     "logoVariant": "Version du logo",
     "logoVariants": {
       "color": "Couleur",
@@ -202,7 +201,9 @@
     "tipAlt": "Alt + glisser crée une copie de l'élément.",
     "tipShift": "Maj contraint les déplacements et les proportions ; Ctrl désactive l'aimantation.",
     "tipSpace": "Espace + glisser déplace la vue ; Ctrl + molette zoome.",
-    "tipDouble": "Double-cliquez sur un texte pour l'écrire, sur une photo pour la cadrer."
+    "tipDouble": "Double-cliquez sur un texte pour l'écrire, sur une photo pour la cadrer.",
+    "reframe": "Cadrer",
+    "reframeHint": "Déplacer la photo dans son cadre"
   },
   "templates": {
     "intro": "Des compositions à vos couleurs, avec votre logo et vos polices, adaptées au format de cette création.",
@@ -661,6 +662,7 @@
       "zoom": "Ctrl + molette",
       "fit": "Ctrl 0 / 1",
       "export": "Ctrl E",
+      "present": "Ctrl Entrée",
       "pages": "Pg préc. / Pg suiv.",
       "comment": "C"
     },
@@ -684,6 +686,7 @@
       "zoom": "Zoomer",
       "fit": "Ajuster à l'écran / taille réelle",
       "export": "Exporter",
+      "present": "Présenter en plein écran",
       "pages": "Page précédente / suivante",
       "comment": "Mode commentaire"
     }
@@ -873,5 +876,159 @@
     "preview": "Aperçu du QR code",
     "add": "Ajouter à la création",
     "printTip": "À l'impression, gardez au moins 2 cm de côté et testez le scan avec votre téléphone avant de tirer."
+  },
+  "photo": {
+    "title": "Atelier photo",
+    "description": "Retouches non destructives : la photo d'origine reste intacte, l'aperçu est celui de l'export.",
+    "open": "Retoucher",
+    "auto": "Auto",
+    "autoDone": "Amélioration automatique appliquée",
+    "compare": "Avant / après",
+    "compareHint": "Maintenez pour voir la photo d'origine",
+    "resetAll": "Tout réinitialiser",
+    "cancel": "Annuler",
+    "apply": "Appliquer",
+    "loading": "Chargement de la photo…",
+    "removeBackground": "Détourer / supprimer le fond",
+    "tabs": {
+      "adjust": "Réglages",
+      "curves": "Courbes",
+      "presets": "Filtres",
+      "crop": "Recadrer",
+      "cutout": "Détourer"
+    },
+    "groups": {
+      "light": "Lumière",
+      "color": "Couleur",
+      "detail": "Détail",
+      "effects": "Effets",
+      "tone": "Virage"
+    },
+    "adjust": {
+      "exposure": "Exposition",
+      "contrast": "Contraste",
+      "highlights": "Hautes lumières",
+      "shadows": "Ombres",
+      "whites": "Blancs",
+      "blacks": "Noirs",
+      "brightness": "Tons moyens",
+      "temperature": "Température",
+      "tint": "Teinte",
+      "vibrance": "Vibrance",
+      "saturation": "Saturation",
+      "hue": "Rotation teinte",
+      "clarity": "Clarté",
+      "sharpen": "Netteté",
+      "blur": "Flou",
+      "vignette": "Vignette",
+      "grain": "Grain",
+      "fade": "Voile mat"
+    },
+    "tones": {
+      "color": "Couleur",
+      "mono": "Noir et blanc",
+      "sepia": "Sépia",
+      "duotone": "Bichromie"
+    },
+    "duotoneDark": "Ombres",
+    "duotoneLight": "Lumières",
+    "invert": "Négatif",
+    "resetGroup": "Réinitialiser le groupe",
+    "whitePicker": "Pipette de balance des blancs",
+    "pickHint": "Cliquez sur une zone qui devrait être blanche ou grise",
+    "histogram": "Histogramme",
+    "curves": "Courbes de tons",
+    "channel": "Canal",
+    "channels": {
+      "rgb": "RVB",
+      "r": "R",
+      "g": "V",
+      "b": "B"
+    },
+    "resetCurve": "Réinitialiser",
+    "curvesHint": "Cliquez pour ajouter un point, glissez pour le déplacer, double-cliquez ou glissez hors du cadre pour le retirer.",
+    "presets": {
+      "original": "Original",
+      "auto": "Auto",
+      "vivid": "Éclatant",
+      "warm": "Chaud",
+      "cool": "Froid",
+      "golden": "Heure dorée",
+      "matte": "Mat",
+      "vintage": "Vintage",
+      "mono": "N&B",
+      "noir": "Noir",
+      "fade-mono": "N&B doux",
+      "dramatic": "Dramatique",
+      "cinema": "Cinéma",
+      "bright": "Lumineux",
+      "duotone-sunset": "Couchant",
+      "duotone-ocean": "Océan"
+    },
+    "aspect": "Proportions",
+    "aspects": {
+      "free": "Libre",
+      "frame": "Cadre",
+      "original": "Origine"
+    },
+    "straighten": "Redresser",
+    "angle": "Angle",
+    "flipX": "Miroir",
+    "flipY": "Retourner",
+    "resetCrop": "Réinitialiser",
+    "cropHint": "Glissez la zone ou ses poignées. Choisir d'autres proportions que celles du cadre adapte le cadre à l'application.",
+    "cutoutAuto": "Détourage automatique",
+    "cutoutAi": "Détourer le sujet (IA)",
+    "cutoutAiUnavailable": "Détourage IA non activé sur cette plateforme : utilisez le fond uni, la baguette ou les pinceaux.",
+    "cutoutDone": "Sujet détouré ({cost, plural, =0 {sans crédit} one {# crédit} other {# crédits}})",
+    "cutoutPlain": "Supprimer le fond uni",
+    "tolerance": "Tolérance",
+    "holes": "Aussi les zones intérieures",
+    "tools": "Outils",
+    "cutoutTools": {
+      "erase": "Gomme",
+      "restore": "Restaurer",
+      "wand": "Baguette"
+    },
+    "contiguous": "Zone contiguë seulement",
+    "wandHint": "Cliquez pour retirer une zone de couleur proche ; Alt + clic pour la rétablir.",
+    "brushSize": "Taille",
+    "hardness": "Dureté",
+    "invertMask": "Inverser",
+    "resetMask": "Tout rétablir",
+    "showMask": "Voir les zones retirées en rouge",
+    "edges": "Bords",
+    "feather": "Lissage",
+    "contract": "Contraction",
+    "sticker": "Contour et lueur",
+    "outline": "Contour",
+    "outlineColor": "Couleur du contour",
+    "glow": "Lueur",
+    "glowColor": "Couleur de la lueur",
+    "resetValue": "Revenir à la valeur par défaut",
+    "maskCanvas": "Masque de détourage : peignez pour gommer ou restaurer"
+  },
+  "presentation": {
+    "present": "Présenter",
+    "title": "Présentation",
+    "slide": "Diapositive {number}",
+    "current": "{label}, diapositive {number} sur {total}",
+    "counter": "{current} / {total}",
+    "previous": "Précédente",
+    "next": "Suivante",
+    "controls": "Commandes de la présentation",
+    "transition": "Transition",
+    "transitions": {
+      "fade": "Fondu",
+      "slide": "Glissement",
+      "zoom": "Zoom",
+      "none": "Aucune"
+    },
+    "overview": "Vue d'ensemble",
+    "fullscreen": "Plein écran",
+    "exitFullscreen": "Quitter le plein écran",
+    "exit": "Quitter la présentation",
+    "blank": "Écran masqué",
+    "hint": "← → pour naviguer · G vue d'ensemble · B écran noir · Échap pour quitter"
   }
 }

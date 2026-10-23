@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { SiteSectionType } from "@/lib/render/site";
 import { useTranslations } from "next-intl";
 import { Monitor, Smartphone } from "lucide-react";
@@ -54,7 +54,7 @@ function useSiteHtml(website: Website, content: SiteContent, brand: WebsiteBrand
  * Iframe rendue à la largeur d'un écran réel, réduite à la largeur disponible. La position de
  * lecture survit au rechargement de la page ; `focus` amène la section modifiée à l'écran.
  */
-function ScaledFrame({ html, width, title, focus }: { html: string; width: number; title: string; focus?: SiteSectionType | null }) {
+function ScaledFrame({ html, width, title, focus }: Readonly<{ html: string; width: number; title: string; focus?: SiteSectionType | null }>) {
   const box = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   const scrollY = useRef(0);
@@ -80,6 +80,14 @@ function ScaledFrame({ html, width, title, focus }: { html: string; width: numbe
     win.addEventListener("scroll", () => (scrollY.current = win.scrollY), { passive: true });
   };
 
+  // Position de lecture rétablie à chaque rechargement du document de l'aperçu.
+  useLayoutEffect(() => {
+    const node = frame.current;
+    if (!node) return undefined;
+    node.addEventListener("load", onLoad);
+    return () => node.removeEventListener("load", onLoad);
+  });
+
   const scale = available ? Math.min(1, available / width) : 0;
   const height = 720;
   return (
@@ -89,7 +97,6 @@ function ScaledFrame({ html, width, title, focus }: { html: string; width: numbe
           ref={frame}
           title={title}
           srcDoc={html}
-          onLoad={onLoad}
           // Aucun script : l'éditeur lit seulement la position de lecture ; les liens externes s'ouvrent à part.
           sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
           className="origin-top-left border-0 bg-white"
@@ -111,13 +118,13 @@ export function SitePreview({
   brand,
   loading,
   focus,
-}: {
+}: Readonly<{
   website: Website;
   content: SiteContent;
   brand?: WebsiteBrand;
   loading: boolean;
   focus?: SiteSectionType | null;
-}) {
+}>) {
   const t = useTranslations("site.preview");
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const html = useSiteHtml(website, content, brand);
@@ -131,7 +138,8 @@ export function SitePreview({
           <span className="size-2.5 rounded-full bg-emerald-400" />
           <span className="ml-2 truncate text-xs text-muted-foreground">{website.url.replace(/^https?:\/\//, "")}</span>
         </div>
-        <div className="flex gap-1" role="group" aria-label={t("label")}>
+        <fieldset className="flex gap-1">
+          <legend className="sr-only">{t("label")}</legend>
           {(
             [
               ["desktop", Monitor],
@@ -151,7 +159,7 @@ export function SitePreview({
               <Icon />
             </Button>
           ))}
-        </div>
+        </fieldset>
       </div>
       <div className={cn("p-3", device === "mobile" && "flex justify-center")}>
         {brand && (

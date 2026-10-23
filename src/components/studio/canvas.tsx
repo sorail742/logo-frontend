@@ -24,7 +24,8 @@ import {
   type Handle,
   type Point,
 } from "@/lib/studio/geometry";
-import { elementTransform, imagePlacement, renderBackground, renderElement } from "@/lib/studio/render";
+import { photoPlacement } from "@/lib/render/photo";
+import { elementTransform, renderBackground, renderElement } from "@/lib/studio/render";
 import { isFrame } from "@/lib/studio/smart";
 import { naturalWidth, relayout } from "@/lib/studio/text";
 import type { DesignElement, DesignPage, ImageElement, TextElement } from "@/lib/studio/types";
@@ -86,11 +87,11 @@ type Gesture =
   /** Deux doigts : écartement et milieu au départ (repère de l'écran), vue de départ. */
   | { type: "pinch"; distance: number; mid: Point; zoom: number; panX: number; panY: number };
 
-const ElementLayer = memo(function ElementLayer({ el }: { el: DesignElement }) {
+const ElementLayer = memo(function ElementLayer({ el }: Readonly<{ el: DesignElement }>) {
   return <g data-el={el.id} dangerouslySetInnerHTML={{ __html: renderElement(el) }} />;
 });
 
-const BackgroundLayer = memo(function BackgroundLayer({ page, width, height }: { page: DesignPage; width: number; height: number }) {
+const BackgroundLayer = memo(function BackgroundLayer({ page, width, height }: Readonly<{ page: DesignPage; width: number; height: number }>) {
   return <g dangerouslySetInnerHTML={{ __html: renderBackground(page, { width, height }) }} />;
 });
 
@@ -532,7 +533,8 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
       }
       case "crop": {
         const el = g.original;
-        const place = imagePlacement(el);
+        // Cadrage dans la zone recadrée (l'image entière quand elle n'est pas recadrée).
+        const place = photoPlacement(el).region;
         const local = rotatePoint({ x: p.x - g.start.x, y: p.y - g.start.y }, { x: 0, y: 0 }, -el.rotation);
         const overflowX = place.width - el.width;
         const overflowY = place.height - el.height;
@@ -582,14 +584,14 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
     const hit = hitTest(page.elements, p, 0);
     return { p, frame: hit && isFrame(hit) ? hit.id : null };
   };
-  const onDragOver = (event: DragEvent<HTMLDivElement>) => {
+  const onDragOver = (event: DragEvent<SVGSVGElement>) => {
     if (!event.dataTransfer.types.includes("Files")) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "copy";
     const { frame } = dropTarget(event);
     if (frame !== dropFrame) setDropFrame(frame);
   };
-  const onDrop = (event: DragEvent<HTMLDivElement>) => {
+  const onDrop = (event: DragEvent<SVGSVGElement>) => {
     const files = [...event.dataTransfer.files].filter((f) => f.type.startsWith("image/"));
     setDropFrame(null);
     if (!files.length) return;
@@ -673,10 +675,6 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
     <div
       ref={containerRef}
       className="relative min-h-0 flex-1 overflow-hidden bg-muted"
-      onDragOver={onDragOver}
-      onDragLeave={() => setDropFrame(null)}
-      onDrop={onDrop}
-      onPointerLeave={() => setHoverId(null)}
     >
       <svg
         ref={svgRef}
@@ -686,6 +684,10 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onDoubleClick={onDoubleClick}
+        onPointerLeave={() => setHoverId(null)}
+        onDragOver={onDragOver}
+        onDragLeave={() => setDropFrame(null)}
+        onDrop={onDrop}
         role="application"
         aria-label={t("label")}
       >
@@ -736,11 +738,11 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
           {selectionBox && <rect {...{ x: toScreen(selectionBox).x, y: toScreen(selectionBox).y, width: selectionBox.width * zoom, height: selectionBox.height * zoom }} className="pointer-events-none fill-none stroke-primary" strokeDasharray="4 3" />}
           {showHandles && !allLocked && !editing && !crop && single && renderHandles(single, single.rotation, handlesFor(single, single.width * zoom, single.height * zoom))}
           {showHandles && !allLocked && !editing && selectionBox && renderHandles(selectionBox, 0, CORNERS)}
-          {guides.map((g, i) =>
+          {guideLines(guides).map(({ key, g }) =>
             g.axis === "x" ? (
-              <line key={i} x1={panX + g.position * zoom} x2={panX + g.position * zoom} y1={panY + g.from * zoom} y2={panY + g.to * zoom} className="pointer-events-none stroke-fuchsia-500" strokeWidth={1} />
+              <line key={key} x1={panX + g.position * zoom} x2={panX + g.position * zoom} y1={panY + g.from * zoom} y2={panY + g.to * zoom} className="pointer-events-none stroke-fuchsia-500" strokeWidth={1} />
             ) : (
-              <line key={i} y1={panY + g.position * zoom} y2={panY + g.position * zoom} x1={panX + g.from * zoom} x2={panX + g.to * zoom} className="pointer-events-none stroke-fuchsia-500" strokeWidth={1} />
+              <line key={key} y1={panY + g.position * zoom} y2={panY + g.position * zoom} x1={panX + g.from * zoom} x2={panX + g.to * zoom} className="pointer-events-none stroke-fuchsia-500" strokeWidth={1} />
             ),
           )}
           {marquee && <rect x={toScreen(marquee).x} y={toScreen(marquee).y} width={marquee.width * zoom} height={marquee.height * zoom} className="pointer-events-none fill-primary/10 stroke-primary" strokeWidth={1} />}
@@ -791,12 +793,14 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
 }
 
 /** Photo entière en transparence pendant le recadrage. */
-function CropGhost({ el }: { el: ImageElement }) {
-  const place = imagePlacement(el);
+function CropGhost({ el }: Readonly<{ el: ImageElement }>) {
+  const { image, region, transform } = photoPlacement(el);
   return (
     <g transform={elementTransform(el)} opacity={0.4}>
-      <image href={el.src} x={place.x} y={place.y} width={place.width} height={place.height} preserveAspectRatio="none" />
-      <rect x={place.x} y={place.y} width={place.width} height={place.height} className="fill-none stroke-primary" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />
+      <g transform={transform ?? undefined}>
+        <image href={el.src} x={image.x} y={image.y} width={image.width} height={image.height} preserveAspectRatio="none" />
+        <rect x={region.x} y={region.y} width={region.width} height={region.height} className="fill-none stroke-primary" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />
+      </g>
     </g>
   );
 }
@@ -816,7 +820,14 @@ function autoWidth(el: TextElement, text: string, pageWidth: number): TextElemen
 }
 
 /** Édition du texte en place : zone de saisie aux mêmes police, corps et interlignage. */
-function TextEditor({ el, zoom, panX, panY }: { el: TextElement; zoom: number; panX: number; panY: number }) {
+/** Repères affichés une seule fois, avec une clé stable (axe, position, étendue). */
+function guideLines(guides: Guide[]) {
+  const unique = new Map(guides.map((g) => [`${g.axis}:${g.position}:${g.from}:${g.to}`, g]));
+  return [...unique].map(([key, g]) => ({ key, g }));
+}
+
+function TextEditor({ el, zoom, panX, panY }: Readonly<{ el: TextElement; zoom: number; panX: number; panY: number }>) {
+  const t = useTranslations("studio.canvas");
   const ref = useRef<HTMLTextAreaElement>(null);
   const id = el.id;
 
@@ -837,6 +848,7 @@ function TextEditor({ el, zoom, panX, panY }: { el: TextElement; zoom: number; p
     <textarea
       ref={ref}
       value={el.text}
+      aria-label={t("editText")}
       spellCheck
       onChange={(event) => {
         const text = event.target.value;
