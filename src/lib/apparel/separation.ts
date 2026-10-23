@@ -2,6 +2,7 @@ import { rgbToHex } from "@/lib/render/color";
 import { renderElement } from "@/lib/studio/render";
 import { svgPixels } from "@/lib/studio/pixels";
 import type { ImageElement } from "@/lib/studio/types";
+import { omit } from "@/lib/object";
 import type { ApparelPhoto } from "./types";
 
 // Séparation en tons directs (sérigraphie) : la photo retouchée est rendue à 300 dpi à sa
@@ -124,7 +125,7 @@ export async function separateInks(
   canvas.width = pixels.width;
   canvas.height = pixels.height;
   canvas.getContext("2d")!.putImageData(new ImageData(out, pixels.width, pixels.height), 0, 0);
-  const { original: _previous, ...source } = photo;
+  const source = omit(photo, ["original"]);
   const separated: ApparelPhoto = {
     src: canvas.toDataURL("image/png"),
     naturalWidth: pixels.width,

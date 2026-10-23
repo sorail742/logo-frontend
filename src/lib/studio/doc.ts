@@ -1,4 +1,5 @@
 import type { IconNode } from "@/lib/render/icons";
+import { randomId, randomInt } from "@/lib/random";
 import type { DesignFormat } from "./formats";
 import type {
   DesignDoc,
@@ -16,8 +17,7 @@ import type {
 // Création et transformations pures du document (aucune dépendance au navigateur).
 
 export function newId() {
-  const random = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID().replace(/-/g, "") : Math.random().toString(36).slice(2);
-  return random.slice(0, 12);
+  return randomId().replaceAll("-", "").slice(0, 12);
 }
 
 export const solid = (color: string): Paint => ({ type: "solid", color });
@@ -69,7 +69,7 @@ export function createShape(shape: ShapeKind, patch: Partial<ShapeElement> = {})
     radius: shape === "rect" ? 0 : undefined,
     sides: shape === "polygon" ? 6 : shape === "star" ? 5 : undefined,
     innerRatio: shape === "star" ? 0.5 : undefined,
-    seed: shape === "blob" ? Math.floor(Math.random() * 1000) : undefined,
+    seed: shape === "blob" ? randomInt(1000) : undefined,
     ...patch,
   };
 }

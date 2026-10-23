@@ -261,7 +261,8 @@ function renderImage(el: ImageElement, pid: string, defs: string[]) {
   const filter = el.adjust ? adjustFilter(`${pid}-img`, el.adjust, Math.max(region.width, region.height)) : imageFilter(`${pid}-img`, el);
   if (filter) defs.push(filter);
   const box = `x="${n(image.x)}" y="${n(image.y)}" width="${n(image.width)}" height="${n(image.height)}"`;
-  let body = `<image href="${escapeXml(el.src)}" ${box} preserveAspectRatio="none"${filter ? ` filter="url(#${pid}-img)"` : ""}/>`;
+  const filterAttr = filter ? ` filter="url(#${pid}-img)"` : "";
+  let body = `<image href="${escapeXml(el.src)}" ${box} preserveAspectRatio="none"${filterAttr}/>`;
   const vignette = el.adjust?.vignette ?? 0;
   if (vignette) {
     defs.push(vignetteGradient(`${pid}-vig`, vignette, region));

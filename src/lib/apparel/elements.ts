@@ -1,5 +1,6 @@
 import { normalizeHex } from "@/lib/render/color";
 import { getFont } from "@/lib/render/fonts";
+import { randomId } from "@/lib/random";
 import { svgParts } from "@/lib/studio/render";
 import { measureText } from "@/lib/studio/text";
 import { arcSagitta, type EditorElement } from "./render";
@@ -9,10 +10,7 @@ import type { ApparelContent, ApparelPhoto, ElementKind, PrintZone } from "./typ
 // élément est dimensionné pour sa zone et porte les informations lues par les contrôles
 // (couleurs imprimées, trait le plus fin, pixels utiles, origine et droits).
 
-export const newElementId = () =>
-  typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `el-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+export const newElementId = () => randomId();
 
 export type TextKind = Extract<ElementKind, "TEXT" | "PLAYER_NAME" | "PLAYER_NUMBER">;
 export const TEXT_KINDS: TextKind[] = ["TEXT", "PLAYER_NAME", "PLAYER_NUMBER"];

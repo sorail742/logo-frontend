@@ -62,8 +62,11 @@ export function useBrandLogos(lid: string | undefined) {
   }, [variants.data, logo.data]);
 }
 
-export function StudioEditor({ sdid }: { sdid: string }) {
+export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
   const t = useTranslations("studio");
+  const backLabel = t("editor.back");
+  const propertiesLabel = t("editor.properties");
+  const presentLabel = t("presentation.present");
   const onError = useApiErrorToast();
   const queryClient = useQueryClient();
   const { workspaces } = useWorkspace();
@@ -219,7 +222,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
       <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
         <p className="text-lg font-semibold">{t("editor.notFound")}</p>
         <Button render={<Link href="/app" />} nativeButton={false}>
-          {t("editor.back")}
+          {backLabel}
         </Button>
       </div>
     );
@@ -231,9 +234,9 @@ export function StudioEditor({ sdid }: { sdid: string }) {
         <div className="flex h-14 items-center gap-3 border-b px-4">
           <Skeleton className="h-6 w-40" />
         </div>
-        <div className="flex flex-1 items-center justify-center bg-muted" role="status" aria-label={t("editor.loading")}>
+        <output className="flex flex-1 items-center justify-center bg-muted" aria-label={t("editor.loading")}>
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
-        </div>
+        </output>
       </div>
     );
   }
@@ -248,7 +251,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
     <StudioContext.Provider value={context}>
       <div className="flex h-svh flex-col overflow-hidden bg-background">
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
-          <Button variant="ghost" size="icon" render={<Link href={`/app/projets/${meta.projectId}/studio`} />} nativeButton={false} aria-label={t("editor.back")} title={t("editor.back")}>
+          <Button variant="ghost" size="icon" render={<Link href={`/app/projets/${meta.projectId}/studio`} />} nativeButton={false} aria-label={backLabel} title={backLabel}>
             <ArrowLeft />
           </Button>
           <Link href="/app" className="hidden shrink-0 sm:block" aria-label={t("editor.home")}>
@@ -295,13 +298,13 @@ export function StudioEditor({ sdid }: { sdid: string }) {
               {t("editor.resize")}
             </Button>
             {canEdit && (
-              <Button variant="outline" size="icon" className="lg:hidden" onClick={() => setPropertiesOpen(true)} aria-label={t("editor.properties")} title={t("editor.properties")}>
+              <Button variant="outline" size="icon" className="lg:hidden" onClick={() => setPropertiesOpen(true)} aria-label={propertiesLabel} title={propertiesLabel}>
                 <SlidersHorizontal />
               </Button>
             )}
-            <Button variant="outline" onClick={() => setPresenting(useStudio.getState().pageIndex)} aria-label={t("presentation.present")} title={`${t("presentation.present")} (Ctrl+Entrée)`}>
+            <Button variant="outline" onClick={() => setPresenting(useStudio.getState().pageIndex)} aria-label={presentLabel} title={`${presentLabel} (Ctrl+Entrée)`}>
               <Play />
-              <span className="max-md:hidden">{t("presentation.present")}</span>
+              <span className="max-md:hidden">{presentLabel}</span>
             </Button>
             <Button onClick={() => setDialog("export")} aria-label={t("editor.export")}>
               <Download />
@@ -317,7 +320,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
             <PageStrip />
           </main>
           {canEdit && (
-            <aside className="hidden w-[288px] shrink-0 border-l bg-background lg:block" aria-label={t("editor.properties")}>
+            <aside className="hidden w-[288px] shrink-0 border-l bg-background lg:block" aria-label={propertiesLabel}>
               <Inspector />
             </aside>
           )}
@@ -326,6 +329,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
         <input
           ref={fileInput}
           type="file"
+          aria-label={t("uploads.import")}
           accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
           multiple
           hidden
@@ -347,7 +351,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
           <Sheet open={propertiesOpen} onOpenChange={setPropertiesOpen}>
             <SheetContent side="right" className="w-[300px] gap-0 p-0 lg:hidden">
               <SheetHeader className="border-b">
-                <SheetTitle>{t("editor.properties")}</SheetTitle>
+                <SheetTitle>{propertiesLabel}</SheetTitle>
               </SheetHeader>
               <div className="min-h-0 flex-1">
                 <Inspector />
@@ -361,7 +365,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
 }
 
 /** Lien « ?presenter=1 » (liste des créations) : présentation ouverte dès le chargement. */
-function OpenPresentation({ onOpen }: { onOpen(): void }) {
+function OpenPresentation({ onOpen }: Readonly<{ onOpen(): void }>) {
   const params = useSearchParams();
   const done = useRef(false);
   const wanted = params.get("presenter") === "1";
@@ -392,7 +396,7 @@ function OpenLinkedThread() {
   return null;
 }
 
-function SaveIndicator({ state, readOnly }: { state: SaveState; readOnly: boolean }) {
+function SaveIndicator({ state, readOnly }: Readonly<{ state: SaveState; readOnly: boolean }>) {
   const t = useTranslations("studio.editor");
   if (readOnly) return <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{t("readOnly")}</span>;
   const content = {
@@ -402,10 +406,10 @@ function SaveIndicator({ state, readOnly }: { state: SaveState; readOnly: boolea
     error: { icon: <CloudOff className="size-3.5 text-destructive" />, label: t("saveError") },
   }[state];
   return (
-    <span className="hidden items-center gap-1.5 text-xs text-muted-foreground md:flex" role="status" aria-live="polite">
+    <output className="hidden items-center gap-1.5 text-xs text-muted-foreground md:flex" aria-live="polite">
       {content.icon}
       {content.label}
-    </span>
+    </output>
   );
 }
 
@@ -434,7 +438,7 @@ const SHORTCUTS = [
   "pages",
 ] as const;
 
-function ShortcutsDialog({ open, onOpenChange }: { open: boolean; onOpenChange(open: boolean): void }) {
+function ShortcutsDialog({ open, onOpenChange }: Readonly<{ open: boolean; onOpenChange(open: boolean): void }>) {
   const t = useTranslations("studio.shortcuts");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -1,5 +1,6 @@
 import type { ApiClient, Session } from "../contract";
 import { ApiError, problem } from "../errors";
+import { randomString } from "@/lib/random";
 import { tokenStore } from "../token";
 import {
   JOB_DURATIONS,
@@ -50,7 +51,15 @@ import type {
   WorkspaceRole,
 } from "@/lib/types";
 
-const wait = (ms = 180) => new Promise((resolve) => setTimeout(resolve, ms));
+/** Base64 d'un texte UTF-8 (SVG avec accents) pour une data URL. */
+function base64Utf8(text: string) {
+  return btoa(Array.from(new TextEncoder().encode(text), (byte) => String.fromCodePoint(byte)).join(""));
+}
+
+const wait = (ms = 180) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
 const today = () => new Date().toISOString().slice(0, 10);
 
 function currentUser() {
@@ -134,6 +143,9 @@ function studioDesign(sdid: string) {
   return design;
 }
 
+const ROSTER_INVALID = "Fichier d’effectif invalide";
+const NAME_NOT_FOUND = "Nom introuvable";
+
 // Textile : tenues rangées à part (images intégrées), sous une clé dédiée du navigateur.
 const APPAREL_KEY = "identite:mock-apparel:v1";
 const RULES_DISCLAIMER = "Les préréglages reprennent les principales règles connues ; le règlement officiel de la compétition fait foi.";
@@ -209,13 +221,13 @@ function parseRoster(csv: string): RosterEntry[] {
   const separator = (lines[0] ?? "").includes(";") ? ";" : ",";
   const header = (lines[0] ?? "").split(separator).map((h) => h.trim().toLowerCase());
   const missing = ["nom", "numero", "taille"].filter((c) => !header.includes(c));
-  if (!lines.length || missing.length) throw problem(422, "Fichier d’effectif invalide", "UNPROCESSABLE", `Colonnes manquantes : ${missing.join(", ") || "nom, numero, taille"}`);
+  if (!lines.length || missing.length) throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Colonnes manquantes : ${missing.join(", ") || "nom, numero, taille"}`);
   return lines.slice(1).map((line, i) => {
     const cells = line.split(separator).map((c) => c.trim());
     const get = (key: string) => cells[header.indexOf(key)] ?? "";
     const quantity = get("quantite") ? Number(get("quantite")) : 1;
-    if (!get("nom")) throw problem(422, "Fichier d’effectif invalide", "UNPROCESSABLE", `Ligne ${i + 2} : nom manquant`);
-    if (!Number.isInteger(quantity) || quantity < 1) throw problem(422, "Fichier d’effectif invalide", "UNPROCESSABLE", `Ligne ${i + 2} : quantité invalide`);
+    if (!get("nom")) throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Ligne ${i + 2} : nom manquant`);
+    if (!Number.isInteger(quantity) || quantity < 1) throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Ligne ${i + 2} : quantité invalide`);
     return { playerName: get("nom"), displayName: get("nom_imprime") || get("nom").toUpperCase(), number: get("numero") || null, size: get("taille").toUpperCase(), quantity, role: get("poste") || null };
   });
 }
@@ -269,7 +281,7 @@ function siteDto(site: MockSite): Website {
   const { messages, ...rest } = site;
   return structuredClone({
     ...rest,
-    dirty: site.published && !!site.publishedAt && site.updatedAt > site.publishedAt,
+    dirty: site.published && !!site.publishedAt && Date.parse(site.updatedAt) > Date.parse(site.publishedAt),
     url: `${typeof window === "undefined" ? "" : window.location.origin}/site/${site.slug}`,
     formUrl: "",
     assetsUrl: "",
@@ -357,7 +369,7 @@ function startJob(project: DbProject, kind: JobKind, cost: number, input: Record
     input: { ...input, idempotencyKey },
     durationMs: JOB_DURATIONS[kind],
     materialized: false,
-    willFail: String(input.feedback ?? "").includes("__echec__"),
+    willFail: typeof input.feedback === "string" && input.feedback.includes("__echec__"),
   };
   // Débit au lancement, dans la même transaction que la création de la tâche (§11.4)
   if (cost > 0) writeLedger(workspace.id, -cost, "GENERATION", `${kind} — ${projectName(project)}`, { jobId: job.id });
@@ -405,7 +417,7 @@ function materialize(job: DbJob) {
   if (job.kind === "LOGOS") {
     const chosen = data.names.find((n) => n.id === project.chosenNameId);
     const slogan = data.slogans.find((s) => s.projectId === project.id && s.isChosen)?.text;
-    const reference = job.input.referenceLogoId ? latestVersion(String(job.input.referenceLogoId))?.spec : undefined;
+    const reference = typeof job.input.referenceLogoId === "string" ? latestVersion(job.input.referenceLogoId)?.spec : undefined;
     const specs = generateLogoSpecs({
       text: chosen?.value ?? project.title,
       tagline: slogan ?? (chosen?.acronym && chosen.meaning.startsWith("Sigle") ? chosen.meaning.replace(/^Sigle de « (.*) »\.$/, "$1") : ""),
@@ -599,7 +611,7 @@ export const mockClient: ApiClient = {
       if (!/^\d{6}$/.test(code)) throw problem(400, "Code à 6 chiffres attendu", "INVALID_TOTP");
       currentUser().totpEnabled = true;
       save();
-      return { backupCodes: Array.from({ length: 8 }, () => Math.random().toString(36).slice(2, 10).toUpperCase()) };
+      return { backupCodes: Array.from({ length: 8 }, () => randomString(8)) };
     },
   },
 
@@ -829,7 +841,7 @@ export const mockClient: ApiClient = {
     },
     async update(nid, patch) {
       const name = db().names.find((n) => n.id === nid);
-      if (!name) throw problem(404, "Nom introuvable");
+      if (!name) throw problem(404, NAME_NOT_FOUND);
       requireRole(projectOr404(name.projectId).workspaceId, "EDITOR");
       Object.assign(name, patch);
       if (patch.isRejected) name.isFavorite = false;
@@ -840,7 +852,7 @@ export const mockClient: ApiClient = {
       await wait(900);
       const data = db();
       const name = data.names.find((n) => n.id === nid);
-      if (!name) throw problem(404, "Nom introuvable");
+      if (!name) throw problem(404, NAME_NOT_FOUND);
       // Cache 24 h (NOM-25)
       const fresh = name.checks[0] && Date.now() - Date.parse(name.checks[0].checkedAt) < 864e5;
       if (!fresh) {
@@ -867,7 +879,7 @@ export const mockClient: ApiClient = {
       requireRole(project.workspaceId, "EDITOR");
       const data = db();
       const name = data.names.find((n) => n.id === nid);
-      if (!name) throw problem(404, "Nom introuvable");
+      if (!name) throw problem(404, NAME_NOT_FOUND);
       const hadName = Boolean(project.chosenNameId);
       project.chosenNameId = nid;
       project.updatedAt = now();
@@ -1064,7 +1076,7 @@ export const mockClient: ApiClient = {
         demo: true,
         provider: "mock",
         images: Array.from({ length: 4 }, (_, i) => ({
-          url: `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(renderArtwork({ style, palette, width, height, seed: seed + i * 7919 }))))}`,
+          url: `data:image/svg+xml;base64,${base64Utf8(renderArtwork({ style, palette, width, height, seed: seed + i * 7919 }))}`,
           width,
           height,
         })),
@@ -1341,7 +1353,8 @@ export const mockClient: ApiClient = {
       const entries = parseRoster(csv);
       const issues = rosterIssues(entries, apparelTemplate(design.templateId).sizes.map((s) => s.label));
       if (issues.length) throw new ApiError({ status: 422, title: "Effectif non conforme", detail: issues[0]!.message, code: "UNPROCESSABLE", issues });
-      design.roster = { name: name?.trim() || "Effectif", entries };
+      const rosterName = name?.trim() ?? "";
+      design.roster = { name: rosterName.length > 0 ? rosterName : "Effectif", entries };
       unlockApparel(design);
       saveApparel(apparelDesigns());
       const bySize: Record<string, number> = {};
@@ -1694,7 +1707,7 @@ export const mockClient: ApiClient = {
         paymentId: key,
         status: "PENDING",
         instructions: input.provider === "CARD" ? undefined : "Validez le paiement sur votre téléphone en composant #144# puis votre code secret Orange Money.",
-        redirectUrl: input.provider === "CARD" ? undefined : undefined,
+        redirectUrl: undefined,
       };
     },
     async payment(paymentId) {
@@ -1835,7 +1848,8 @@ export const mockClient: ApiClient = {
         decidedAt: null,
         createdAt: now(),
       };
-      (data.creditRequests ??= []).unshift(request);
+      data.creditRequests ??= [];
+      data.creditRequests.unshift(request);
       audit("credits.request", "Workspace", workspaceId);
       save();
       const { requestedById: _requester, ...dto } = request;

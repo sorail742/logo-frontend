@@ -11,6 +11,7 @@ import { renderLogoSvg } from "@/lib/render/logo";
 import { namePreviewSpecs } from "@/lib/render/name-previews";
 import type { AvailabilityCheck, Brief, CheckStatus, NameSuggestion } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { hashSeed } from "@/lib/render/artwork";
 
 const STATUS_STYLES: Record<CheckStatus, string> = {
   AVAILABLE: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
@@ -18,7 +19,7 @@ const STATUS_STYLES: Record<CheckStatus, string> = {
   UNKNOWN: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200",
 };
 
-function CheckPill({ check }: { check: AvailabilityCheck }) {
+function CheckPill({ check }: Readonly<{ check: AvailabilityCheck }>) {
   const t = useTranslations("names");
   const content = (
     <>
@@ -36,7 +37,7 @@ function CheckPill({ check }: { check: AvailabilityCheck }) {
   );
 }
 
-export function AvailabilityResults({ checks }: { checks: AvailabilityCheck[] }) {
+export function AvailabilityResults({ checks }: Readonly<{ checks: AvailabilityCheck[] }>) {
   const t = useTranslations("names");
   const format = useFormatter();
   if (!checks.length) return null;
@@ -87,15 +88,16 @@ export function AvailabilityResults({ checks }: { checks: AvailabilityCheck[] })
 }
 
 /** Le nom mis en forme en trois pistes de logo, pour le juger en situation. */
-function NameLogoPreviews({ value, brief }: { value: string; brief?: Brief | null }) {
+function NameLogoPreviews({ value, brief }: Readonly<{ value: string; brief?: Brief | null }>) {
   const t = useTranslations("names");
   const svgs = useMemo(() => namePreviewSpecs(value, brief).map((spec) => renderLogoSvg(spec).svg), [value, brief]);
   return (
-    <div className="grid grid-cols-3 gap-2" role="group" aria-label={t("logoPreviews")}>
-      {svgs.map((svg, index) => (
-        <SvgView key={index} svg={svg} className="aspect-[4/3] rounded-lg border bg-white p-2" />
+    <fieldset className="grid grid-cols-3 gap-2">
+      <legend className="sr-only">{t("logoPreviews")}</legend>
+      {svgs.map((svg) => (
+        <SvgView key={hashSeed(svg)} svg={svg} className="aspect-[4/3] rounded-lg border bg-white p-2" />
       ))}
-    </div>
+    </fieldset>
   );
 }
 
@@ -114,7 +116,7 @@ export function NameCard({
   onChoose,
   onVote,
   onToggleCompare,
-}: {
+}: Readonly<{
   name: NameSuggestion;
   brief?: Brief | null;
   isChosen: boolean;
@@ -129,7 +131,7 @@ export function NameCard({
   onChoose: () => void;
   onVote: (value: -1 | 1) => void;
   onToggleCompare: () => void;
-}) {
+}>) {
   const t = useTranslations("names");
   return (
     <article className={cn("grid gap-3 rounded-xl border bg-card p-4", isChosen && "border-primary ring-2 ring-primary/30", name.isRejected && "opacity-60")}>

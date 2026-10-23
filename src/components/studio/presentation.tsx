@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight, LayoutGrid, Maximize, Minimize, X } from "lucide-react";
+import { labelSvg } from "@/lib/render/svg";
 import { renderPage } from "@/lib/studio/render";
 import type { DesignDoc } from "@/lib/studio/types";
 import { cn } from "@/lib/utils";
@@ -72,13 +73,11 @@ function readPreference(): SlideTransition {
 /** SVG d'une page ajusté à son cadre (proportions conservées). */
 const fitted = (svg: string) => svg.replace(/ width="[\d.]+" height="[\d.]+"/, ' width="100%" height="100%"');
 
-function Slide({ svg, label, className }: { svg: string; label: string; className?: string }) {
+function Slide({ svg, label, className }: Readonly<{ svg: string; label: string; className?: string }>) {
   return (
     <div
       className={cn("absolute inset-0 bg-white [&>svg]:block", className)}
-      role="img"
-      aria-label={label}
-      dangerouslySetInnerHTML={{ __html: svg }}
+      dangerouslySetInnerHTML={{ __html: labelSvg(svg, label) }}
     />
   );
 }
@@ -87,13 +86,13 @@ export function PresentationMode({
   doc,
   start = 0,
   onClose,
-}: {
+}: Readonly<{
   doc: DesignDoc;
   start?: number;
   onClose(): void;
-}) {
+}>) {
   const t = useTranslations("studio.presentation");
-  const root = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLDialogElement>(null);
   const incoming = useRef<HTMLDivElement>(null);
   const outgoing = useRef<HTMLDivElement>(null);
   const typed = useRef("");
@@ -125,12 +124,12 @@ export function PresentationMode({
 
   // Transition : la nouvelle diapositive entre, l'ancienne sort ; animations du navigateur.
   useLayoutEffect(() => {
-    if (!previous) return;
+    if (!previous) return undefined;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const motion = reduced ? null : frames(transition, previous.direction);
     if (!motion || !incoming.current || !outgoing.current) {
       setPrevious(null);
-      return;
+      return undefined;
     }
     const options = { duration: DURATION_MS, easing: EASING, fill: "both" as const };
     const enter = incoming.current.animate(motion.enter, options);
@@ -153,8 +152,9 @@ export function PresentationMode({
   useEffect(() => {
     const onChange = () => setFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", onChange);
-    void root.current?.requestFullscreen?.().catch(() => undefined);
-    root.current?.focus();
+    const dialog = root.current;
+    if (dialog && !dialog.open) dialog.showModal();
+    void dialog?.requestFullscreen?.().catch(() => undefined);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
@@ -244,16 +244,14 @@ export function PresentationMode({
     "flex size-9 items-center justify-center rounded-full text-white/85 transition hover:bg-white/15 hover:text-white disabled:opacity-30";
 
   return (
-    <div
+    <dialog
       ref={root}
       className={cn(
-        "fixed inset-0 z-[100] flex items-center justify-center bg-black outline-none select-none",
+        "fixed inset-0 m-0 flex size-full max-h-none max-w-none items-center justify-center border-0 bg-black p-0 outline-none select-none backdrop:bg-black",
         !controls && "cursor-none",
       )}
-      role="dialog"
-      aria-modal="true"
       aria-label={t("title")}
-      tabIndex={-1}
+      onCancel={(event) => event.preventDefault()}
       onPointerMove={wake}
     >
       <div
@@ -372,41 +370,40 @@ export function PresentationMode({
       )}
 
       {overview && (
-        <div
+        <nav
           className="absolute inset-0 overflow-y-auto bg-neutral-950/95 p-6 sm:p-10"
-          role="listbox"
           aria-label={t("overview")}
         >
-          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {slides.map((svg, i) => (
-              <button
-                key={doc.pages[i]!.id}
-                type="button"
-                role="option"
-                aria-selected={i === index}
-                onClick={() => go(i)}
-                className={cn(
-                  "group grid gap-1.5 text-left text-xs text-white/70",
-                  i === index && "text-white",
-                )}
-              >
-                <span
+              <li key={doc.pages[i]!.id}>
+                <button
+                  type="button"
+                  aria-current={i === index ? "true" : undefined}
+                  onClick={() => go(i)}
                   className={cn(
-                    "relative block overflow-hidden rounded-md ring-2 transition",
-                    i === index ? "ring-white" : "ring-transparent group-hover:ring-white/50",
+                    "group grid w-full gap-1.5 text-left text-xs text-white/70",
+                    i === index && "text-white",
                   )}
-                  style={{ aspectRatio: `${doc.width} / ${doc.height}` }}
                 >
-                  <Slide svg={svg} label={label(i)} />
-                </span>
-                <span className="truncate">
-                  {i + 1}. {label(i)}
-                </span>
-              </button>
+                  <span
+                    className={cn(
+                      "relative block overflow-hidden rounded-md ring-2 transition",
+                      i === index ? "ring-white" : "ring-transparent group-hover:ring-white/50",
+                    )}
+                    style={{ aspectRatio: `${doc.width} / ${doc.height}` }}
+                  >
+                    <Slide svg={svg} label={label(i)} />
+                  </span>
+                  <span className="truncate">
+                    {i + 1}. {label(i)}
+                  </span>
+                </button>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </nav>
       )}
-    </div>
+    </dialog>
   );
 }

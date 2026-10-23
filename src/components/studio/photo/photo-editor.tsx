@@ -54,7 +54,7 @@ function legacyAdjust(el: ImageElement): PhotoAdjust {
 }
 
 /** Aperçu de l'élément (cadre, réglages, détourage, effets) à la taille de la vue. */
-function ElementPreview({ el, onPick, picking }: { el: ImageElement; picking: boolean; onPick: (x: number, y: number) => void }) {
+function ElementPreview({ el, onPick, picking }: Readonly<{ el: ImageElement; picking: boolean; onPick: (x: number, y: number) => void }>) {
   // Identifiant propre à l'atelier : le même élément est aussi rendu sur le canevas.
   const markup = useMemo(() => renderElement(frameOf(el, { id: `${el.id}-atelier` })), [el]);
   return (
@@ -82,14 +82,14 @@ export function PhotoEditor({
   onApply,
   onClose,
   projectId: project,
-}: {
+}: Readonly<{
   el: ImageElement;
   initialTab?: PhotoTab;
   onApply: (el: ImageElement) => void;
   onClose: () => void;
   /** Projet facturé pour le détourage IA (par défaut : celui de la création du Studio ouverte). */
   projectId?: string;
-}) {
+}>) {
   const t = useTranslations("studio.photo");
   const onError = useApiErrorToast();
   const studioProject = useStudio((s) => s.meta?.projectId);
@@ -126,7 +126,7 @@ export function PhotoEditor({
 
   // Histogramme du résultat (image réduite), recalculé peu après la dernière modification.
   useEffect(() => {
-    if (!thumb || (tab !== "adjust" && tab !== "curves")) return;
+    if (!thumb || (tab !== "adjust" && tab !== "curves")) return undefined;
     const timer = setTimeout(() => {
       const frame = frameOf(draft, { id: "histogram", src: thumb.src, cutout: null, outline: null, glow: null, mask: "none" });
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${draft.width} ${draft.height}" width="${draft.width}" height="${draft.height}">${renderElement(frame)}</svg>`;
@@ -147,7 +147,7 @@ export function PhotoEditor({
 
   // Entrée dans le détourage : photo en pleine résolution, masque existant relu ou masque plein.
   useEffect(() => {
-    if (tab !== "cutout" || mask) return;
+    if (tab !== "cutout" || mask) return undefined;
     let alive = true;
     const load = async () => {
       const px = source ?? (await loadPixels(el.src));

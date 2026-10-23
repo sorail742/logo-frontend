@@ -5,7 +5,8 @@
     "lock": "Lock",
     "unlock": "Unlock",
     "delete": "Delete",
-    "cropHint": "Drag to frame the photo · Enter or Esc to finish"
+    "cropHint": "Drag to frame the photo · Enter or Esc to finish",
+    "editText": "Text being edited"
   },
   "paint": {
     "saturation": "Saturation and brightness",
@@ -933,7 +934,6 @@
     "duotoneLight": "Highlights",
     "invert": "Negative",
     "resetGroup": "Reset group",
-    "doubleClickReset": "Double-click: reset",
     "whitePicker": "White balance picker",
     "pickHint": "Click an area that should be white or grey",
     "histogram": "Histogram",
@@ -1004,7 +1004,9 @@
     "outline": "Outline",
     "outlineColor": "Outline colour",
     "glow": "Glow",
-    "glowColor": "Glow colour"
+    "glowColor": "Glow colour",
+    "resetValue": "Back to the default value",
+    "maskCanvas": "Cutout mask: paint to erase or restore"
   },
   "presentation": {
     "present": "Present",

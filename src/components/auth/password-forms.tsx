@@ -17,9 +17,12 @@ export function ForgotPasswordForm() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const submit = async (event: React.FormEvent) => {
+  const submit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!/^\S+@\S+\.\S+$/.test(email)) return toast.error(t("errors.email"));
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error(t("errors.email"));
+      return;
+    }
     setBusy(true);
     try {
       await api.auth.forgotPassword(email);
@@ -43,11 +46,11 @@ export function ForgotPasswordForm() {
       }
     >
       {sent ? (
-        <p className="rounded-lg bg-accent p-3 text-sm text-accent-foreground" role="status">
+        <output className="block rounded-lg bg-accent p-3 text-sm text-accent-foreground">
           {t("forgot.sent")}
-        </p>
+        </output>
       ) : (
-        <form onSubmit={submit} className="grid gap-4" noValidate>
+        <form onSubmit={(event) => void submit(event)} className="grid gap-4" noValidate>
           <Field label={t("login.email")} htmlFor="email">
             <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </Field>
@@ -76,10 +79,16 @@ export function ResetPasswordForm() {
     );
   }
 
-  const submit = async (event: React.FormEvent) => {
+  const submit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (password.length < 8) return toast.error(t("errors.password"));
-    if (password !== confirm) return toast.error(t("errors.mismatch"));
+    if (password.length < 8) {
+      toast.error(t("errors.password"));
+      return;
+    }
+    if (password !== confirm) {
+      toast.error(t("errors.mismatch"));
+      return;
+    }
     setBusy(true);
     try {
       await api.auth.resetPassword(token, password);
@@ -94,7 +103,7 @@ export function ResetPasswordForm() {
 
   return (
     <AuthCard title={t("reset.title")}>
-      <form onSubmit={submit} className="grid gap-4" noValidate>
+      <form onSubmit={(event) => void submit(event)} className="grid gap-4" noValidate>
         <Field label={t("reset.password")} htmlFor="password">
           <Input id="password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </Field>

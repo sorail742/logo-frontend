@@ -44,6 +44,11 @@ export function defaultCutoutSettings(el: ImageElement): CutoutSettings {
 }
 
 /** Toile de détourage : photo et masque composés, pinceaux et baguette magique. */
+const SOURCE_OVER = "source-over";
+
+/** Valeur strictement positive, sinon valeur par défaut (un contour de 0 est invisible). */
+const positiveOr = (value: number | undefined, fallback: number) => (value && value > 0 ? value : fallback);
+
 export function CutoutView({
   source,
   mask,
@@ -51,7 +56,7 @@ export function CutoutView({
   version,
   settings,
   onEdit,
-}: {
+}: Readonly<{
   source: Pixels;
   /** Masque modifié en place par les outils. */
   mask: Uint8ClampedArray;
@@ -60,7 +65,8 @@ export function CutoutView({
   version: number;
   settings: CutoutSettings;
   onEdit: () => void;
-}) {
+}>) {
+  const t = useTranslations("studio.photo");
   const canvas = useRef<HTMLCanvasElement>(null);
   const last = useRef<{ x: number; y: number } | null>(null);
   const frame = useRef(0);
@@ -99,11 +105,11 @@ export function CutoutView({
     }
     matte.putImageData(image, 0, 0);
     ctx.clearRect(0, 0, width, height);
-    ctx.globalCompositeOperation = "source-over";
+    ctx.globalCompositeOperation = SOURCE_OVER;
     ctx.drawImage(layers.photo, 0, 0);
-    ctx.globalCompositeOperation = settings.overlay ? "source-over" : "destination-in";
+    ctx.globalCompositeOperation = settings.overlay ? SOURCE_OVER : "destination-in";
     ctx.drawImage(layers.matte, 0, 0);
-    ctx.globalCompositeOperation = "source-over";
+    ctx.globalCompositeOperation = SOURCE_OVER;
   };
 
   useEffect(() => {
@@ -136,6 +142,7 @@ export function CutoutView({
         width={width}
         height={height}
         className={cn("bg-checker max-h-full max-w-full touch-none", settings.tool === "wand" ? "cursor-crosshair" : "cursor-none")}
+        aria-label={t("maskCanvas")}
         onPointerDown={(event) => {
           const p = toImage(event);
           if (settings.tool === "wand") {
@@ -190,7 +197,7 @@ export function CutoutPanel({
   onInvert,
   onReset,
   onChange,
-}: {
+}: Readonly<{
   el: ImageElement;
   settings: CutoutSettings;
   onSettings: (patch: Partial<CutoutSettings>) => void;
@@ -201,7 +208,7 @@ export function CutoutPanel({
   onInvert: () => void;
   onReset: () => void;
   onChange: (patch: Partial<ImageElement>) => void;
-}) {
+}>) {
   const t = useTranslations("studio.photo");
   const maxSize = Math.round(Math.max(el.naturalWidth, el.naturalHeight) * 0.15);
   return (
@@ -272,7 +279,7 @@ export function CutoutPanel({
             type="color"
             value={el.outline?.color ?? "#ffffff"}
             aria-label={t("outlineColor")}
-            onChange={(e) => onChange({ outline: { color: e.target.value, width: el.outline?.width || 8 } })}
+            onChange={(e) => onChange({ outline: { color: e.target.value, width: positiveOr(el.outline?.width, 8) } })}
             className="h-7 w-9 shrink-0 cursor-pointer rounded border bg-transparent p-0.5"
           />
           <div className="min-w-0 flex-1">
@@ -284,7 +291,7 @@ export function CutoutPanel({
             type="color"
             value={el.glow?.color ?? "#ffd166"}
             aria-label={t("glowColor")}
-            onChange={(e) => onChange({ glow: { color: e.target.value, size: el.glow?.size || 24, opacity: el.glow?.opacity ?? 0.8 } })}
+            onChange={(e) => onChange({ glow: { color: e.target.value, size: positiveOr(el.glow?.size, 24), opacity: el.glow?.opacity ?? 0.8 } })}
             className="h-7 w-9 shrink-0 cursor-pointer rounded border bg-transparent p-0.5"
           />
           <div className="min-w-0 flex-1">

@@ -49,6 +49,7 @@ import { autoAdjust, loadPixels } from "@/lib/studio/pixels";
 import { ensureFonts } from "@/lib/studio/text";
 import type { ImageElement } from "@/lib/studio/types";
 import { cn } from "@/lib/utils";
+import { omit } from "@/lib/object";
 import { useApparel } from "@/stores/apparel";
 import { useApparelEditor } from "./editor";
 
@@ -57,6 +58,8 @@ import { useApparelEditor } from "./editor";
 // (atelier de retouche du Studio, séparation en tons directs, droits).
 
 const round = (value: number) => Math.round(value * 10) / 10;
+
+const INSPECTOR = "apparel.inspector";
 
 /** Remplace toutes les couleurs d'un SVG par une seule (flex, flocage, broderie). */
 function recolorSvg(svg: string, color: string) {
@@ -76,13 +79,13 @@ function Geometry({
   zone,
   zones,
   editable,
-}: {
+}: Readonly<{
   el: EditorElement;
   zone: PrintZone;
   zones: PrintZone[];
   editable: boolean;
-}) {
-  const t = useTranslations("apparel.inspector");
+}>) {
+  const t = useTranslations(INSPECTOR);
   const update = (patch: Partial<EditorElement>, merge = "geometry") =>
     useApparel.getState().update(el.id, patch, { merge: `${merge}-${el.id}` });
   const ratio = el.widthMm / el.heightMm;
@@ -225,8 +228,8 @@ function Geometry({
   );
 }
 
-function TextSettings({ el, zone, editable }: { el: EditorElement; zone: PrintZone; editable: boolean }) {
-  const t = useTranslations("apparel.inspector");
+function TextSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone: PrintZone; editable: boolean }>) {
+  const t = useTranslations(INSPECTOR);
   const { brandColors } = useApparelEditor();
   const c = el.content;
   const font = getFont(c.fontId ?? "montserrat");
@@ -350,8 +353,8 @@ function TextSettings({ el, zone, editable }: { el: EditorElement; zone: PrintZo
   );
 }
 
-function LogoSettings({ el, editable }: { el: EditorElement; editable: boolean }) {
-  const t = useTranslations("apparel.inspector");
+function LogoSettings({ el, editable }: Readonly<{ el: EditorElement; editable: boolean }>) {
+  const t = useTranslations(INSPECTOR);
   const ta = useTranslations("apparel.add");
   const { logos, brandColors } = useApparelEditor();
   const c = el.content;
@@ -368,7 +371,8 @@ function LogoSettings({ el, editable }: { el: EditorElement; editable: boolean }
   return (
     <Section title={t("logo")}>
       {variants.length > 0 && c.source !== "upload" && (
-        <div className="flex flex-wrap gap-1" role="group" aria-label={t("variant")}>
+        <fieldset className="flex flex-wrap gap-1">
+          <legend className="sr-only">{t("variant")}</legend>
           {variants.map((key) => (
             <Button
               key={key}
@@ -380,7 +384,7 @@ function LogoSettings({ el, editable }: { el: EditorElement; editable: boolean }
               {ta(`variants.${key}`)}
             </Button>
           ))}
-        </div>
+        </fieldset>
       )}
       <div className="grid gap-1.5">
         <span className="text-muted-foreground text-xs">{t("inks", { count: c.colors?.length ?? 0 })}</span>
@@ -423,8 +427,8 @@ function LogoSettings({ el, editable }: { el: EditorElement; editable: boolean }
   );
 }
 
-function PhotoSettings({ el, zone, editable }: { el: EditorElement; zone: PrintZone; editable: boolean }) {
-  const t = useTranslations("apparel.inspector");
+function PhotoSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone: PrintZone; editable: boolean }>) {
+  const t = useTranslations(INSPECTOR);
   const technique = useApparel((s) => s.design?.technique);
   const photo = el.content.photo!;
   const [inks, setInks] = useState(technique === "SCREEN_PRINT" ? 4 : 6);
@@ -476,7 +480,7 @@ function PhotoSettings({ el, zone, editable }: { el: EditorElement; zone: PrintZ
   const restore = () => {
     const original = photo.original;
     if (!original) return;
-    const { colors: _colors, spotColors: _spot, ...content } = el.content;
+    const content = omit(el.content, ["colors", "spotColors"]);
     useApparel
       .getState()
       .update(el.id, { content: { ...content, photo: original, pixelWidth: photoPixelWidth(original) } });
@@ -576,8 +580,8 @@ function PhotoSettings({ el, zone, editable }: { el: EditorElement; zone: PrintZ
   );
 }
 
-function Rights({ el, editable }: { el: EditorElement; editable: boolean }) {
-  const t = useTranslations("apparel.inspector");
+function Rights({ el, editable }: Readonly<{ el: EditorElement; editable: boolean }>) {
+  const t = useTranslations(INSPECTOR);
   const attested = Boolean(el.content.rightsAttested);
   return (
     <Section title={t("rights")}>
@@ -603,7 +607,7 @@ function Rights({ el, editable }: { el: EditorElement; editable: boolean }) {
   );
 }
 
-export function ElementInspector({ el }: { el: EditorElement }) {
+export function ElementInspector({ el }: Readonly<{ el: EditorElement }>) {
   const t = useTranslations("apparel");
   const { template, canEdit, projectId } = useApparelEditor();
   const previewSize = useApparel((s) => s.previewSize);

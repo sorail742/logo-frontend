@@ -28,7 +28,7 @@ import { useApparelEditor } from "./editor";
 const MOCKUP_SIZE = 2400;
 const BOARD_GAP = 60;
 
-export function ExportMenu({ children }: { children: ReactNode }) {
+export function ExportMenu({ children }: Readonly<{ children: ReactNode }>) {
   const t = useTranslations("apparel.export");
   const tv = useTranslations("apparel.views");
   const { template } = useApparelEditor();

@@ -38,21 +38,21 @@ function withoutMedia(content: SiteContent, mediaId: string): SiteContent {
   };
 }
 
-function SaveIndicator({ state }: { state: SaveState }) {
+function SaveIndicator({ state }: Readonly<{ state: SaveState }>) {
   const t = useTranslations("site.status");
   if (state === "idle") return null;
   const icons = { saving: Loader2, saved: Check, error: CloudOff } as const;
   const Icon = icons[state];
   return (
-    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" role="status">
+    <output className="inline-flex items-center gap-1 text-xs text-muted-foreground">
       <Icon className={state === "saving" ? "size-3.5 animate-spin" : "size-3.5"} aria-hidden="true" />
       {t(state)}
-    </span>
+    </output>
   );
 }
 
 /** Éditeur du site : panneaux à gauche, aperçu en direct à droite, sauvegarde automatique. */
-export function SiteEditor({ website, logos }: { website: Website; logos: Logo[] }) {
+export function SiteEditor({ website, logos }: Readonly<{ website: Website; logos: Logo[] }>) {
   const t = useTranslations("site");
   const queryClient = useQueryClient();
   const onError = useApiErrorToast();
@@ -93,7 +93,9 @@ export function SiteEditor({ website, logos }: { website: Website; logos: Logo[]
   useEffect(() => {
     if (!pending.current) return;
     setSaveState("saving");
-    const timer = setTimeout(() => flush().catch((error: unknown) => toast.error(errorMessage(error))), AUTOSAVE_MS);
+    const timer = setTimeout(() => {
+      flush().catch((error: unknown) => toast.error(errorMessage(error)));
+    }, AUTOSAVE_MS);
     return () => clearTimeout(timer);
   }, [content, flush]);
 

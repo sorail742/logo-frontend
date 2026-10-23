@@ -123,7 +123,7 @@ function rotation(center: Point, p: Point, stepped: boolean) {
   return Math.round(stepped || Math.abs(angle - nearest) < 3 ? nearest : angle);
 }
 
-export function ApparelCanvas({ template, canEdit }: { template: ApparelTemplate; canEdit: boolean }) {
+export function ApparelCanvas({ template, canEdit }: Readonly<{ template: ApparelTemplate; canEdit: boolean }>) {
   const t = useTranslations("apparel.editor");
   const design = useApparel((s) => s.design)!;
   const elements = useApparel((s) => s.elements);
@@ -142,7 +142,7 @@ export function ApparelCanvas({ template, canEdit }: { template: ApparelTemplate
 
   useEffect(() => {
     const node = wrap.current;
-    if (!node) return;
+    if (!node) return undefined;
     const observer = new ResizeObserver(
       ([entry]) => entry && setSpace({ width: entry.contentRect.width, height: entry.contentRect.height }),
     );

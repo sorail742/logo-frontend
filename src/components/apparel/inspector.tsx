@@ -49,7 +49,7 @@ function DesignSettings() {
     onMutate: (patch) => useApparel.getState().setDesign(patch),
     onSuccess: (next) => {
       applyDesign(next);
-      queryClient.invalidateQueries({ queryKey: qk.apparel(next.projectId) });
+      void queryClient.invalidateQueries({ queryKey: qk.apparel(next.projectId) });
     },
     onError,
   });
@@ -94,7 +94,8 @@ function DesignSettings() {
         <p className="text-muted-foreground text-[11px]">{t(`techniques.${design.technique}.hint`)}</p>
       </Section>
       <Section title={t("settings.fabric")}>
-        <div className="grid grid-cols-9 gap-1" role="group" aria-label={t("settings.fabric")}>
+        <fieldset className="grid grid-cols-9 gap-1">
+          <legend className="sr-only">{t("settings.fabric")}</legend>
           {GARMENT_COLORS.map((color) => (
             <button
               key={color}
@@ -112,7 +113,7 @@ function DesignSettings() {
               style={{ background: color }}
             />
           ))}
-        </div>
+        </fieldset>
         {canEdit && (
           <ColorField
             value={design.garmentColor}
@@ -180,13 +181,13 @@ function DesignSettings() {
   );
 }
 
-function IssueList({ issues, onSelect }: { issues: ApparelIssue[]; onSelect(issue: ApparelIssue): void }) {
+function IssueList({ issues, onSelect }: Readonly<{ issues: ApparelIssue[]; onSelect(issue: ApparelIssue): void }>) {
   return (
     <ul className="grid gap-1.5">
-      {issues.map((issue, i) => {
+      {issues.map((issue) => {
         const Icon = issue.severity === "error" ? CircleAlert : AlertTriangle;
         return (
-          <li key={`${issue.code}-${issue.elementId ?? issue.zoneKey ?? ""}-${i}`}>
+          <li key={`${issue.code}-${issue.elementId ?? issue.zoneKey ?? ""}-${issue.message}`}>
             <button
               type="button"
               onClick={() => onSelect(issue)}

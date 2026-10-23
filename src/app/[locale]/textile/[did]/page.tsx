@@ -10,9 +10,9 @@ export default function ApparelEditorPage() {
   const status = useRequireAuth();
   if (status !== "authenticated") {
     return (
-      <div className="flex min-h-svh items-center justify-center" role="status">
+      <output className="flex min-h-svh items-center justify-center">
         <Skeleton className="h-8 w-48" />
-      </div>
+      </output>
     );
   }
   return <ApparelEditor did={did} />;

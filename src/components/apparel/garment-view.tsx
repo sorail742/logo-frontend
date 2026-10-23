@@ -3,6 +3,7 @@
 import { useId, useMemo } from "react";
 import { renderGarment, type SizeView } from "@/lib/apparel/render";
 import type { ApparelElement, GarmentView, PrintZone, ProductCategory } from "@/lib/apparel/types";
+import { labelSvg } from "@/lib/render/svg";
 import { cn } from "@/lib/utils";
 
 /** Préfixe d'identifiants SVG unique par instance (plusieurs vues sur une même page). */
@@ -10,17 +11,19 @@ export function useSvgPrefix(prefix: string) {
   return `${prefix}${useId().replaceAll(/[^\w-]/g, "")}`;
 }
 
+const NO_ELEMENTS: ApparelElement[] = [];
+
 /** Vue d'un vêtement avec ses impressions (aperçu non interactif : listes, BAT). */
 export function GarmentPreview({
   category,
   view,
   color,
   zones,
-  elements = [],
+  elements = NO_ELEMENTS,
   sizing,
   className,
   label,
-}: {
+}: Readonly<{
   category: ProductCategory;
   view: GarmentView;
   color: string;
@@ -29,7 +32,7 @@ export function GarmentPreview({
   sizing?: SizeView;
   className?: string;
   label?: string;
-}) {
+}>) {
   const prefix = useSvgPrefix("gp");
   const svg = useMemo(
     () =>
@@ -47,9 +50,7 @@ export function GarmentPreview({
   return (
     <div
       className={cn("[&>svg]:block", className)}
-      role="img"
-      aria-label={label}
-      dangerouslySetInnerHTML={{ __html: svg }}
+      dangerouslySetInnerHTML={{ __html: labelSvg(svg, label) }}
     />
   );
 }

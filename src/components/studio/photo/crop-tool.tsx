@@ -90,7 +90,7 @@ function constrain(box: { x: number; y: number; right: number; bottom: number },
 }
 
 /** Vue de recadrage : photo entière, zone conservée, poignées et grille des tiers. */
-export function CropView({ el, crop, ratio, onChange }: { el: ImageElement; crop: PhotoCrop; ratio: number | null; onChange: (crop: PhotoCrop) => void }) {
+export function CropView({ el, crop, ratio, onChange }: Readonly<{ el: ImageElement; crop: PhotoCrop; ratio: number | null; onChange: (crop: PhotoCrop) => void }>) {
   const svg = useRef<SVGSVGElement>(null);
   const drag = useRef<{ handle: Handle; start: { x: number; y: number }; crop: PhotoCrop } | null>(null);
   const nw = el.naturalWidth;
@@ -187,12 +187,12 @@ export function CropPanel({
   aspect,
   onAspect,
   onChange,
-}: {
+}: Readonly<{
   el: ImageElement;
   aspect: AspectId;
   onAspect: (aspect: AspectId) => void;
   onChange: (patch: Partial<ImageElement>) => void;
-}) {
+}>) {
   const t = useTranslations("studio.photo");
   return (
     <div className="grid gap-5">
@@ -208,9 +208,17 @@ export function CropPanel({
       </section>
       <section className="grid gap-2">
         <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("straighten")}</h3>
-        <div onDoubleClick={() => onChange({ straighten: 0 })}>
-          <SliderField label={t("angle")} value={el.straighten ?? 0} min={-45} max={45} step={0.5} format={(v) => `${v}°`} onChange={(v) => onChange({ straighten: v || undefined })} />
-        </div>
+        <SliderField
+          label={t("angle")}
+          value={el.straighten ?? 0}
+          min={-45}
+          max={45}
+          step={0.5}
+          format={(v) => `${v}°`}
+          onChange={(v) => onChange({ straighten: v || undefined })}
+          onReset={() => onChange({ straighten: undefined })}
+          resetLabel={t("resetValue")}
+        />
         <div className="flex flex-wrap gap-1.5">
           <Button type="button" size="sm" variant={el.flipX ? "secondary" : "outline"} onClick={() => onChange({ flipX: !el.flipX })}>
             <FlipHorizontal2 /> {t("flipX")}

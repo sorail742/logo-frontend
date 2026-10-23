@@ -119,6 +119,7 @@
     "officialWarning": "Termes officiels détectés : {terms}. Le cachet passera en validation manuelle."
   },
   "inks": {
+    "label": "Couleur de l'encre",
     "blue": "Bleu",
     "violet": "Violet",
     "red": "Rouge",

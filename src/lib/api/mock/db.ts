@@ -1,3 +1,4 @@
+import { randomId } from "@/lib/random";
 import type {
   AppNotification,
   AuditEntry,
@@ -166,10 +167,7 @@ const STORAGE_KEY = "identite:mock-db:v1";
 export const now = () => new Date().toISOString();
 
 export function id(prefix = "") {
-  const value =
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+  const value = randomId();
   return prefix ? `${prefix}_${value}` : value;
 }
 

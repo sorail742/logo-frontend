@@ -64,13 +64,13 @@ export function AdjustPanel({
   onChange,
   picking,
   onPick,
-}: {
+}: Readonly<{
   adjust: PhotoAdjust;
   onChange: (adjust: PhotoAdjust) => void;
   /** Pipette de balance des blancs active. */
   picking: boolean;
   onPick: (active: boolean) => void;
-}) {
+}>) {
   const t = useTranslations("studio.photo");
   const set = (key: AdjustKey, value: number) => {
     const next = { ...adjust, [key]: value };
@@ -109,9 +109,18 @@ export function AdjustPanel({
             </div>
           </div>
           {group.keys.map(({ key, min, max, step }) => (
-            <div key={key} onDoubleClick={() => set(key, 0)} title={t("doubleClickReset")}>
-              <SliderField label={t(`adjust.${key}`)} value={adjust[key] ?? 0} min={min} max={max} step={step} format={(v) => format(key, v)} onChange={(v) => set(key, v)} />
-            </div>
+            <SliderField
+              key={key}
+              label={t(`adjust.${key}`)}
+              value={adjust[key] ?? 0}
+              min={min}
+              max={max}
+              step={step}
+              format={(v) => format(key, v)}
+              onChange={(v) => set(key, v)}
+              onReset={() => set(key, 0)}
+              resetLabel={t("resetValue")}
+            />
           ))}
         </section>
       ))}

@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { CircleAlert, Copy, ExternalLink, Link2Off, Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -32,13 +32,13 @@ function ProofBody({
   issues,
   url,
   onClose,
-}: {
+}: Readonly<{
   approved: boolean;
   pending: boolean;
   issues: ApparelIssue[] | null;
   url?: string;
   onClose(): void;
-}) {
+}>) {
   const t = useTranslations("apparel.proof");
   if (approved) {
     return (
@@ -49,9 +49,9 @@ function ProofBody({
   }
   if (pending) {
     return (
-      <p className="text-muted-foreground flex items-center gap-2 text-sm" role="status">
+      <output className="text-muted-foreground flex items-center gap-2 text-sm">
         <Loader2 className="size-4 animate-spin" aria-hidden="true" /> {t("checking")}
-      </p>
+      </output>
     );
   }
   if (issues) {
@@ -59,8 +59,8 @@ function ProofBody({
       <div className="grid gap-2">
         <p className="text-destructive text-sm font-medium">{t("blocked", { count: issues.length })}</p>
         <ul className="grid max-h-64 gap-1.5 overflow-y-auto">
-          {issues.map((issue, i) => (
-            <li key={`${issue.code}-${i}`}>
+          {issues.map((issue) => (
+            <li key={`${issue.code}-${issue.elementId ?? issue.zoneKey ?? ""}-${issue.message}`}>
               <button
                 type="button"
                 className="border-destructive/30 hover:bg-muted flex w-full gap-2 rounded-lg border p-2 text-left text-xs"
@@ -87,29 +87,29 @@ function ProofBody({
         <Button
           variant="outline"
           size="icon"
-          onClick={() => navigator.clipboard.writeText(url).then(() => toast.success(t("copied")))}
+          onClick={() => void navigator.clipboard.writeText(url).then(() => toast.success(t("copied")))}
           aria-label={t("copy")}
           title={t("copy")}
         >
           <Copy />
         </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          render={<a href={url} target="_blank" rel="noopener noreferrer" />}
-          nativeButton={false}
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ variant: "outline", size: "icon" })}
           aria-label={t("open")}
           title={t("open")}
         >
           <ExternalLink />
-        </Button>
+        </a>
       </div>
       <p className="text-muted-foreground text-xs">{t("editRevokes")}</p>
     </div>
   );
 }
 
-export function ProofDialog({ onClose }: { onClose(): void }) {
+export function ProofDialog({ onClose }: Readonly<{ onClose(): void }>) {
   const t = useTranslations("apparel.proof");
   const onError = useApiErrorToast();
   const { localId } = useApparelEditor();

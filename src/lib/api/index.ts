@@ -1,3 +1,4 @@
+import { randomId } from "@/lib/random";
 import type { ApiClient } from "./contract";
 import { httpClient } from "./http";
 import { mockClient } from "./mock";
@@ -8,9 +9,7 @@ export const API_MODE: ApiClient["mode"] =
 export const api: ApiClient = API_MODE === "http" ? httpClient : mockClient;
 
 export function newIdempotencyKey() {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return randomId();
 }
 
 export type * from "./contract";

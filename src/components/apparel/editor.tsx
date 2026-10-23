@@ -37,6 +37,7 @@ import type { BrandLogos } from "@/lib/studio/brand";
 import { imageFiles, prepareImage } from "@/lib/studio/images";
 import { ensureFonts } from "@/lib/studio/text";
 import { cn } from "@/lib/utils";
+import { omit } from "@/lib/object";
 import { useApparel } from "@/stores/apparel";
 import { AddPanel } from "./add-panel";
 import { ApparelCanvas } from "./canvas";
@@ -141,8 +142,10 @@ function isTyping(target: EventTarget | null) {
   );
 }
 
-export function ApparelEditor({ did }: { did: string }) {
+export function ApparelEditor({ did }: Readonly<{ did: string }>) {
   const t = useTranslations("apparel");
+  const inspectorTitle = t("inspector.title");
+  const addTitle = t("add.title");
   const onError = useApiErrorToast();
   const queryClient = useQueryClient();
   const { workspaces } = useWorkspace();
@@ -220,8 +223,7 @@ export function ApparelEditor({ did }: { did: string }) {
   const syncStatus = useCallback(
     (next: ApparelDesign) => {
       const before = useApparel.getState().design?.status;
-      const { elements: _elements, ...meta } = next;
-      useApparel.getState().setDesign(meta);
+      useApparel.getState().setDesign(omit(next, ["elements"]));
       if (before && before !== "DRAFT" && next.status === "DRAFT") toast.warning(t("editor.proofReset"));
     },
     [t],
@@ -244,7 +246,7 @@ export function ApparelEditor({ did }: { did: string }) {
       syncStatus(saved);
       setSaveState(useApparel.getState().revision === target ? "saved" : "pending");
       queryClient.setQueryData(qk.apparelDesign(saved.id), saved);
-      queryClient.invalidateQueries({ queryKey: qk.apparel(saved.projectId) });
+      void queryClient.invalidateQueries({ queryKey: qk.apparel(saved.projectId) });
     } catch (error) {
       setSaveState("error");
       onError(error);
@@ -259,7 +261,7 @@ export function ApparelEditor({ did }: { did: string }) {
   }, [save]);
 
   useEffect(() => {
-    if (!revision || revision === savedRevision.current || !canEdit) return;
+    if (!revision || revision === savedRevision.current || !canEdit) return undefined;
     setSaveState("pending");
     const timer = setTimeout(() => void flush(), SAVE_DELAY_MS);
     return () => clearTimeout(timer);
@@ -496,7 +498,7 @@ export function ApparelEditor({ did }: { did: string }) {
         <div className="flex min-h-0 flex-1">
           <aside
             className="hidden w-72 shrink-0 overflow-y-auto border-r p-3 lg:block"
-            aria-label={t("add.title")}
+            aria-label={addTitle}
           >
             <AddPanel />
           </aside>
@@ -524,14 +526,14 @@ export function ApparelEditor({ did }: { did: string }) {
               <div className="ml-auto flex gap-1 lg:hidden">
                 {canEdit && (
                   <Button size="sm" variant="outline" onClick={() => setPanelOpen("add")}>
-                    {t("add.title")}
+                    {addTitle}
                   </Button>
                 )}
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => setPanelOpen("inspect")}
-                  aria-label={t("inspector.title")}
+                  aria-label={inspectorTitle}
                 >
                   <SlidersHorizontal />
                 </Button>
@@ -541,7 +543,7 @@ export function ApparelEditor({ did }: { did: string }) {
           </main>
           <aside
             className="hidden w-80 shrink-0 overflow-y-auto border-l lg:block"
-            aria-label={t("inspector.title")}
+            aria-label={inspectorTitle}
           >
             <Inspector />
           </aside>
@@ -550,7 +552,7 @@ export function ApparelEditor({ did }: { did: string }) {
         <Sheet open={panelOpen !== null} onOpenChange={(open) => !open && setPanelOpen(null)}>
           <SheetContent side={adding ? "left" : "right"} className="w-[88vw] max-w-sm overflow-y-auto p-0">
             <SheetHeader className="border-b">
-              <SheetTitle>{adding ? t("add.title") : t("inspector.title")}</SheetTitle>
+              <SheetTitle>{adding ? addTitle : inspectorTitle}</SheetTitle>
             </SheetHeader>
             <div className={adding ? "p-3" : ""}>{adding ? <AddPanel /> : <Inspector />}</div>
           </SheetContent>
@@ -561,6 +563,7 @@ export function ApparelEditor({ did }: { did: string }) {
         <input
           ref={fileInput}
           type="file"
+          aria-label={t("add.upload")}
           accept="image/png,image/jpeg,image/webp"
           className="hidden"
           onChange={(event) => {

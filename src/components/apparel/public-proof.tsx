@@ -27,12 +27,12 @@ function Approval({
   status,
   approvedAt,
   onApproved,
-}: {
+}: Readonly<{
   token: string;
   status: ApparelStatus;
   approvedAt: string | null;
   onApproved(): void;
-}) {
+}>) {
   const t = useTranslations("apparel.public");
   const format = useFormatter();
   const [approver, setApprover] = useState("");
@@ -112,10 +112,10 @@ export function PublicProof() {
 
   if (proof.isLoading) {
     return (
-      <div className="grid gap-4" role="status" aria-busy="true">
+      <output className="grid gap-4" aria-busy="true">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="aspect-[2/1] w-full rounded-2xl" />
-      </div>
+      </output>
     );
   }
   if (proof.error || !data) {

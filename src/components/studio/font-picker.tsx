@@ -12,7 +12,9 @@ import { cn } from "@/lib/utils";
 
 const CATEGORIES: FontCategory[] = ["sans", "serif", "display", "script"];
 
-export function FontPicker({ value, onChange, brandFonts = [] }: { value: string; onChange(fontId: string): void; brandFonts?: string[] }) {
+const NO_FONTS: string[] = [];
+
+export function FontPicker({ value, onChange, brandFonts = NO_FONTS }: Readonly<{ value: string; onChange(fontId: string): void; brandFonts?: string[] }>) {
   const t = useTranslations("studio.text");
   const tc = useTranslations("common.fontCategories");
   const [open, setOpen] = useState(false);
@@ -45,7 +47,8 @@ export function FontPicker({ value, onChange, brandFonts = [] }: { value: string
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchFont")} className="h-8 pl-8 text-xs" aria-label={t("searchFont")} />
         </div>
-        <div className="max-h-80 overflow-y-auto pr-1" role="listbox" aria-label={t("font")}>
+        <fieldset className="max-h-80 overflow-y-auto pr-1">
+          <legend className="sr-only">{t("font")}</legend>
           {groups.map((group) => (
             <div key={group.id} className="mb-1.5">
               <p className="sticky top-0 bg-popover px-2 py-1 text-[11px] font-medium text-muted-foreground">{group.label}</p>
@@ -53,8 +56,7 @@ export function FontPicker({ value, onChange, brandFonts = [] }: { value: string
                 <button
                   key={`${group.id}-${f.id}`}
                   type="button"
-                  role="option"
-                  aria-selected={f.id === value}
+                  aria-pressed={f.id === value}
                   onClick={() => {
                     onChange(f.id);
                     setOpen(false);
@@ -68,7 +70,7 @@ export function FontPicker({ value, onChange, brandFonts = [] }: { value: string
               ))}
             </div>
           ))}
-        </div>
+        </fieldset>
       </PopoverContent>
     </Popover>
   );

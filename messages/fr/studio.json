@@ -5,7 +5,8 @@
     "lock": "Verrouiller",
     "unlock": "Déverrouiller",
     "delete": "Supprimer",
-    "cropHint": "Glissez pour cadrer la photo · Entrée ou Échap pour terminer"
+    "cropHint": "Glissez pour cadrer la photo · Entrée ou Échap pour terminer",
+    "editText": "Texte en cours de modification"
   },
   "paint": {
     "saturation": "Saturation et luminosité",
@@ -933,7 +934,6 @@
     "duotoneLight": "Lumières",
     "invert": "Négatif",
     "resetGroup": "Réinitialiser le groupe",
-    "doubleClickReset": "Double-clic : remettre à zéro",
     "whitePicker": "Pipette de balance des blancs",
     "pickHint": "Cliquez sur une zone qui devrait être blanche ou grise",
     "histogram": "Histogramme",
@@ -1004,7 +1004,9 @@
     "outline": "Contour",
     "outlineColor": "Couleur du contour",
     "glow": "Lueur",
-    "glowColor": "Couleur de la lueur"
+    "glowColor": "Couleur de la lueur",
+    "resetValue": "Revenir à la valeur par défaut",
+    "maskCanvas": "Masque de détourage : peignez pour gommer ou restaurer"
   },
   "presentation": {
     "present": "Présenter",

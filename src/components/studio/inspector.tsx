@@ -34,13 +34,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { NativeSelect } from "@/components/common/native-select";
-import { getFont } from "@/lib/render/fonts";
+import { closestWeight, getFont } from "@/lib/render/fonts";
 import { documentColors } from "@/lib/studio/doc";
 import { aabb, union } from "@/lib/studio/geometry";
 import { relayout } from "@/lib/studio/text";
 import { PHOTO_PRESETS } from "@/lib/render/photo";
 import { autoAdjust, downscale } from "@/lib/studio/pixels";
 import { BLEND_MODES, type BlendMode, type DesignElement, type ImageElement, type ShapeElement, type SvgElement, type TextElement } from "@/lib/studio/types";
+import { randomInt } from "@/lib/random";
 import { selectedElements, useStudio } from "@/stores/studio";
 import { useStudioContext } from "./context";
 import { NumberField, Section, SliderField, ToggleButtons } from "./fields";
@@ -176,7 +177,8 @@ export function Inspector() {
             </Button>
           </div>
         </div>
-        <div className="grid grid-cols-6 gap-1" role="group" aria-label={single ? t("alignPage") : t("alignSelection")}>
+        <fieldset className="grid grid-cols-6 gap-1">
+          <legend className="sr-only">{single ? t("alignPage") : t("alignSelection")}</legend>
           {(
             [
               ["left", AlignStartVertical],
@@ -191,7 +193,7 @@ export function Inspector() {
               <Icon />
             </Button>
           ))}
-        </div>
+        </fieldset>
         {selected.length >= 3 && (
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" onClick={() => distribute("x")}>
@@ -204,7 +206,8 @@ export function Inspector() {
             </Button>
           </div>
         )}
-        <div className="grid grid-cols-4 gap-1" role="group" aria-label={t("order")}>
+        <fieldset className="grid grid-cols-4 gap-1">
+          <legend className="sr-only">{t("order")}</legend>
           <Button variant="ghost" size="sm" onClick={() => state.arrange("front")} title={`${t("front")} (Ctrl+⇧+])`}>
             <ArrowUpToLine />
           </Button>
@@ -217,7 +220,7 @@ export function Inspector() {
           <Button variant="ghost" size="sm" onClick={() => state.arrange("back")} title={`${t("back")} (Ctrl+⇧+[)`}>
             <ArrowDownToLine />
           </Button>
-        </div>
+        </fieldset>
       </Section>
 
       <Section title={t("effects")}>
@@ -273,7 +276,7 @@ export function Inspector() {
 
 type ColorProps = { brandColors: string[]; documentColors: string[] };
 
-function Row({ label, children }: { label: string; children: ReactNode }) {
+function Row({ label, children }: Readonly<{ label: string; children: ReactNode }>) {
   return (
     <div className="grid grid-cols-[5.5rem_1fr] items-center gap-2">
       <span className="truncate text-xs text-muted-foreground">{label}</span>
@@ -282,7 +285,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function TextSection({ el, update, colorProps }: { el: TextElement; update: Updater; colorProps: ColorProps }) {
+function TextSection({ el, update, colorProps }: Readonly<{ el: TextElement; update: Updater; colorProps: ColorProps }>) {
   const t = useTranslations("studio.inspector");
   const { brand } = useStudioContext();
   const font = getFont(el.fontId);
@@ -292,7 +295,7 @@ function TextSection({ el, update, colorProps }: { el: TextElement; update: Upda
   return (
     <>
       <Section title={t("text")}>
-        <FontPicker value={el.fontId} onChange={(fontId) => text((e) => ({ ...e, fontId, fontWeight: getFont(fontId).weights.reduce((best, w) => (Math.abs(w - e.fontWeight) < Math.abs(best - e.fontWeight) ? w : best)) }))} brandFonts={brandFonts} />
+        <FontPicker value={el.fontId} onChange={(fontId) => text((e) => ({ ...e, fontId, fontWeight: closestWeight(fontId, e.fontWeight) }))} brandFonts={brandFonts} />
         <div className="grid grid-cols-2 gap-2">
           <NativeSelect value={String(el.fontWeight)} onChange={(e) => text((x) => ({ ...x, fontWeight: Number(e.target.value) }))} aria-label={t("weight")}>
             {font.weights.map((w) => (
@@ -362,7 +365,7 @@ function TextSection({ el, update, colorProps }: { el: TextElement; update: Upda
   );
 }
 
-function ShapeSection({ el, update, colorProps }: { el: ShapeElement; update: Updater; colorProps: ColorProps }) {
+function ShapeSection({ el, update, colorProps }: Readonly<{ el: ShapeElement; update: Updater; colorProps: ColorProps }>) {
   const t = useTranslations("studio.inspector");
   const shape = (fn: (el: ShapeElement) => ShapeElement, key?: string) => update((e) => (e.type === "shape" ? fn(e) : e), key);
   const line = el.shape === "line" || el.shape === "arrow";
@@ -401,7 +404,7 @@ function ShapeSection({ el, update, colorProps }: { el: ShapeElement; update: Up
       {(el.shape === "polygon" || el.shape === "star") && <SliderField label={el.shape === "star" ? t("points") : t("sides")} value={el.sides ?? 5} min={3} max={24} onChange={(v) => shape((e) => ({ ...e, sides: v }), "sides")} />}
       {el.shape === "star" && <SliderField label={t("innerRatio")} value={Math.round((el.innerRatio ?? 0.5) * 100)} min={15} max={95} format={(v) => `${v} %`} onChange={(v) => shape((e) => ({ ...e, innerRatio: v / 100 }), "inner")} />}
       {el.shape === "blob" && (
-        <Button variant="outline" size="sm" onClick={() => shape((e) => ({ ...e, seed: Math.floor(Math.random() * 1000) }))}>
+        <Button variant="outline" size="sm" onClick={() => shape((e) => ({ ...e, seed: randomInt(1000) }))}>
           <Shuffle />
           {t("reshape")}
         </Button>
@@ -410,17 +413,17 @@ function ShapeSection({ el, update, colorProps }: { el: ShapeElement; update: Up
   );
 }
 
-function ImageSection({ el, update }: { el: ImageElement; update: Updater }) {
+function ImageSection({ el, update }: Readonly<{ el: ImageElement; update: Updater }>) {
   const t = useTranslations("studio.inspector");
   const tp = useTranslations("studio.photo");
   const { pickImages } = useStudioContext();
   const [editing, setEditing] = useState<PhotoTab | null>(null);
   const [enhancing, setEnhancing] = useState(false);
   const image = (fn: (el: ImageElement) => ImageElement, key?: string) => update((e) => (e.type === "image" ? fn(e) : e), key);
-  const retouched = Boolean(el.adjust || el.filters || el.crop || el.cutout || el.straighten || el.outline || el.glow);
+  const retouched = [el.adjust, el.filters, el.crop, el.cutout, el.outline, el.glow].some(Boolean) || Boolean(el.straighten);
   const enhance = () => {
     setEnhancing(true);
-    downscale(el.src, 320)
+    void downscale(el.src, 320)
       .then(({ pixels }) => image((e) => ({ ...e, filters: undefined, adjust: { ...e.adjust, ...autoAdjust(pixels) } })))
       .finally(() => setEnhancing(false));
   };
@@ -520,7 +523,7 @@ function ImageSection({ el, update }: { el: ImageElement; update: Updater }) {
   );
 }
 
-function SvgSection({ el, update }: { el: SvgElement; update: Updater }) {
+function SvgSection({ el, update }: Readonly<{ el: SvgElement; update: Updater }>) {
   const t = useTranslations("studio.inspector");
   const { brand } = useStudioContext();
   const variants = Object.entries(brand?.logos ?? {}).filter(([, svg]) => Boolean(svg)) as [string, string][];
@@ -545,7 +548,7 @@ function SvgSection({ el, update }: { el: SvgElement; update: Updater }) {
   );
 }
 
-function PageInspector({ colorProps }: { colorProps: ColorProps }) {
+function PageInspector({ colorProps }: Readonly<{ colorProps: ColorProps }>) {
   const t = useTranslations("studio.inspector");
   const doc = useStudio((s) => s.doc)!;
   const pageIndex = useStudio((s) => s.pageIndex);

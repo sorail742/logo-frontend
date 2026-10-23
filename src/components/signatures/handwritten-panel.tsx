@@ -18,16 +18,16 @@ import type { HandwrittenData, InkColor } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Attestation } from "./attestation";
 
-export function InkPicker({ value, onChange }: { value: InkColor; onChange: (ink: InkColor) => void }) {
+export function InkPicker({ value, onChange }: Readonly<{ value: InkColor; onChange: (ink: InkColor) => void }>) {
   const t = useTranslations("signatures.inks");
   return (
-    <div className="flex gap-2" role="radiogroup">
+    <fieldset className="flex gap-2">
+      <legend className="sr-only">{t("label")}</legend>
       {(Object.keys(INK_COLORS) as InkColor[]).map((ink) => (
         <button
           key={ink}
           type="button"
-          role="radio"
-          aria-checked={value === ink}
+          aria-pressed={value === ink}
           onClick={() => onChange(ink)}
           className={cn("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs", value === ink && "border-primary ring-2 ring-primary/30")}
         >
@@ -35,7 +35,7 @@ export function InkPicker({ value, onChange }: { value: InkColor; onChange: (ink
           {t(ink)}
         </button>
       ))}
-    </div>
+    </fieldset>
   );
 }
 
@@ -44,12 +44,12 @@ export function HandwrittenPanel({
   canEdit,
   saving,
   onSave,
-}: {
+}: Readonly<{
   defaultText: string;
   canEdit: boolean;
   saving: boolean;
   onSave: (data: HandwrittenData, attested: boolean) => Promise<boolean>;
-}) {
+}>) {
   const t = useTranslations("signatures");
   const [mode, setMode] = useState<"font" | "draw">("font");
   const [text, setText] = useState(defaultText);
@@ -134,7 +134,6 @@ export function HandwrittenPanel({
                   setStrokes((s) => [...s.slice(0, -1), [...s[s.length - 1]!, p]]);
                 }}
                 onPointerUp={() => (drawing.current = false)}
-                role="img"
                 aria-label={t("handwritten.drawHint")}
               >
                 <path d={path} fill="none" stroke={INK_COLORS[ink]} strokeWidth={3.2} strokeLinecap="round" strokeLinejoin="round" />
@@ -155,19 +154,19 @@ export function HandwrittenPanel({
         <Attestation checked={attested} onChange={setAttested} />
         {canEdit && (
           <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={save} disabled={saving || (mode === "draw" ? !path : !text.trim())}>
+            <Button onClick={() => void save()} disabled={saving || (mode === "draw" ? !path : !text.trim())}>
               <Save />
               {t("handwritten.save")}
             </Button>
             <CreditCost cost={CREDIT_COSTS.HANDWRITTEN_OR_STAMP} />
-            <Button variant="outline" disabled={!savedOnce} onClick={() => downloadSvg(svg, "paraphe.svg")} title={savedOnce ? undefined : t("export.requiresSave")}>
+            <Button variant="outline" disabled={!savedOnce} onClick={() => void downloadSvg(svg, "paraphe.svg")} title={savedOnce ? undefined : t("export.requiresSave")}>
               <Download />
               {t("export.svg")}
             </Button>
             <Button
               variant="outline"
               disabled={!savedOnce}
-              onClick={async () => downloadBlob(await svgToPngBlob(svg, { size: 2400 }), "paraphe.png")}
+              onClick={() => void svgToPngBlob(svg, { size: 2400 }).then((blob) => downloadBlob(blob, "paraphe.png"))}
               title={savedOnce ? undefined : t("export.requiresSave")}
             >
               <Download />

@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 
 const QUICK = ["post-square", "story", "flyer-a5", "business-card", "slide", "facebook-cover"];
 
-function FormatShape({ format, className }: { format: DesignFormat; className?: string }) {
+function FormatShape({ format, className }: Readonly<{ format: DesignFormat; className?: string }>) {
   const ratio = format.width / format.height;
   const w = ratio >= 1 ? 40 : 40 * ratio;
   const h = ratio >= 1 ? 40 / ratio : 40;
@@ -37,7 +37,7 @@ function FormatShape({ format, className }: { format: DesignFormat; className?: 
   );
 }
 
-export function NewDesignDialog({ open, onOpenChange, initialFormat }: { open: boolean; onOpenChange(open: boolean): void; initialFormat?: string }) {
+export function NewDesignDialog({ open, onOpenChange, initialFormat }: Readonly<{ open: boolean; onOpenChange(open: boolean): void; initialFormat?: string }>) {
   const t = useTranslations("studio.list");
   const tf = useTranslations("studio.formats");
   const onError = useApiErrorToast();
@@ -118,7 +118,7 @@ export function NewDesignDialog({ open, onOpenChange, initialFormat }: { open: b
   );
 }
 
-function DesignCard({ design, canEdit }: { design: StudioDesignSummary; canEdit: boolean }) {
+function DesignCard({ design, canEdit }: Readonly<{ design: StudioDesignSummary; canEdit: boolean }>) {
   const t = useTranslations("studio.list");
   const tp = useTranslations("studio.presentation");
   const router = useRouter();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { FileUp, Loader2 } from "lucide-react";
@@ -27,13 +27,14 @@ import { useApparel } from "@/stores/apparel";
 const EXAMPLE =
   "nom,nom_imprime,numero,taille,poste,quantite\nMamadou Diallo,DIALLO,10,M,Joueur,1\nFatoumata Camara,CAMARA,1,L,Gardienne,1";
 
-export function RosterDialog({ onClose }: { onClose(): void }) {
+export function RosterDialog({ onClose }: Readonly<{ onClose(): void }>) {
   const t = useTranslations("apparel.roster");
   const design = useApparel((s) => s.design)!;
   const [csv, setCsv] = useState("");
   const [name, setName] = useState(design.roster?.name ?? "");
   const [problems, setProblems] = useState<string[]>([]);
   const [summary, setSummary] = useState<RosterSummary | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const importRoster = useMutation({
     mutationFn: () => api.apparel.importRoster(design.id, csv, name.trim() || undefined),
@@ -76,19 +77,22 @@ export function RosterDialog({ onClose }: { onClose(): void }) {
               <Button size="xs" variant="ghost" onClick={() => setCsv(EXAMPLE)}>
                 {t("example")}
               </Button>
-              <Button size="xs" variant="outline" render={<label />} nativeButton={false}>
+              <Button size="xs" variant="outline" onClick={() => fileInput.current?.click()}>
                 <FileUp /> {t("file")}
-                <input
-                  type="file"
-                  accept=".csv,text/csv,text/plain"
-                  className="sr-only"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    event.target.value = "";
-                    void file?.text().then(setCsv);
-                  }}
-                />
               </Button>
+              <input
+                ref={fileInput}
+                type="file"
+                accept=".csv,text/csv,text/plain"
+                className="sr-only"
+                tabIndex={-1}
+                aria-label={t("file")}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  void file?.text().then(setCsv);
+                }}
+              />
             </span>
           </div>
           <Textarea

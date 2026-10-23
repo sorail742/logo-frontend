@@ -106,6 +106,40 @@ export function neutralize(r: number, g: number, b: number): { temperature: numb
   return { temperature: Math.round(clamp(t, -1, 1) * 100), tint: Math.round(clamp(m, -1, 1) * 100) };
 }
 
+/** Luminance cumulée, saturation cumulée et moyenne des tons moyens (balance des blancs). */
+function toneStats(px: Pixels) {
+  let sum = 0;
+  let sat = 0;
+  let count = 0;
+  const avg: [number, number, number] = [0, 0, 0];
+  const { data } = px;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3]! < 128) continue;
+    const r = data[i]!;
+    const g = data[i + 1]!;
+    const b = data[i + 2]!;
+    const y = luma(r, g, b);
+    sum += y;
+    sat += (Math.max(r, g, b) - Math.min(r, g, b)) / 255;
+    // Balance des blancs estimée sur les tons moyens (ni noirs ni blancs brûlés).
+    if (y > 50 && y < 215) {
+      avg[0] += r;
+      avg[1] += g;
+      avg[2] += b;
+      count++;
+    }
+  }
+  return { sum, sat, count, avg };
+}
+
+/** Correction partielle : la dominante d'une scène (coucher de soleil) n'est pas une erreur. */
+function partialWhiteBalance(avg: [number, number, number], count: number): PhotoAdjust {
+  const wb = neutralize(avg[0] / count, avg[1] / count, avg[2] / count);
+  const temperature = Math.round(clamp(wb.temperature * 0.5, -30, 30));
+  const tint = Math.round(clamp(wb.tint * 0.5, -25, 25));
+  return { ...(Math.abs(temperature) >= 3 && { temperature }), ...(Math.abs(tint) >= 3 && { tint }) };
+}
+
 /** Amélioration automatique : niveaux étirés, tons moyens, balance des blancs, vibrance, netteté. */
 export function autoAdjust(px: Pixels): PhotoAdjust {
   const h = histogram(px);
@@ -122,38 +156,13 @@ export function autoAdjust(px: Pixels): PhotoAdjust {
       ],
     };
   }
-  let sum = 0;
-  let sat = 0;
-  let count = 0;
-  const avg = [0, 0, 0];
-  const { data } = px;
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3]! < 128) continue;
-    const [r, g, b] = [data[i]!, data[i + 1]!, data[i + 2]!];
-    const y = luma(r, g, b);
-    sum += y;
-    sat += (Math.max(r, g, b) - Math.min(r, g, b)) / 255;
-    // Balance des blancs estimée sur les tons moyens (ni noirs ni blancs brûlés).
-    if (y > 50 && y < 215) {
-      avg[0] += r;
-      avg[1] += g;
-      avg[2] += b;
-      count++;
-    }
-  }
+  const { sum, sat, count, avg } = toneStats(px);
   const mean = sum / h.total / 255;
   const [low, high] = [lo * 0.66, 255 - (255 - hi) * 0.66];
   const stretched = (mean * 255 - low) / (high - low);
   const brightness = Math.round(clamp((0.47 - stretched) * 160, -40, 40));
   if (Math.abs(brightness) >= 3) adjust.brightness = brightness;
-  if (count > h.total * 0.05) {
-    const wb = neutralize(avg[0]! / count, avg[1]! / count, avg[2]! / count);
-    // Correction partielle : la dominante d'une scène (coucher de soleil) n'est pas une erreur.
-    const temperature = Math.round(clamp(wb.temperature * 0.5, -30, 30));
-    const tint = Math.round(clamp(wb.tint * 0.5, -25, 25));
-    if (Math.abs(temperature) >= 3) adjust.temperature = temperature;
-    if (Math.abs(tint) >= 3) adjust.tint = tint;
-  }
+  if (count > h.total * 0.05) Object.assign(adjust, partialWhiteBalance(avg, count));
   adjust.vibrance = sat / h.total < 0.3 ? 18 : 6;
   return adjust;
 }
@@ -214,28 +223,44 @@ function flood(px: Pixels, seeds: number[], ref: [number, number, number], limit
   const queue = new Int32Array(width * height);
   let head = 0;
   let tail = 0;
-  const near = (i: number) => distance(data[i * 4]!, data[i * 4 + 1]!, data[i * 4 + 2]!, ...ref) < limit;
+  const gain = (j: number) => {
+    won[j] = 1;
+    queue[tail] = j;
+    tail += 1;
+  };
   for (const seed of seeds) {
-    if (!won[seed] && near(seed)) {
-      won[seed] = 1;
-      queue[tail++] = seed;
-    }
+    if (!won[seed] && distance(...colorAt(data, seed), ...ref) < limit) gain(seed);
   }
   while (head < tail) {
-    const i = queue[head++]!;
-    const x = i % width;
-    const neighbours = [x > 0 ? i - 1 : -1, x < width - 1 ? i + 1 : -1, i - width, i + width];
-    for (const j of neighbours) {
-      if (j < 0 || j >= width * height || won[j]) continue;
-      const d = distance(data[j * 4]!, data[j * 4 + 1]!, data[j * 4 + 2]!, ...ref);
-      const step = distance(data[j * 4]!, data[j * 4 + 1]!, data[j * 4 + 2]!, data[i * 4]!, data[i * 4 + 1]!, data[i * 4 + 2]!);
-      if (d < limit || (step < limit * 0.25 && d < limit * 2.2)) {
-        won[j] = 1;
-        queue[tail++] = j;
-      }
+    const i = queue[head]!;
+    head += 1;
+    for (const j of neighbours(i, width, height)) {
+      if (!won[j] && accepts(data, i, j, ref, limit)) gain(j);
     }
   }
   return won;
+}
+
+function colorAt(data: Uint8ClampedArray, i: number): [number, number, number] {
+  return [data[i * 4]!, data[i * 4 + 1]!, data[i * 4 + 2]!];
+}
+
+/** Voisins directs d'un pixel (gauche, droite, haut, bas) dans l'image. */
+function neighbours(i: number, width: number, height: number) {
+  const x = i % width;
+  const out: number[] = [];
+  if (x > 0) out.push(i - 1);
+  if (x < width - 1) out.push(i + 1);
+  if (i >= width) out.push(i - width);
+  if (i + width < width * height) out.push(i + width);
+  return out;
+}
+
+/** Pixel gagné : proche du fond, ou proche de son voisin gagné dans un dégradé doux. */
+function accepts(data: Uint8ClampedArray, from: number, to: number, ref: [number, number, number], limit: number) {
+  const color = colorAt(data, to);
+  const d = distance(...color, ...ref);
+  return d < limit || (distance(...color, ...colorAt(data, from)) < limit * 0.25 && d < limit * 2.2);
 }
 
 /** Bords adoucis : les pixels voisins de la zone retirée prennent une opacité selon leur écart au fond. */
@@ -326,29 +351,34 @@ export function paintMask(
   const length = Math.hypot(to.x - from.x, to.y - from.y);
   const steps = Math.max(1, Math.ceil(length / Math.max(1, radius / 4)));
   const box = { x0: width, y0: height, x1: 0, y1: 0 };
-  const inner = radius * clamp(hardness, 0, 1);
+  const brush = { radius, inner: radius * clamp(hardness, 0, 1), value };
   for (let s = 0; s <= steps; s++) {
-    const cx = from.x + ((to.x - from.x) * s) / steps;
-    const cy = from.y + ((to.y - from.y) * s) / steps;
-    const x0 = Math.max(0, Math.floor(cx - radius));
-    const x1 = Math.min(width - 1, Math.ceil(cx + radius));
-    const y0 = Math.max(0, Math.floor(cy - radius));
-    const y1 = Math.min(height - 1, Math.ceil(cy + radius));
-    for (let y = y0; y <= y1; y++) {
-      for (let x = x0; x <= x1; x++) {
-        const d = Math.hypot(x - cx, y - cy);
-        if (d > radius) continue;
-        const a = d <= inner ? 1 : 1 - (d - inner) / Math.max(1e-6, radius - inner);
-        const i = y * width + x;
-        mask[i] = value === 0 ? Math.min(mask[i]!, Math.round(255 * (1 - a))) : Math.max(mask[i]!, Math.round(255 * a));
-      }
-    }
-    box.x0 = Math.min(box.x0, x0);
-    box.y0 = Math.min(box.y0, y0);
-    box.x1 = Math.max(box.x1, x1);
-    box.y1 = Math.max(box.y1, y1);
+    const dab = paintDab(mask, width, height, from.x + ((to.x - from.x) * s) / steps, from.y + ((to.y - from.y) * s) / steps, brush);
+    box.x0 = Math.min(box.x0, dab.x0);
+    box.y0 = Math.min(box.y0, dab.y0);
+    box.x1 = Math.max(box.x1, dab.x1);
+    box.y1 = Math.max(box.y1, dab.y1);
   }
   return box;
+}
+
+/** Une touche de pinceau centrée en (cx, cy) ; renvoie la zone touchée. */
+function paintDab(mask: Uint8ClampedArray, width: number, height: number, cx: number, cy: number, brush: { radius: number; inner: number; value: 0 | 255 }): Box {
+  const { radius, inner, value } = brush;
+  const x0 = Math.max(0, Math.floor(cx - radius));
+  const x1 = Math.min(width - 1, Math.ceil(cx + radius));
+  const y0 = Math.max(0, Math.floor(cy - radius));
+  const y1 = Math.min(height - 1, Math.ceil(cy + radius));
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) {
+      const d = Math.hypot(x - cx, y - cy);
+      if (d > radius) continue;
+      const a = d <= inner ? 1 : 1 - (d - inner) / Math.max(1e-6, radius - inner);
+      const i = y * width + x;
+      mask[i] = value === 0 ? Math.min(mask[i]!, Math.round(255 * (1 - a))) : Math.max(mask[i]!, Math.round(255 * a));
+    }
+  }
+  return { x0, y0, x1, y1 };
 }
 
 /** Flou de boîte séparable, deux passes (proche d'un flou gaussien). */
@@ -357,28 +387,27 @@ function boxBlur(mask: Uint8ClampedArray, width: number, height: number, radius:
   if (r < 1) return mask;
   let src = mask;
   for (let pass = 0; pass < 2; pass++) {
-    const tmp = new Uint8ClampedArray(src.length);
-    for (let y = 0; y < height; y++) {
-      let acc = 0;
-      const row = y * width;
-      for (let x = -r; x <= r; x++) acc += src[row + clamp(x, 0, width - 1)]!;
-      for (let x = 0; x < width; x++) {
-        tmp[row + x] = acc / (2 * r + 1);
-        acc += src[row + Math.min(width - 1, x + r + 1)]! - src[row + Math.max(0, x - r)]!;
-      }
-    }
-    const out = new Uint8ClampedArray(src.length);
-    for (let x = 0; x < width; x++) {
-      let acc = 0;
-      for (let y = -r; y <= r; y++) acc += tmp[clamp(y, 0, height - 1) * width + x]!;
-      for (let y = 0; y < height; y++) {
-        out[y * width + x] = acc / (2 * r + 1);
-        acc += tmp[Math.min(height - 1, y + r + 1) * width + x]! - tmp[Math.max(0, y - r) * width + x]!;
-      }
-    }
-    src = out;
+    // Lignes puis colonnes : une même moyenne glissante, avec un pas de 1 ou de `width`.
+    const rows = slidingMean(src, height, width, width, 1, r);
+    src = slidingMean(rows, width, height, 1, width, r);
   }
   return src;
+}
+
+/** Moyenne glissante de rayon r le long de `count` lignes de `length` valeurs (bords prolongés). */
+function slidingMean(src: Uint8ClampedArray, count: number, length: number, lineStep: number, step: number, r: number) {
+  const out = new Uint8ClampedArray(src.length);
+  for (let line = 0; line < count; line++) {
+    const base = line * lineStep;
+    const at = (k: number) => src[base + clamp(k, 0, length - 1) * step]!;
+    let acc = 0;
+    for (let k = -r; k <= r; k++) acc += at(k);
+    for (let k = 0; k < length; k++) {
+      out[base + k * step] = acc / (2 * r + 1);
+      acc += at(k + r + 1) - at(k - r);
+    }
+  }
+  return out;
 }
 
 /** Bord du masque : rétréci (contraction > 0, en px) puis adouci (lissage, en px). */

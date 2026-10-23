@@ -13,7 +13,7 @@ export function frameOf(el: ImageElement, patch: Partial<ImageElement> = {}): Im
 }
 
 /** Miniature SVG de l'élément avec d'autres réglages (image réduite pour rester légère). */
-function Thumbnail({ id, el, adjust, thumbSrc }: { id: string; el: ImageElement; adjust: PhotoAdjust; thumbSrc: string }) {
+function Thumbnail({ id, el, adjust, thumbSrc }: Readonly<{ id: string; el: ImageElement; adjust: PhotoAdjust; thumbSrc: string }>) {
   // Identifiant propre à la vignette : les filtres de toutes les vignettes cohabitent dans la page.
   const svg = useMemo(() => renderElement(frameOf(el, { id: `preset-${id}`, src: thumbSrc, adjust, filters: undefined })), [id, el, adjust, thumbSrc]);
   return (
@@ -22,7 +22,7 @@ function Thumbnail({ id, el, adjust, thumbSrc }: { id: string; el: ImageElement;
 }
 
 /** Galerie de filtres : un clic remplace tous les réglages par ceux du préréglage. */
-export function PresetsPanel({ el, thumbSrc, current, onPick }: { el: ImageElement; thumbSrc: string | null; current: PhotoAdjust; onPick: (adjust: PhotoAdjust) => void }) {
+export function PresetsPanel({ el, thumbSrc, current, onPick }: Readonly<{ el: ImageElement; thumbSrc: string | null; current: PhotoAdjust; onPick: (adjust: PhotoAdjust) => void }>) {
   const t = useTranslations("studio.photo");
   const active = JSON.stringify(current);
   return (

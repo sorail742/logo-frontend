@@ -10,7 +10,7 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
   setRequestLocale(locale);
   // Coque cliente (session, URL) : rendue à la demande, sous Suspense (Cache Components).
   return (
-    <Suspense fallback={<div className="flex min-h-svh items-center justify-center" role="status" aria-busy="true" />}>
+    <Suspense fallback={<output className="flex min-h-svh items-center justify-center" aria-busy="true" />}>
       <AppShell>{children}</AppShell>
     </Suspense>
   );

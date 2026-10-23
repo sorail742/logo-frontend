@@ -26,10 +26,11 @@ function histogramPath(counts: Uint32Array, height: number) {
 }
 
 /** Histogramme du résultat : luminance et trois canaux. */
-export function HistogramView({ histogram, className }: { histogram: Histogram | null; className?: string }) {
+export function HistogramView({ histogram, className }: Readonly<{ histogram: Histogram | null; className?: string }>) {
   const t = useTranslations("studio.photo");
   return (
-    <svg viewBox="0 0 256 80" preserveAspectRatio="none" className={cn("h-20 w-full rounded-md bg-muted/60", className)} role="img" aria-label={t("histogram")}>
+    <svg viewBox="0 0 256 80" preserveAspectRatio="none" className={cn("h-20 w-full rounded-md bg-muted/60", className)} aria-label={t("histogram")}>
+      <title>{t("histogram")}</title>
       {histogram && (
         <>
           <path d={histogramPath(histogram.r, 80)} fill="#ef4444" opacity={0.35} />
@@ -46,7 +47,7 @@ export function HistogramView({ histogram, className }: { histogram: Histogram |
  * Courbes (comme Photoshop) : canal RVB et canaux rouge, vert, bleu. Clic pour ajouter un point,
  * glisser pour le déplacer, double-clic ou glisser hors du cadre pour le retirer.
  */
-export function CurvesEditor({ curves, onChange, histogram }: { curves: PhotoCurves | undefined; onChange: (curves: PhotoCurves | undefined) => void; histogram: Histogram | null }) {
+export function CurvesEditor({ curves, onChange, histogram }: Readonly<{ curves: PhotoCurves | undefined; onChange: (curves: PhotoCurves | undefined) => void; histogram: Histogram | null }>) {
   const t = useTranslations("studio.photo");
   const [channel, setChannel] = useState<Channel>("rgb");
   const svg = useRef<SVGSVGElement>(null);
@@ -110,7 +111,8 @@ export function CurvesEditor({ curves, onChange, histogram }: { curves: PhotoCur
   return (
     <div className="grid gap-3">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex rounded-lg border p-0.5" role="group" aria-label={t("channel")}>
+        <fieldset className="flex rounded-lg border p-0.5">
+          <legend className="sr-only">{t("channel")}</legend>
           {CHANNELS.map((c) => (
             <button
               key={c}
@@ -122,7 +124,7 @@ export function CurvesEditor({ curves, onChange, histogram }: { curves: PhotoCur
               {t(`channels.${c}`)}
             </button>
           ))}
-        </div>
+        </fieldset>
         <Button type="button" size="xs" variant="ghost" onClick={() => write(null)}>
           <RotateCcw /> {t("resetCurve")}
         </Button>
@@ -140,7 +142,6 @@ export function CurvesEditor({ curves, onChange, histogram }: { curves: PhotoCur
           const index = points.findIndex((q, i) => i > 0 && i < points.length - 1 && Math.abs(q.x - x) < 0.04);
           if (index > 0) write(points.filter((_, i) => i !== index));
         }}
-        role="img"
         aria-label={t("curves")}
       >
         {counts && <path d={histogramPath(counts, SIZE)} transform={`scale(${SIZE / 256} 1)`} fill={STROKES[channel]} opacity={0.18} />}
@@ -152,8 +153,8 @@ export function CurvesEditor({ curves, onChange, histogram }: { curves: PhotoCur
         ))}
         <line x1={0} y1={SIZE} x2={SIZE} y2={0} stroke="currentColor" strokeOpacity={0.2} strokeDasharray="4 4" />
         <path d={d} fill="none" stroke={STROKES[channel]} strokeWidth={2} />
-        {points.map((p, i) => (
-          <circle key={i} cx={p.x * SIZE} cy={(1 - p.y) * SIZE} r={5} fill="var(--background)" stroke={STROKES[channel]} strokeWidth={2} />
+        {points.map((p) => (
+          <circle key={p.x.toFixed(4)} cx={p.x * SIZE} cy={(1 - p.y) * SIZE} r={5} fill="var(--background)" stroke={STROKES[channel]} strokeWidth={2} />
         ))}
       </svg>
       <p className="text-xs text-muted-foreground">{t("curvesHint")}</p>

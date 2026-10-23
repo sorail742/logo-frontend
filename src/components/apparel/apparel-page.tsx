@@ -54,11 +54,11 @@ function NewApparelDialog({
   templates,
   initial,
   onClose,
-}: {
+}: Readonly<{
   templates: ApparelTemplate[];
   initial?: string;
   onClose(): void;
-}) {
+}>) {
   const t = useTranslations("apparel");
   const onError = useApiErrorToast();
   const router = useRouter();
@@ -76,12 +76,12 @@ function NewApparelDialog({
     mutationFn: () =>
       api.apparel.create(pid, {
         templateId,
-        name: (name.trim() || template?.name || "Tenue").slice(0, 120),
+        name: (name.trim() || (template?.name ?? "Tenue")).slice(0, 120),
         technique,
         garmentColor: color,
       }),
     onSuccess: (design) => {
-      queryClient.invalidateQueries({ queryKey: qk.apparel(pid) });
+      void queryClient.invalidateQueries({ queryKey: qk.apparel(pid) });
       onClose();
       router.push(`/textile/${design.id}`);
     },
@@ -129,7 +129,8 @@ function NewApparelDialog({
             <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               {t("settings.fabric")}
             </span>
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("settings.fabric")}>
+            <fieldset className="flex flex-wrap gap-1.5">
+              <legend className="sr-only">{t("settings.fabric")}</legend>
               {GARMENT_COLORS.map((c) => (
                 <button
                   key={c}
@@ -145,7 +146,7 @@ function NewApparelDialog({
                   style={{ background: c }}
                 />
               ))}
-            </div>
+            </fieldset>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="grid gap-1.5 text-sm font-medium">
@@ -190,11 +191,11 @@ function DesignCard({
   design,
   template,
   canEdit,
-}: {
+}: Readonly<{
   design: ApparelDesignSummary;
   template?: ApparelTemplate;
   canEdit: boolean;
-}) {
+}>) {
   const t = useTranslations("apparel");
   const format = useFormatter();
   const now = useNow({ updateInterval: 60_000 });
@@ -213,7 +214,7 @@ function DesignCard({
     mutationFn: () => api.apparel.remove(design.id),
     onSuccess: () => {
       toast.success(t("list.deleted"));
-      queryClient.invalidateQueries({ queryKey: qk.apparel(pid) });
+      void queryClient.invalidateQueries({ queryKey: qk.apparel(pid) });
     },
     onError,
   });
@@ -300,7 +301,7 @@ function DesignCard({
 }
 
 /** Aucune tenue : présentation du module et bouton de création. */
-function EmptyDesigns({ canEdit, disabled, onNew }: { canEdit: boolean; disabled: boolean; onNew(): void }) {
+function EmptyDesigns({ canEdit, disabled, onNew }: Readonly<{ canEdit: boolean; disabled: boolean; onNew(): void }>) {
   const t = useTranslations("apparel.list");
   const features = [
     { icon: Shirt, key: "realistic" },

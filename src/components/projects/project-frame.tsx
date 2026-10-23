@@ -26,12 +26,12 @@ const STEPS = [
 /** Étapes facultatives, repérées par une icône plutôt que par un numéro. */
 const STEP_ICONS: Partial<Record<(typeof STEPS)[number]["id"], LucideIcon>> = { studio: Sparkles, textile: Shirt, site: Globe };
 
-function StepMarker({ id, index, done }: { id: (typeof STEPS)[number]["id"]; index: number; done: boolean }) {
+function StepMarker({ id, index, done }: Readonly<{ id: (typeof STEPS)[number]["id"]; index: number; done: boolean }>) {
   const Icon = done ? Check : STEP_ICONS[id];
   return Icon ? <Icon className="size-3" /> : index;
 }
 
-export function ProjectFrame({ children }: { children: ReactNode }) {
+export function ProjectFrame({ children }: Readonly<{ children: ReactNode }>) {
   const t = useTranslations();
   const pathname = usePathname();
   const { project, pid, isLoading, error } = useProject();

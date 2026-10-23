@@ -15,18 +15,19 @@ import { LOGO_TYPES, type IconFrame, type LogoLayout, type LogoSpec } from "@/li
 import { cn } from "@/lib/utils";
 import { useLogoEditor } from "@/stores/logo-editor";
 
-function IconGlyph({ node }: { node: IconNode }) {
+function IconGlyph({ node }: Readonly<{ node: IconNode }>) {
   return (
     <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {node.map(([tag, attrs], i) => {
+      {node.map(([tag, attrs]) => {
         const Tag = tag as "path";
-        return <Tag key={i} {...(attrs as Record<string, string>)} />;
+        const { key, ...props } = attrs as Record<string, string>;
+        return <Tag key={key ?? `${tag}-${JSON.stringify(props)}`} {...props} />;
       })}
     </svg>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: Readonly<{ title: string; children: React.ReactNode }>) {
   return (
     <section className="grid gap-3 border-b pb-4 last:border-0">
       <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{title}</h3>
@@ -35,7 +36,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export function EditorControls({ spec }: { spec: LogoSpec }) {
+export function EditorControls({ spec }: Readonly<{ spec: LogoSpec }>) {
   const t = useTranslations("logos");
   const tc = useTranslations("common");
   const update = useLogoEditor((s) => s.update);
@@ -97,17 +98,15 @@ export function EditorControls({ spec }: { spec: LogoSpec }) {
       <Section title={t("editor.colors")}>
         <div className="grid grid-cols-2 gap-3">
           {(["primary", "secondary", "text", "background"] as const).map((key) => (
-            <label key={key} className="flex items-center gap-2 rounded-lg border p-1.5 text-sm">
+            <label key={key} className="grid grid-cols-[auto_1fr] items-center gap-x-2 rounded-lg border p-1.5 text-sm">
               <input
                 type="color"
                 value={spec.colors[key]}
                 onChange={(e) => updateColors({ [key]: e.target.value }, true)}
-                className="size-7 cursor-pointer rounded border-0 bg-transparent"
+                className="row-span-2 size-7 cursor-pointer rounded border-0 bg-transparent"
               />
-              <span className="grid">
-                <span className="text-xs">{t(`editor.${key === "text" ? "textColor" : key}`)}</span>
-                <span className="font-mono text-[11px] text-muted-foreground">{spec.colors[key].toUpperCase()}</span>
-              </span>
+              <span className="text-xs">{t(`editor.${key === "text" ? "textColor" : key}`)}</span>
+              <span className="font-mono text-[11px] text-muted-foreground">{spec.colors[key].toUpperCase()}</span>
             </label>
           ))}
         </div>
@@ -119,11 +118,11 @@ export function EditorControls({ spec }: { spec: LogoSpec }) {
 
       <Section title={t("editor.icon")}>
         <Input value={iconQuery} onChange={(e) => setIconQuery(e.target.value)} placeholder={t("editor.iconSearch")} aria-label={t("editor.iconSearch")} />
-        <div className="grid max-h-44 grid-cols-6 gap-1 overflow-y-auto" role="listbox" aria-label={t("editor.icon")}>
+        <fieldset className="grid max-h-44 grid-cols-6 gap-1 overflow-y-auto">
+          <legend className="sr-only">{t("editor.icon")}</legend>
           <button
             type="button"
-            role="option"
-            aria-selected={!spec.iconId}
+            aria-pressed={!spec.iconId}
             onClick={() => update({ iconId: null })}
             className={cn("flex aspect-square items-center justify-center rounded-md border text-xs font-semibold", !spec.iconId ? "border-primary bg-accent" : "hover:bg-muted")}
             title={t("editor.iconNone")}
@@ -134,8 +133,7 @@ export function EditorControls({ spec }: { spec: LogoSpec }) {
             <button
               key={icon.id}
               type="button"
-              role="option"
-              aria-selected={spec.iconId === icon.id}
+              aria-pressed={spec.iconId === icon.id}
               onClick={() => update({ iconId: icon.id, type: spec.type === "MONOGRAM" || spec.type === "WORDMARK" ? "ICON_TEXT" : spec.type })}
               className={cn("flex aspect-square items-center justify-center rounded-md border", spec.iconId === icon.id ? "border-primary bg-accent" : "hover:bg-muted")}
               title={icon.id}
@@ -143,7 +141,7 @@ export function EditorControls({ spec }: { spec: LogoSpec }) {
               <IconGlyph node={icon.node} />
             </button>
           ))}
-        </div>
+        </fieldset>
         <Field label={`${t("editor.iconScale")} (${Math.round(spec.iconScale * 100)} %)`}>
           <Slider
             min={0.5}
