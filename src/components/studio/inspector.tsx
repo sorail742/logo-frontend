@@ -45,6 +45,7 @@ import { randomInt } from "@/lib/random";
 import { selectedElements, useStudio } from "@/stores/studio";
 import { useStudioContext } from "./context";
 import { NumberField, Section, SliderField, ToggleButtons } from "./fields";
+import { FontCoverageNotice } from "./font-coverage";
 import { FontPicker } from "./font-picker";
 import { ColorPicker, PaintPicker } from "./paint-picker";
 import { PhotoEditor, type PhotoTab } from "./photo/photo-editor";
@@ -296,6 +297,7 @@ function TextSection({ el, update, colorProps }: Readonly<{ el: TextElement; upd
     <>
       <Section title={t("text")}>
         <FontPicker value={el.fontId} onChange={(fontId) => text((e) => ({ ...e, fontId, fontWeight: closestWeight(fontId, e.fontWeight) }))} brandFonts={brandFonts} />
+        <FontCoverageNotice text={el.text} fontId={el.fontId} />
         <div className="grid grid-cols-2 gap-2">
           <NativeSelect value={String(el.fontWeight)} onChange={(e) => text((x) => ({ ...x, fontWeight: Number(e.target.value) }))} aria-label={t("weight")}>
             {font.weights.map((w) => (

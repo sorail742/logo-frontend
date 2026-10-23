@@ -1,4 +1,4 @@
-import { closestWeight, getFont } from "@/lib/render/fonts";
+import { closestWeight, FALLBACK_FONTS, fontVars, getFont } from "@/lib/render/fonts";
 import { curveGeometry, displayText, lineMetrics } from "./render";
 import type { TextElement } from "./types";
 
@@ -8,27 +8,46 @@ import type { TextElement } from "./types";
 
 const families = new Map<string, string>();
 
-/** Nom réel de la famille (posé par next/font dans la variable CSS de la police). */
-export function fontFamilyName(fontId: string) {
-  const cached = families.get(fontId);
-  if (cached) return cached;
-  const font = getFont(fontId);
+/** Nom réel de la famille posée par next/font dans une variable CSS. */
+function familyOf(cssVar: string) {
+  const cached = families.get(cssVar);
+  if (cached !== undefined) return cached;
   let family = "";
   if (typeof document !== "undefined") {
-    family = getComputedStyle(document.documentElement).getPropertyValue(font.cssVar).split(",")[0]?.trim().replace(/['"]/g, "") ?? "";
+    family = getComputedStyle(document.documentElement).getPropertyValue(cssVar).split(",")[0]?.trim().replace(/['"]/g, "") ?? "";
   }
-  family ||= font.name;
-  families.set(fontId, family);
+  families.set(cssVar, family);
   return family;
 }
 
-/** Charge les polices avant de mesurer ou d'exporter. */
-export async function ensureFonts(fonts: { fontId: string; fontWeight: number }[]) {
+/** Nom réel de la famille (posé par next/font dans la variable CSS de la police). */
+export function fontFamilyName(fontId: string) {
+  const font = getFont(fontId);
+  return familyOf(font.cssVar) || font.name;
+}
+
+/** Familles à essayer pour chaque caractère (même repli que l'affichage), pour le canevas. */
+export function fontStack(fontId: string) {
+  const vars = [...fontVars(fontId), ...FALLBACK_FONTS.map((f) => f.cssVar)];
+  const names = vars.map(familyOf).filter(Boolean);
+  return (names.length ? names : [getFont(fontId).name]).map((name) => `"${name}"`).join(", ");
+}
+
+/**
+ * Charge les polices avant de mesurer ou d'exporter. Avec `text`, charge aussi le latin étendu et
+ * les polices de secours dont ce texte a besoin.
+ */
+export async function ensureFonts(fonts: { fontId: string; fontWeight: number; text?: string }[]) {
   if (typeof document === "undefined" || !document.fonts) return;
-  const unique = new Map(fonts.map((f) => [`${f.fontId}:${f.fontWeight}`, f]));
+  const unique = new Map<string, { fontId: string; fontWeight: number; text: string }>();
+  for (const f of fonts) {
+    const key = `${f.fontId}:${f.fontWeight}`;
+    const text = (unique.get(key)?.text ?? "") + (f.text ?? "");
+    unique.set(key, { ...f, text });
+  }
   await Promise.all(
     [...unique.values()].map((f) =>
-      document.fonts.load(`${closestWeight(f.fontId, f.fontWeight)} 32px "${fontFamilyName(f.fontId)}"`).catch(() => undefined),
+      document.fonts.load(`${closestWeight(f.fontId, f.fontWeight)} 32px ${fontStack(f.fontId)}`, f.text || undefined).catch(() => undefined),
     ),
   );
 }
@@ -41,7 +60,7 @@ export function measureText(text: string, style: Measurable) {
   if (typeof document === "undefined") return text.length * style.fontSize * getFont(style.fontId).widthFactor;
   context ??= document.createElement("canvas").getContext("2d");
   if (!context) return text.length * style.fontSize * 0.6;
-  context.font = `${closestWeight(style.fontId, style.fontWeight)} ${style.fontSize}px "${fontFamilyName(style.fontId)}"`;
+  context.font = `${closestWeight(style.fontId, style.fontWeight)} ${style.fontSize}px ${fontStack(style.fontId)}`;
   const characters = Array.from(text).length;
   return context.measureText(text).width + style.letterSpacing * style.fontSize * Math.max(0, characters - 1);
 }

@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { NumberField, Section, SliderField } from "@/components/studio/fields";
+import { FontCoverageNotice } from "@/components/studio/font-coverage";
 import { FontPicker } from "@/components/studio/font-picker";
 import { ColorPicker } from "@/components/studio/paint-picker";
 import { PhotoEditor, type PhotoTab } from "@/components/studio/photo/photo-editor";
@@ -237,8 +238,9 @@ function TextSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone
   /** Contenu modifié : largeur recalculée (polices chargées d'abord). */
   const write = async (patch: Partial<ApparelContent>, merge = "text") => {
     const content = { ...c, ...patch };
-    if (patch.fontId || patch.fontWeight)
-      await ensureFonts([{ fontId: content.fontId ?? "montserrat", fontWeight: content.fontWeight ?? 700 }]);
+    // Police changée, ou lettres hors du latin de base (pular, N'Ko) : polices chargées avant la mesure.
+    if (patch.fontId || patch.fontWeight || /[\u0100-\uFFFF]/u.test(patch.text ?? ""))
+      await ensureFonts([{ fontId: content.fontId ?? "montserrat", fontWeight: content.fontWeight ?? 700, text: content.text }]);
     useApparel
       .getState()
       .update(el.id, (current) => refitText(current, { ...current.content, ...patch }, zone), {
@@ -288,6 +290,7 @@ function TextSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone
           })
         }
       />
+      <FontCoverageNotice text={c.text ?? ""} fontId={font.id} />
       <NativeSelect
         value={String(c.fontWeight ?? 700)}
         onChange={(e) => void write({ fontWeight: Number(e.target.value) })}

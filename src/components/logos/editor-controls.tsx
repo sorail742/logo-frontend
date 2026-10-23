@@ -9,7 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Field } from "@/components/common/field";
 import { NativeSelect } from "@/components/common/native-select";
 import { contrastRatio } from "@/lib/render/color";
-import { getFont, LOGO_FONTS } from "@/lib/render/fonts";
+import { getFont, LOGO_FONTS, PULAR_FONTS } from "@/lib/render/fonts";
+import { FontCoverageNotice } from "@/components/studio/font-coverage";
 import { ICONS, searchIcons, type IconNode } from "@/lib/render/icons";
 import { LOGO_TYPES, type IconFrame, type LogoLayout, type LogoSpec } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -62,7 +63,7 @@ export function EditorControls({ spec }: Readonly<{ spec: LogoSpec }>) {
                 <optgroup key={category} label={tc(`fontCategories.${category}`)}>
                   {LOGO_FONTS.filter((f) => f.category === category).map((f) => (
                     <option key={f.id} value={f.id}>
-                      {f.name}
+                      {PULAR_FONTS.has(f.id) ? `${f.name} · ɓɗƴ` : f.name}
                     </option>
                   ))}
                 </optgroup>
@@ -79,6 +80,7 @@ export function EditorControls({ spec }: Readonly<{ spec: LogoSpec }>) {
             </NativeSelect>
           </Field>
         </div>
+        <FontCoverageNotice text={spec.text} fontId={spec.fontId} />
         <Field label={`${t("editor.letterSpacing")} (${spec.letterSpacing.toFixed(2)} em)`}>
           <Slider
             min={-0.05}

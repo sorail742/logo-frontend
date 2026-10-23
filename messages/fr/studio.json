@@ -39,7 +39,10 @@
   "text": {
     "font": "Police",
     "searchFont": "Rechercher une police",
-    "brandFonts": "Polices de la marque"
+    "brandFonts": "Polices de la marque",
+    "pular": "Écrit le pular (ɓ ɗ ŋ ƴ)",
+    "fallbackLetters": "{count, plural, one {Lettre {letters} absente} other {Lettres {letters} absentes}} de cette police : dessinée{count, plural, one {} other {s}} en Montserrat.",
+    "nkoFallback": "Écriture N'Ko : dessinée avec Noto Sans NKo, de droite à gauche."
   },
   "roles": {
     "background": "Fond",

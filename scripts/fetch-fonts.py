@@ -1,5 +1,7 @@
-# Télécharge une fois les polices (sous-ensemble latin) dans src/fonts et génère src/app/fonts.ts
-# pour next/font/local : le build ne dépend plus du réseau.
+# Télécharge une fois les polices dans src/fonts et génère src/app/fonts.ts pour next/font/local :
+# le build ne dépend plus du réseau. Polices des logos : sous-ensemble latin, plus le latin étendu
+# (lettres pular ɓ ɗ ŋ ƴ…) dans une famille à part limitée par unicode-range, téléchargée par le
+# navigateur seulement si le texte en contient. Noto Sans NKo : écriture N'Ko (police de secours).
 import os, re, sys, urllib.request
 
 ROOT = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -59,7 +61,13 @@ FONTS = [
     ("caveat", "Caveat", "wght@400..700", "--font-caveat", False),
     ("permanent-marker", "Permanent Marker", "", "--font-permanent-marker", False),
     ("kaushan-script", "Kaushan Script", "", "--font-kaushan-script", False),
+    ("noto-sans-nko", "Noto Sans NKo", "", "--font-nko", False),
 ]
+
+# Police de l'interface : sous-ensemble latin seul, repli métrique sur Arial (next/font).
+UI_FONTS = {"geist", "geist-mono"}
+# Sous-ensemble principal quand ce n'est pas le latin.
+MAIN_SUBSET = {"noto-sans-nko": "nko"}
 
 
 def get(url):
@@ -73,38 +81,67 @@ def camel(s):
     return parts[0] + "".join(p.capitalize() for p in parts[1:])
 
 
-decls = []
-for fid, family, axis, var, preload in FONTS:
-    q = family.replace(" ", "+") + (":" + axis if axis else "")
-    css = get(f"https://fonts.googleapis.com/css2?family={q}&display=swap").decode()
-    blocks = re.findall(r"/\* ([\w-]+) \*/\s*@font-face\s*\{(.*?)\}", css, re.S)
-    srcs = []
+def download(fid, blocks, wanted, suffix=""):
+    """Fichiers du sous-ensemble demandé : (nom, graisse, style), et son unicode-range."""
+    srcs, ranges = [], None
     for subset, body in blocks:
-        if subset != "latin":
+        if subset != wanted:
             continue
         weight = re.search(r"font-weight:\s*([^;]+);", body).group(1).strip()
         style = re.search(r"font-style:\s*([^;]+);", body).group(1).strip()
         url = re.search(r"url\((https://[^)]+\.woff2)\)", body).group(1)
-        name = f"{fid}-{weight.replace(' ', '-')}{'' if style == 'normal' else '-' + style}.woff2"
+        found = re.search(r"unicode-range:\s*([^;]+);", body)
+        ranges = found.group(1).strip() if found else ranges
+        name = f"{fid}{suffix}-{weight.replace(' ', '-')}{'' if style == 'normal' else '-' + style}.woff2"
         path = os.path.join(OUT, name)
         if not os.path.exists(path):
             open(path, "wb").write(get(url))
         srcs.append((name, weight, style))
-    if not srcs:
-        raise SystemExit(f"Aucun fichier latin pour {family}")
-    print(f"{family}: {len(srcs)} fichier(s)")
+    return srcs, ranges
+
+
+def declaration(const, srcs, var, preload, logo, ranges=None):
     entries = ",\n".join(f'    {{ path: "../fonts/{n}", weight: "{w}", style: "{s}" }}' for n, w, s in srcs)
-    decls.append(
-        f'const {camel(fid)} = localFont({{\n  src: [\n{entries},\n  ],\n  variable: "{var}",\n  display: "swap",\n  preload: {"true" if preload else "false"},\n}});'
+    extra = ""
+    if ranges:
+        extra += f'\n  declarations: [{{ prop: "unicode-range", value: "{ranges}" }}],'
+    if logo:
+        # Pas de repli métrique (Arial) : les lettres absentes passent à la famille suivante.
+        extra += "\n  adjustFontFallback: false,"
+    return (
+        f'const {const} = localFont({{\n  src: [\n{entries},\n  ],\n  variable: "{var}",\n  display: "swap",\n'
+        f'  preload: {"true" if preload else "false"},{extra}\n}});'
     )
 
-names = ", ".join(camel(f[0]) for f in FONTS)
+
+decls, consts = [], []
+for fid, family, axis, var, preload in FONTS:
+    q = family.replace(" ", "+") + (":" + axis if axis else "")
+    css = get(f"https://fonts.googleapis.com/css2?family={q}&display=swap").decode()
+    blocks = re.findall(r"/\* ([\w-]+) \*/\s*@font-face\s*\{(.*?)\}", css, re.S)
+    logo = fid not in UI_FONTS
+    main = MAIN_SUBSET.get(fid, "latin")
+    srcs, ranges = download(fid, blocks, main)
+    if not srcs:
+        raise SystemExit(f"Aucun fichier {main} pour {family}")
+    decls.append(declaration(camel(fid), srcs, var, preload, logo, ranges if main != "latin" else None))
+    consts.append(camel(fid))
+    count = len(srcs)
+    if logo and main == "latin":
+        ext, ext_ranges = download(fid, blocks, "latin-ext", "-ext")
+        if ext:
+            decls.append(declaration(camel(fid) + "Ext", ext, var + "-ext", False, True, ext_ranges))
+            consts.append(camel(fid) + "Ext")
+            count += len(ext)
+    print(f"{family}: {count} fichier(s)")
+
+names = ", ".join(consts)
 ts = f'''import localFont from "next/font/local";
 
-// Polices auto-hébergées (sous-ensemble latin, licence OFL) dans src/fonts :
-// le build ne télécharge rien depuis Google Fonts. Seule la police de l'interface est préchargée ;
-// les polices des logos ne sont chargées par le navigateur que si un logo les utilise.
-// Pour les régénérer : python scripts/fetch-fonts.py
+// Polices auto-hébergées (licence OFL) dans src/fonts : le build ne télécharge rien depuis
+// Google Fonts. Seule la police de l'interface est préchargée ; les polices des logos ne sont
+// chargées par le navigateur que si un logo les utilise, et leur latin étendu (variable « -ext »)
+// que si le texte en contient. Pour les régénérer : python scripts/fetch-fonts.py
 
 {chr(10).join(decls)}
 

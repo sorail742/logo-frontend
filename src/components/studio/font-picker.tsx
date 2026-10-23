@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Check, ChevronDown, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cssFontFamily, FONTS, getFont, type FontCategory } from "@/lib/render/fonts";
+import { cssFontFamily, FONTS, getFont, PULAR_FONTS, type FontCategory } from "@/lib/render/fonts";
 import { cn } from "@/lib/utils";
 
 // Choix de la police avec aperçu dans chaque police, recherche et polices de la marque en tête.
@@ -65,7 +65,15 @@ export function FontPicker({ value, onChange, brandFonts = NO_FONTS }: Readonly<
                   style={{ fontFamily: cssFontFamily(f.id) }}
                 >
                   <span className="truncate">{f.name}</span>
-                  {f.id === value && <Check className="size-3.5 shrink-0" aria-hidden="true" />}
+                  <span className="ml-auto flex shrink-0 items-center gap-1.5 pl-2">
+                    {PULAR_FONTS.has(f.id) && (
+                      <span className="text-[11px] text-muted-foreground" style={{ fontFamily: cssFontFamily("montserrat") }} title={t("pular")}>
+                        <span aria-hidden="true">ɓɗƴ</span>
+                        <span className="sr-only">{t("pular")}</span>
+                      </span>
+                    )}
+                    {f.id === value && <Check className="size-3.5" aria-hidden="true" />}
+                  </span>
                 </button>
               ))}
             </div>

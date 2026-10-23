@@ -1,5 +1,7 @@
 // Bibliothèque interne de polices (toutes sous licence OFL, servies par next/font).
 // Le rendu utilise la variable CSS de chaque police ; l'export la résout en nom réel.
+// Lettres absentes d'une police : même repli que le rendu serveur (assets/fonts du back) — le
+// latin étendu de la police, puis Montserrat, puis Noto Sans NKo pour l'écriture N'Ko.
 
 export type FontCategory = "sans" | "serif" | "display" | "script";
 
@@ -68,6 +70,36 @@ export const FONTS: LibraryFontDef[] = [
   { id: "kaushan-script", name: "Kaushan Script", cssVar: "--font-kaushan-script", category: "script", license: "OFL", weights: [400], widthFactor: 0.49, ascent: 1.084, descent: 0.367 },
 ];
 
+/** Polices qui écrivent tout le pular (ɓ ɗ ŋ ƴ et capitales), d'après le manifeste de l'API. */
+export const PULAR_FONTS = new Set(["montserrat", "nunito", "merriweather", "great-vibes", "inter", "anton", "unbounded", "libre-baskerville"]);
+/** Polices sans sous-ensemble latin étendu (pas de variable « -ext »). */
+const LATIN_ONLY = new Set(["satisfy", "permanent-marker"]);
+
+/** Lettres pular (fula) hors de l'alphabet latin de base. */
+export const PULAR_LETTERS = /[ɓɗŋƴƁƊŊƳ]/gu;
+const NKO_LETTERS = /[\u07C0-\u07FF]/u;
+
+/** Polices de secours, dans l'ordre (variable CSS posée sur :root dans globals.css). */
+export const FALLBACK_FONTS = [
+  { cssVar: "--font-montserrat-ext", name: "Montserrat" },
+  { cssVar: "--font-nko", name: "Noto Sans NKo" },
+];
+
+/** Variables CSS d'une police : sous-ensemble latin, puis latin étendu s'il existe. */
+export function fontVars(id: string) {
+  const font = getFont(id);
+  return LATIN_ONLY.has(font.id) ? [font.cssVar] : [font.cssVar, `${font.cssVar}-ext`];
+}
+
+/**
+ * Lettres d'un texte que la police n'a pas : elles seront dessinées avec la police de secours
+ * (Montserrat, Noto Sans NKo), dans l'éditeur comme dans les exports.
+ */
+export function fallbackLetters(text: string, id: string) {
+  const letters = PULAR_FONTS.has(getFont(id).id) ? [] : [...new Set(text.match(PULAR_LETTERS) ?? [])];
+  return { letters, nko: NKO_LETTERS.test(text) };
+}
+
 export const LOGO_FONTS = FONTS.filter((font) => font.category !== "script");
 export const SCRIPT_FONTS = FONTS.filter((font) => font.category === "script");
 
@@ -79,7 +111,8 @@ export function getFont(id: string): LibraryFontDef {
 export function cssFontFamily(id: string) {
   const font = getFont(id);
   const fallback = font.category === "serif" ? "serif" : font.category === "script" ? "cursive" : "sans-serif";
-  return `var(${font.cssVar}), '${font.name}', ${fallback}`;
+  const vars = fontVars(font.id).map((v) => `var(${v})`).join(", ");
+  return `${vars}, var(--logo-font-fallbacks), '${font.name}', ${fallback}`;
 }
 
 /** Plus proche graisse disponible. */

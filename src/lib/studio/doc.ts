@@ -162,5 +162,7 @@ export function documentColors(doc: DesignDoc): string[] {
 
 /** Polices utilisées (chargement avant mesure ou export). */
 export function documentFonts(doc: DesignDoc) {
-  return doc.pages.flatMap((page) => page.elements.filter((el): el is TextElement => el.type === "text").map((el) => ({ fontId: el.fontId, fontWeight: el.fontWeight })));
+  return doc.pages.flatMap((page) =>
+    page.elements.filter((el): el is TextElement => el.type === "text").map((el) => ({ fontId: el.fontId, fontWeight: el.fontWeight, text: el.text })),
+  );
 }

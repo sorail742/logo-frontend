@@ -39,7 +39,10 @@
   "text": {
     "font": "Font",
     "searchFont": "Search fonts",
-    "brandFonts": "Brand fonts"
+    "brandFonts": "Brand fonts",
+    "pular": "Writes Pular (ɓ ɗ ŋ ƴ)",
+    "fallbackLetters": "{count, plural, one {Letter {letters} is} other {Letters {letters} are}} missing from this font: drawn in Montserrat.",
+    "nkoFallback": "N'Ko script: drawn with Noto Sans NKo, right to left."
   },
   "roles": {
     "background": "Background",

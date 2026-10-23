@@ -106,7 +106,7 @@ export function PublicProof() {
       void ensureFonts(
         data.elements
           .filter((e) => e.content.fontId)
-          .map((e) => ({ fontId: e.content.fontId!, fontWeight: e.content.fontWeight ?? 700 })),
+          .map((e) => ({ fontId: e.content.fontId!, fontWeight: e.content.fontWeight ?? 700, text: e.content.text })),
       );
   }, [data]);
 
