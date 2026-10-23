@@ -661,6 +661,7 @@
       "zoom": "Ctrl + molette",
       "fit": "Ctrl 0 / 1",
       "export": "Ctrl E",
+      "present": "Ctrl Entrée",
       "pages": "Pg préc. / Pg suiv.",
       "comment": "C"
     },
@@ -684,6 +685,7 @@
       "zoom": "Zoomer",
       "fit": "Ajuster à l'écran / taille réelle",
       "export": "Exporter",
+      "present": "Présenter en plein écran",
       "pages": "Page précédente / suivante",
       "comment": "Mode commentaire"
     }
@@ -1003,5 +1005,28 @@
     "outlineColor": "Couleur du contour",
     "glow": "Lueur",
     "glowColor": "Couleur de la lueur"
+  },
+  "presentation": {
+    "present": "Présenter",
+    "title": "Présentation",
+    "slide": "Diapositive {number}",
+    "current": "{label}, diapositive {number} sur {total}",
+    "counter": "{current} / {total}",
+    "previous": "Précédente",
+    "next": "Suivante",
+    "controls": "Commandes de la présentation",
+    "transition": "Transition",
+    "transitions": {
+      "fade": "Fondu",
+      "slide": "Glissement",
+      "zoom": "Zoom",
+      "none": "Aucune"
+    },
+    "overview": "Vue d'ensemble",
+    "fullscreen": "Plein écran",
+    "exitFullscreen": "Quitter le plein écran",
+    "exit": "Quitter la présentation",
+    "blank": "Écran masqué",
+    "hint": "← → pour naviguer · G vue d'ensemble · B écran noir · Échap pour quitter"
   }
 }

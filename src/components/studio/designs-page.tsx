@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormatter, useNow, useTranslations } from "next-intl";
-import { Copy, LayoutTemplate, Loader2, MoreHorizontal, Palette, Plus, Printer, Smartphone, Sparkles, Trash2, Wand2 } from "lucide-react";
+import { Copy, LayoutTemplate, Loader2, MoreHorizontal, Palette, Play, Plus, Printer, Smartphone, Sparkles, Trash2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -120,6 +120,8 @@ export function NewDesignDialog({ open, onOpenChange, initialFormat }: { open: b
 
 function DesignCard({ design, canEdit }: { design: StudioDesignSummary; canEdit: boolean }) {
   const t = useTranslations("studio.list");
+  const tp = useTranslations("studio.presentation");
+  const router = useRouter();
   const tf = useTranslations("studio.formats");
   const format = useFormatter();
   const now = useNow({ updateInterval: 60_000 });
@@ -169,6 +171,10 @@ function DesignCard({ design, canEdit }: { design: StudioDesignSummary; canEdit:
             <MoreHorizontal />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => router.push(`/studio/${design.id}?presenter=1`)}>
+              <Play />
+              {tp("present")}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => duplicate.mutate()}>
               <Copy />
               {t("duplicate")}

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Check, CloudOff, Download, Keyboard, Loader2, MessageSquarePlus, Redo2, SlidersHorizontal, Sparkles, Undo2, Wand2 } from "lucide-react";
+import { ArrowLeft, Check, CloudOff, Download, Keyboard, Loader2, MessageSquarePlus, Play, Redo2, SlidersHorizontal, Sparkles, Undo2, Wand2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import { StudioContext, type StudioContextValue } from "./context";
 import { ExportDialog } from "./export-dialog";
 import { Inspector } from "./inspector";
 import { PageStrip } from "./page-strip";
+import { PresentationMode } from "./presentation";
 import { placeImages } from "./placement";
 import { ResizeDialog } from "./resize-dialog";
 import { SidePanel, type PanelId } from "./side-panel";
@@ -86,6 +87,8 @@ export function StudioEditor({ sdid }: { sdid: string }) {
   const [panel, setPanel] = useState<PanelId | null>(() => (typeof window !== "undefined" && window.innerWidth < 768 ? null : "templates"));
   const [propertiesOpen, setPropertiesOpen] = useState(false);
   const [dialog, setDialog] = useState<"export" | "resize" | "variations" | "help" | null>(null);
+  /** Diapositive de départ du mode présentation (null : fermé). */
+  const [presenting, setPresenting] = useState<number | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [nameDraft, setNameDraft] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -206,7 +209,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
     fileInput.current?.click();
   }, []);
 
-  const handlers = useMemo(() => ({ onExport: () => setDialog("export"), onHelp: () => setDialog("help") }), []);
+  const handlers = useMemo(() => ({ onExport: () => setDialog("export"), onHelp: () => setDialog("help"), onPresent: () => setPresenting(useStudio.getState().pageIndex) }), []);
   useStudioShortcuts(handlers);
 
   const context = useMemo<StudioContextValue>(() => ({ projectId: pid ?? "", brand, canEdit, icons, pickImages, flush }), [pid, brand, canEdit, icons, pickImages, flush]);
@@ -296,6 +299,10 @@ export function StudioEditor({ sdid }: { sdid: string }) {
                 <SlidersHorizontal />
               </Button>
             )}
+            <Button variant="outline" onClick={() => setPresenting(useStudio.getState().pageIndex)} aria-label={t("presentation.present")} title={`${t("presentation.present")} (Ctrl+Entrée)`}>
+              <Play />
+              <span className="max-md:hidden">{t("presentation.present")}</span>
+            </Button>
             <Button onClick={() => setDialog("export")} aria-label={t("editor.export")}>
               <Download />
               <span className="max-sm:hidden">{t("editor.export")}</span>
@@ -333,6 +340,8 @@ export function StudioEditor({ sdid }: { sdid: string }) {
         <ResizeDialog open={dialog === "resize"} onOpenChange={(open) => setDialog(open ? "resize" : null)} />
         <VariationsDialog open={dialog === "variations"} onOpenChange={(open) => setDialog(open ? "variations" : null)} />
         <OpenLinkedThread />
+        <OpenPresentation onOpen={() => setPresenting(0)} />
+        {presenting !== null && <PresentationMode doc={doc} start={presenting} onClose={() => setPresenting(null)} />}
         <ShortcutsDialog open={dialog === "help"} onOpenChange={(open) => setDialog(open ? "help" : null)} />
         {canEdit && (
           <Sheet open={propertiesOpen} onOpenChange={setPropertiesOpen}>
@@ -349,6 +358,19 @@ export function StudioEditor({ sdid }: { sdid: string }) {
       </div>
     </StudioContext.Provider>
   );
+}
+
+/** Lien « ?presenter=1 » (liste des créations) : présentation ouverte dès le chargement. */
+function OpenPresentation({ onOpen }: { onOpen(): void }) {
+  const params = useSearchParams();
+  const done = useRef(false);
+  const wanted = params.get("presenter") === "1";
+  useEffect(() => {
+    if (done.current || !wanted) return;
+    done.current = true;
+    onOpen();
+  }, [wanted, onOpen]);
+  return null;
 }
 
 /** Lien de notification « ?commentaire=… » : ouvre le fil sur sa page. */
@@ -407,6 +429,7 @@ const SHORTCUTS = [
   "zoom",
   "fit",
   "export",
+  "present",
   "comment",
   "pages",
 ] as const;

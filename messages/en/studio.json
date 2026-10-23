@@ -661,6 +661,7 @@
       "zoom": "Ctrl + wheel",
       "fit": "Ctrl 0 / 1",
       "export": "Ctrl E",
+      "present": "Ctrl Enter",
       "pages": "Page Up / Down",
       "comment": "C"
     },
@@ -684,6 +685,7 @@
       "zoom": "Zoom",
       "fit": "Fit to screen / actual size",
       "export": "Export",
+      "present": "Present full screen",
       "pages": "Previous / next page",
       "comment": "Comment mode"
     }
@@ -1003,5 +1005,28 @@
     "outlineColor": "Outline colour",
     "glow": "Glow",
     "glowColor": "Glow colour"
+  },
+  "presentation": {
+    "present": "Present",
+    "title": "Presentation",
+    "slide": "Slide {number}",
+    "current": "{label}, slide {number} of {total}",
+    "counter": "{current} / {total}",
+    "previous": "Previous",
+    "next": "Next",
+    "controls": "Presentation controls",
+    "transition": "Transition",
+    "transitions": {
+      "fade": "Fade",
+      "slide": "Slide",
+      "zoom": "Zoom",
+      "none": "None"
+    },
+    "overview": "Overview",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen",
+    "exit": "Exit presentation",
+    "blank": "Screen hidden",
+    "hint": "← → to navigate · G overview · B black screen · Esc to exit"
   }
 }
