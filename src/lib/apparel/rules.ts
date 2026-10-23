@@ -35,6 +35,7 @@ const STYLE_TECHNIQUES: Record<string, PrintTechnique[]> = {
   NOTCHED: ["HEAT_TRANSFER_VINYL", "SCREEN_PRINT", "DTF", "SUBLIMATION"],
   RIBBON_3D: ["SUBLIMATION", "DTF", "DTG"],
   HALFTONE: ["SCREEN_PRINT", "DTF", "DTG", "SUBLIMATION"],
+  TEXTURED: ["SCREEN_PRINT", "DTF", "DTG", "SUBLIMATION"],
 };
 
 /** Nom affiché des familles de style. */
@@ -44,6 +45,7 @@ const STYLE_LABELS: Record<string, string> = {
   NOTCHED: "crans",
   RIBBON_3D: "relief 3D",
   HALFTONE: "trame de points",
+  TEXTURED: "texture",
 };
 const AD_KINDS = new Set<ElementKind>(["LOGO", "SPONSOR", "IMAGE"]);
 const TEXT_KINDS = new Set<ElementKind>(["TEXT", "PLAYER_NAME", "PLAYER_NUMBER"]);

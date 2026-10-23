@@ -1043,7 +1043,13 @@
       "inline": "Liseré",
       "relief": "Relief 3D",
       "halftone": "Trame",
-      "shadow": "Ombre"
+      "shadow": "Ombre",
+      "lines": "Lignes",
+      "notched": "Cranté",
+      "stripes": "Rayures",
+      "carbon": "Carbone",
+      "distressed": "Usé",
+      "claws": "Griffes"
     },
     "outline": "Contour",
     "outline2": "Second contour",
@@ -1054,6 +1060,10 @@
     "inset": "Retrait du bord",
     "depth": "Profondeur",
     "angle": "Angle",
-    "dotSize": "Taille des points"
+    "dotSize": "Taille des points",
+    "notched": "Cranté",
+    "lines": "Nombre de lignes",
+    "pattern": "Texture",
+    "patternSize": "Taille du motif"
   }
 }

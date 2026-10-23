@@ -48,8 +48,10 @@ function effectsWidthMm(effects: TextEffects | null | undefined) {
 /** Famille de style des règles d'impression (STYLE_TECHNIQUES de l'API) d'après la forme du lettrage. */
 export function letteringFamily(stroke: unknown, effects: TextEffects | null | undefined) {
   if (effects?.halftone) return "HALFTONE";
+  if (effects?.pattern) return "TEXTURED";
   if (effects?.extrude) return "RIBBON_3D";
   if (effects?.inline) return "GEOMETRIC_INLINE";
+  if (effects?.outline2?.notched) return "NOTCHED";
   if (effects?.outline2 || stroke) return "CLASSIC_OUTLINE";
   return undefined;
 }

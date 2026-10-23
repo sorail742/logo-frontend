@@ -6,13 +6,16 @@ import { cssFontFamily } from "@/lib/render/fonts";
 import { contrastRatio, readableOn } from "@/lib/render/color";
 import {
   LETTERING_PRESETS,
+  PATTERN_KINDS,
   letteringLayers,
   presetOf,
   presetStyle,
   type LetteringPreset,
   type LetteringStyle,
+  type PatternKind,
   type TextEffects,
 } from "@/lib/studio/lettering";
+import { NativeSelect } from "@/components/common/native-select";
 import { cn } from "@/lib/utils";
 import { NumberField } from "./fields";
 import { ColorPicker } from "./paint-picker";
@@ -185,6 +188,22 @@ export function LetteringControls({
           {thickness(t("width"), effects.outline2.width, (v) =>
             setEffects({ outline2: v ? { ...effects.outline2!, width: v } : null }, "lettering-o2-w"),
           )}
+          <button
+            type="button"
+            aria-pressed={Boolean(effects.outline2.notched)}
+            onClick={() =>
+              setEffects(
+                { outline2: { ...effects.outline2!, notched: !effects.outline2!.notched } },
+                "lettering-o2-n",
+              )
+            }
+            className={cn(
+              "hover:bg-muted h-8 shrink-0 rounded-md border px-2 text-[11px]",
+              effects.outline2.notched && "border-primary bg-accent",
+            )}
+          >
+            {t("notched")}
+          </button>
         </LayerRow>
       )}
       {effects.inline && (
@@ -202,6 +221,15 @@ export function LetteringControls({
             max / 2,
             "⇥",
           )}
+          <NumberField
+            label="≡"
+            title={t("lines")}
+            className="w-14 shrink-0"
+            value={effects.inline.lines ?? 1}
+            min={1}
+            max={6}
+            onChange={(v) => setEffects({ inline: { ...effects.inline!, lines: v } }, "lettering-in-l")}
+          />
         </LayerRow>
       )}
       {effects.extrude && (
@@ -225,6 +253,45 @@ export function LetteringControls({
             suffix="°"
             onChange={(v) => setEffects({ extrude: { ...effects.extrude!, angle: v } }, "lettering-ex-a")}
           />
+        </LayerRow>
+      )}
+      {effects.pattern && (
+        <LayerRow label={t("pattern")}>
+          <NativeSelect
+            aria-label={t("pattern")}
+            className="w-28 shrink-0"
+            value={effects.pattern.kind}
+            onChange={(e) =>
+              setEffects(
+                { pattern: { ...effects.pattern!, kind: e.target.value as PatternKind } },
+                "lettering-pt-k",
+              )
+            }
+          >
+            {PATTERN_KINDS.map((kind) => (
+              <option key={kind} value={kind}>
+                {t(`presets.${kind}`)}
+              </option>
+            ))}
+          </NativeSelect>
+          {color(t("pattern"), effects.pattern.color, (c) =>
+            setEffects({ pattern: { ...effects.pattern!, color: c } }, "lettering-pt"),
+          )}
+          {thickness(t("patternSize"), effects.pattern.size, (v) =>
+            setEffects({ pattern: { ...effects.pattern!, size: Math.max(0.5, v) } }, "lettering-pt-s"),
+          )}
+          {(effects.pattern.kind === "stripes" || effects.pattern.kind === "claws") && (
+            <NumberField
+              label="∠"
+              title={t("angle")}
+              className="w-16 shrink-0"
+              value={effects.pattern.angle}
+              min={-180}
+              max={180}
+              suffix="°"
+              onChange={(v) => setEffects({ pattern: { ...effects.pattern!, angle: v } }, "lettering-pt-a")}
+            />
+          )}
         </LayerRow>
       )}
       {effects.halftone && (

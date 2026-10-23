@@ -1043,7 +1043,13 @@
       "inline": "Inline",
       "relief": "3D relief",
       "halftone": "Halftone",
-      "shadow": "Shadow"
+      "shadow": "Shadow",
+      "lines": "Lines",
+      "notched": "Notched",
+      "stripes": "Stripes",
+      "carbon": "Carbon",
+      "distressed": "Distressed",
+      "claws": "Claws"
     },
     "outline": "Outline",
     "outline2": "Second outline",
@@ -1054,6 +1060,10 @@
     "inset": "Distance from edge",
     "depth": "Depth",
     "angle": "Angle",
-    "dotSize": "Dot size"
+    "dotSize": "Dot size",
+    "notched": "Notched",
+    "lines": "Number of lines",
+    "pattern": "Texture",
+    "patternSize": "Pattern size"
   }
 }
