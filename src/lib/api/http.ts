@@ -320,6 +320,27 @@ export const httpClient: ApiClient = {
     cutout: (pid, input, key) => post(`/projects/${pid}/studio-cutout`, input, key),
   },
 
+  apparel: {
+    templates: () => get("/apparel/templates"),
+    rulePresets: () => get("/apparel/rule-presets"),
+    list: (pid) => get(`/projects/${pid}/apparel-designs`),
+    create: (pid, input) => post(`/projects/${pid}/apparel-designs`, input),
+    get: (did) => get(`/apparel-designs/${did}`),
+    update: (did, input) => patch(`/apparel-designs/${did}`, input),
+    remove: (did) => del(`/apparel-designs/${did}`),
+    // Champs attendus seulement : les identifiants locaux de l'éditeur sont remplacés par l'API.
+    saveElements: (did, elements) =>
+      put(`/apparel-designs/${did}/elements`, {
+        elements: elements.map(({ zoneKey, kind, content, widthMm, heightMm, offsetXMm, offsetYMm, rotationDeg, zIndex }) => ({ zoneKey, kind, content, widthMm, heightMm, offsetXMm, offsetYMm, rotationDeg, zIndex })),
+      }),
+    check: (did, input) => post(`/apparel-designs/${did}/check`, input ?? {}),
+    importRoster: (did, csv, name) => post(`/apparel-designs/${did}/roster/import`, { csv, name }),
+    proof: (did) => post(`/apparel-designs/${did}/proof`, {}),
+    revokeProof: (did) => post(`/apparel-designs/${did}/proof`, { revoke: true }),
+    publicProof: (token) => request(`/public/proofs/${encodeURIComponent(token)}`, { auth: false }),
+    approveProof: (token, approverName) => request(`/public/proofs/${encodeURIComponent(token)}/approve`, { method: "POST", body: { approverName }, auth: false }),
+  },
+
   websites: {
     get: async (pid) => (await get<{ website: Website | null }>(`/projects/${pid}/website`)).website,
     create: (pid) => post(`/projects/${pid}/website`),

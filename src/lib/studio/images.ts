@@ -35,9 +35,10 @@ function hasTransparency(ctx: CanvasRenderingContext2D, width: number, height: n
 
 const bytesOf = (dataUrl: string) => Math.ceil(((dataUrl.length - dataUrl.indexOf(",") - 1) * 3) / 4);
 
-export async function prepareImage(file: Blob): Promise<PreparedImage> {
+/** `maxSide` : côté maximal (impression textile à 300 dpi : davantage que pour une page). */
+export async function prepareImage(file: Blob, options: { maxSide?: number } = {}): Promise<PreparedImage> {
   const img = await decode(file);
-  let scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+  let scale = Math.min(1, (options.maxSide ?? MAX_SIDE) / Math.max(img.naturalWidth, img.naturalHeight));
   for (let attempt = 0; attempt < 6; attempt++) {
     const width = Math.max(1, Math.round(img.naturalWidth * scale));
     const height = Math.max(1, Math.round(img.naturalHeight * scale));

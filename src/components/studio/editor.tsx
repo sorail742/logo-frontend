@@ -47,7 +47,7 @@ const THUMBNAIL_SIZE = 400;
 type SaveState = "saved" | "pending" | "saving" | "error";
 
 /** Logos du projet : déclinaisons du serveur (texte vectorisé), sinon rendues dans le navigateur. */
-function useBrandLogos(lid: string | undefined) {
+export function useBrandLogos(lid: string | undefined) {
   const logo = useQuery({ queryKey: qk.logo(lid ?? ""), queryFn: () => api.logos.get(lid!), enabled: Boolean(lid) });
   const variants = useQuery({ queryKey: qk.logoVariants(lid ?? ""), queryFn: () => api.logos.variants(lid!, { transparent: true }), enabled: Boolean(lid), staleTime: 5 * 60_000, retry: false });
   return useMemo<BrandLogos>(() => {
@@ -178,7 +178,7 @@ export function StudioEditor({ sdid }: { sdid: string }) {
       if (!files.length) return;
       const toastId = toast.loading(t("uploads.processing", { count: files.length }));
       try {
-        const prepared = await Promise.all(files.slice(0, 12).map(prepareImage));
+        const prepared = await Promise.all(files.slice(0, 12).map((file) => prepareImage(file)));
         placeImages(prepared, at, frameId);
         toast.success(t("uploads.added", { count: prepared.length }), { id: toastId });
       } catch {

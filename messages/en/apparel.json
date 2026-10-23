@@ -1,0 +1,284 @@
+{
+  "status": {
+    "DRAFT": "Draft",
+    "PROOF_SENT": "Proof sent",
+    "APPROVED": "Approved",
+    "IN_PRODUCTION": "In production"
+  },
+  "views": {
+    "FRONT": "Front",
+    "BACK": "Back",
+    "LEFT_SLEEVE": "Left sleeve",
+    "RIGHT_SLEEVE": "Right sleeve",
+    "SHORTS_FRONT": "Shorts",
+    "OTHER": "Other"
+  },
+  "kinds": {
+    "LOGO": "Logo",
+    "SPONSOR": "Sponsor",
+    "TEXT": "Text",
+    "PLAYER_NAME": "Player name",
+    "PLAYER_NUMBER": "Number",
+    "IMAGE": "Image",
+    "PATTERN": "Pattern"
+  },
+  "techniques": {
+    "DTF": {
+      "name": "DTF (direct-to-film)",
+      "hint": "Versatile: photos, gradients and fine detail on cotton or polyester, light or dark."
+    },
+    "SCREEN_PRINT": {
+      "name": "Screen printing",
+      "hint": "Best for runs: one screen per colour, vivid and very durable solids."
+    },
+    "DTG": {
+      "name": "Direct-to-garment (DTG)",
+      "hint": "Photos on cotton with no minimum; dark fabrics need a white underbase."
+    },
+    "HEAT_TRANSFER_VINYL": {
+      "name": "Heat transfer vinyl",
+      "hint": "Jersey names and numbers: solid colours, strokes of at least 2 mm, no photos or gradients."
+    },
+    "FLOCK": {
+      "name": "Flock",
+      "hint": "Raised velvet finish: solid colours, strokes of at least 3 mm."
+    },
+    "SUBLIMATION": {
+      "name": "Sublimation",
+      "hint": "All-over print with no hand feel: light polyester only."
+    },
+    "EMBROIDERY": {
+      "name": "Embroidery",
+      "hint": "Premium for polos and caps: text at least 5 mm tall, few colours."
+    }
+  },
+  "editor": {
+    "canvas": "Garment: click a zone to target it, a print to select it",
+    "rotate": "Rotate (Shift: 15° steps)",
+    "previewSize": "Previewing size {size}: switch back to {ref} to edit",
+    "proofReset": "Design changed: the proof sent has been revoked, send it again for approval.",
+    "saved": "Saved",
+    "pending": "Unsaved changes",
+    "saving": "Saving…",
+    "saveError": "Save failed",
+    "readOnly": "Read only",
+    "undo": "Undo (Ctrl+Z)",
+    "redo": "Redo (Ctrl+Shift+Z)",
+    "zones": "Show print zones",
+    "size": "Displayed size",
+    "sizeHint": "Preview another size: proportional zones grow with the garment",
+    "refSize": "Size {size}",
+    "back": "Back to project",
+    "notFound": "This design does not exist or is no longer available.",
+    "importing": "Preparing image…",
+    "imported": "Image added",
+    "rightsReminder": "Confirm you hold its rights before sending the proof.",
+    "importFailed": "Unreadable or too large image",
+    "views": "Garment views"
+  },
+  "add": {
+    "title": "Add",
+    "zone": "Print zone",
+    "logo": "Project logo",
+    "variants": {
+      "color": "Colour",
+      "white": "White",
+      "black": "Black",
+      "icon": "Symbol",
+      "horizontal": "Horizontal",
+      "vertical": "Vertical"
+    },
+    "recommended": "Best",
+    "noLogo": "Create a logo in the project first: it will show up here in all its variants.",
+    "texts": "Text",
+    "text": "Text",
+    "name": "Name",
+    "number": "Number",
+    "slogan": "Slogan",
+    "noSlogan": "Pick a slogan in the project",
+    "image": "Image",
+    "upload": "Upload an image",
+    "imageHint": "Transparent PNG recommended, 300 dpi at print size. You can also paste an image (Ctrl+V).",
+    "layers": "Layers · {view}",
+    "forward": "Bring forward",
+    "backward": "Send backward",
+    "remove": "Delete",
+    "noLayers": "Nothing printed on this view."
+  },
+  "inspector": {
+    "title": "Properties",
+    "placement": "Position",
+    "zone": "Zone",
+    "width": "Width (mm)",
+    "height": "Height (mm)",
+    "offsetX": "From the zone's left edge (mm)",
+    "offsetY": "From the zone's top (mm)",
+    "rotation": "Rotation (°)",
+    "centerH": "Centre",
+    "centerV": "Middle",
+    "fit": "Fill the zone",
+    "duplicate": "Duplicate (Ctrl+D)",
+    "text": "Text",
+    "content": "Printed text",
+    "nameHint": "With a roster, each jersey gets its player's printed name.",
+    "weight": "Weight",
+    "weights": {
+      "400": "Regular",
+      "600": "Semibold",
+      "700": "Bold",
+      "800": "Extra bold",
+      "900": "Black"
+    },
+    "fill": "Colour",
+    "outline": "Outline",
+    "outlineColor": "Outline colour",
+    "spacing": "Spacing",
+    "arc": "Arc",
+    "logo": "Logo",
+    "variant": "Variant",
+    "inks": "{count, plural, =0 {No ink detected} one {# ink} other {# inks}}",
+    "monochrome": "Single colour",
+    "monochromeHint": "Vinyl, flock and embroidery: switch the logo to one vinyl or thread colour.",
+    "restoreColors": "Original colours",
+    "photo": "Photo",
+    "dpiUnknown": "Unknown resolution",
+    "dpi": "{dpi} dpi at print size ({min} dpi required)",
+    "retouch": "Retouch",
+    "filters": "Filters",
+    "crop": "Crop",
+    "cutout": "Cut out",
+    "auto": "Auto",
+    "flipX": "Mirror",
+    "flipY": "Flip",
+    "separation": "Spot colours (screen printing)",
+    "separationHint": "Reduces the retouched photo to a few solid inks, rendered at 300 dpi: one screen per colour, no halftones.",
+    "inkCount": "Inks",
+    "separate": "Separate colours",
+    "separated": "{count, plural, one {Photo reduced to # ink} other {Photo reduced to # inks}}",
+    "restorePhoto": "Back to the original photo",
+    "rights": "Rights",
+    "rightsLabel": "I confirm I hold the rights to this image or the owner's written permission (trademarks, club crests, photos)."
+  },
+  "settings": {
+    "design": "Design",
+    "name": "Name",
+    "support": "Garment: {name}",
+    "technique": "Print technique",
+    "fabric": "Fabric colour",
+    "brandColors": "Brand colours",
+    "rules": "Regulations",
+    "noRules": "None (t-shirt, leisure)"
+  },
+  "roster": {
+    "title": "Roster",
+    "summary": "{name}: {players, plural, one {# player} other {# players}}, {garments, plural, one {# garment} other {# garments}}",
+    "empty": "Import the player list: printed names, numbers and sizes, checked before the proof.",
+    "import": "Import a roster (CSV)",
+    "description": "One line per player. Duplicate numbers and sizes the garment doesn't come in are rejected.",
+    "name": "Roster name",
+    "namePlaceholder": "Senior squad",
+    "csv": "CSV file",
+    "example": "Example",
+    "file": "Choose a file",
+    "columns": "Columns: nom, nom_imprime, numero, taille, poste (optional), quantite (optional). Comma or semicolon separated.",
+    "result": "{players, plural, one {# player} other {# players}} · {garments, plural, one {# garment} other {# garments}} to produce",
+    "close": "Close",
+    "imported": "{count, plural, one {# player imported} other {# players imported}}"
+  },
+  "checks": {
+    "title": "Checks",
+    "ok": "Everything complies with this technique.",
+    "empty": "Add a logo, some text or an image.",
+    "summary": "{errors, plural, =0 {No errors} one {# error} other {# errors}}, {warnings, plural, =0 {no warnings} one {# warning} other {# warnings}}",
+    "screens": "{count, plural, one {# screen} other {# screens}}",
+    "full": "Full check",
+    "fullOk": "Full check passed (reference size {size}).",
+    "fullErrors": "{count, plural, one {# error blocks the proof} other {# errors block the proof}}"
+  },
+  "proof": {
+    "send": "Send proof",
+    "title": "Print proof",
+    "description": "Your client reviews and approves the design without an account; their name and the date are recorded.",
+    "approved": "The client approved this design: it can go into production.",
+    "checking": "Checking the design…",
+    "blocked": "{count, plural, one {# error to fix before sending:} other {# errors to fix before sending:}}",
+    "ready": "Proof link ready: send it to your client.",
+    "link": "Proof link",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "open": "Open the proof",
+    "editRevokes": "Any change to the design revokes this link: you will need to send the proof again.",
+    "revoke": "Revoke link",
+    "revoked": "Proof link revoked",
+    "close": "Close"
+  },
+  "export": {
+    "title": "Export",
+    "mockup": "View mockup (PNG)",
+    "mockupHint": "Realistic garment to show your client",
+    "board": "All views board (PNG)",
+    "boardHint": "Front, back and sleeves side by side",
+    "print": "Print files (PNG 300 dpi)",
+    "printHint": "One file per zone, actual size, transparent background",
+    "nothing": "Nothing to export.",
+    "printDone": "{count, plural, one {# print file exported} other {# print files exported}}"
+  },
+  "list": {
+    "title": "Apparel",
+    "description": "T-shirts, polos and jerseys in your colours: real print zones, per-technique checks and a client-approved proof.",
+    "new": "New design",
+    "quick": "Pick a garment",
+    "zonesCount": "{count, plural, one {# zone} other {# zones}}",
+    "mine": "Project designs",
+    "emptyTitle": "Dress your team or your clients",
+    "emptyBody": "Place the logo, names and numbers on the garment, check the print, then send the proof.",
+    "features": {
+      "realistic": {
+        "title": "Realistic rendering",
+        "body": "Folds, knit and fabric colour: the ink blends into the garment."
+      },
+      "zones": {
+        "title": "Zones in millimetres",
+        "body": "Chest, back, sleeves, numbers: each zone has its real dimensions, per size."
+      },
+      "print": {
+        "title": "Print-shop ready",
+        "body": "Per-technique checks, 300 dpi, spot colours and print files."
+      },
+      "proof": {
+        "title": "Online proof",
+        "body": "The client approves in one click, no account; any change restarts approval."
+      }
+    },
+    "newTitle": "New design",
+    "newDescription": "Pick the garment, fabric colour and print technique: everything stays editable.",
+    "support": "Garment",
+    "create": "Create design",
+    "actions": "Actions",
+    "delete": "Delete",
+    "deleted": "Design deleted",
+    "deleteTitle": "Delete this design?",
+    "deleteBody": "“{name}”, its roster and its proof will be permanently deleted.",
+    "cancel": "Cancel"
+  },
+  "public": {
+    "notFound": "Proof not found",
+    "notFoundBody": "This link was revoked or the design changed: ask your contact for a new link.",
+    "kicker": "Print proof",
+    "views": "Garment views",
+    "screenNotice": "On-screen colours are indicative: the final result depends on the fabric and print technique.",
+    "roster": "Roster: {name}",
+    "printedName": "Printed name",
+    "number": "Number",
+    "size": "Size",
+    "quantity": "Quantity",
+    "approval": "Approval",
+    "approvedOn": "Proof approved on {date}.",
+    "approvalHint": "Check the spelling of names, numbers, sizes and colours before approving.",
+    "approver": "Your name and role",
+    "approverPlaceholder": "Mamadou Diallo, club president",
+    "confirm": "I have checked the design and authorise its production.",
+    "approve": "Approve the proof",
+    "notPending": "This proof is no longer awaiting approval."
+  }
+}

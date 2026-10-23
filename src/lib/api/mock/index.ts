@@ -1,5 +1,5 @@
 import type { ApiClient, Session } from "../contract";
-import { problem } from "../errors";
+import { ApiError, problem } from "../errors";
 import { tokenStore } from "../token";
 import {
   JOB_DURATIONS,
@@ -23,6 +23,9 @@ import { findOfficialTerms, renderStampSvg } from "@/lib/render/stamp";
 import { DEFAULT_SPEC, LOGO_VARIANTS, renderLogoSvg } from "@/lib/render/logo";
 import { hashSeed, renderArtwork, styleFromPrompt } from "@/lib/render/artwork";
 import type { StudioDesign } from "@/lib/studio/types";
+import { DEFAULT_TEMPLATES } from "@/lib/apparel/defaults";
+import { checkElements } from "@/lib/apparel/rules";
+import type { ApparelDesign, ApparelIssue, ApparelTemplate, RosterEntry, RulePreset } from "@/lib/apparel/types";
 import { slugify } from "@/lib/format";
 import { brandAssets } from "@/lib/render/logo-assets";
 import { resolveFontVars } from "@/lib/render/export";
@@ -129,6 +132,92 @@ function studioDesign(sdid: string) {
   const design = studioDesigns().find((d) => d.id === sdid);
   if (!design) throw problem(404, "Création introuvable", "NOT_FOUND");
   return design;
+}
+
+// Textile : tenues rangées à part (images intégrées), sous une clé dédiée du navigateur.
+const APPAREL_KEY = "identite:mock-apparel:v1";
+const RULES_DISCLAIMER = "Les préréglages reprennent les principales règles connues ; le règlement officiel de la compétition fait foi.";
+const MOCK_PRESETS: RulePreset[] = [
+  { id: "rp-football-men", code: "FOOTBALL_MEN", name: "Football hommes (FIFA, UEFA)" },
+  { id: "rp-football-women", code: "FOOTBALL_WOMEN", name: "Football femmes (FIFA, UEFA)" },
+  { id: "rp-fiba", code: "FIBA", name: "Basket (FIBA)" },
+  { id: "rp-free", code: "FREE", name: "Libre (t-shirt, loisir)" },
+];
+let apparelCache: ApparelDesign[] | null = null;
+
+function apparelDesigns(): ApparelDesign[] {
+  if (apparelCache) return apparelCache;
+  try {
+    apparelCache = JSON.parse(window.localStorage.getItem(APPAREL_KEY) ?? "[]") as ApparelDesign[];
+  } catch {
+    apparelCache = [];
+  }
+  return apparelCache;
+}
+
+function saveApparel(designs: ApparelDesign[]) {
+  try {
+    window.localStorage.setItem(APPAREL_KEY, JSON.stringify(designs));
+    apparelCache = designs;
+  } catch {
+    apparelCache = null;
+    throw problem(413, "Tenue trop lourde", "PAYLOAD_TOO_LARGE", "Le stockage du navigateur est plein : réduisez le nombre ou la taille des images.");
+  }
+}
+
+function apparelDesign(did: string) {
+  const design = apparelDesigns().find((d) => d.id === did);
+  if (!design) throw problem(404, "Tenue introuvable", "NOT_FOUND");
+  return design;
+}
+
+function apparelTemplate(tid: string): ApparelTemplate {
+  const template = DEFAULT_TEMPLATES.find((t) => t.id === tid);
+  if (!template) throw problem(400, "Support introuvable ou désactivé", "BAD_REQUEST");
+  return template;
+}
+
+/** Une tenue modifiée après l'envoi du BAT doit être revalidée. */
+function unlockApparel(design: ApparelDesign) {
+  if (design.status === "PROOF_SENT" || design.status === "APPROVED") Object.assign(design, { status: "DRAFT", approvedAt: null, proofToken: null });
+  design.updatedAt = now();
+}
+
+/** Contrôle de l'effectif : numéros en double, tailles absentes du support. */
+function rosterIssues(entries: RosterEntry[], sizes: string[]): ApparelIssue[] {
+  const issues: ApparelIssue[] = [];
+  const seen = new Set<string>();
+  for (const e of entries) {
+    if (e.number && seen.has(e.number)) issues.push({ code: "DUPLICATE_NUMBER", severity: "error", message: `Numéro ${e.number} attribué deux fois` });
+    if (e.number) seen.add(e.number);
+    if (!sizes.includes(e.size)) issues.push({ code: "UNKNOWN_SIZE", severity: "error", message: `Taille ${e.size} indisponible pour ${e.displayName}` });
+  }
+  return issues;
+}
+
+function apparelCheck(design: ApparelDesign) {
+  const template = apparelTemplate(design.templateId);
+  const issues = checkElements(template.zones, design.elements, design.technique, design.garmentColor);
+  if (design.roster) issues.push(...rosterIssues(design.roster.entries, template.sizes.map((s) => s.label)));
+  const errors = issues.filter((i) => i.severity === "error");
+  return { ok: errors.length === 0, errors, warnings: issues.filter((i) => i.severity === "warning"), disclaimer: design.rulePresetId ? RULES_DISCLAIMER : undefined, referenceSize: "M" };
+}
+
+/** CSV d'effectif (virgule ou point-virgule) : nom, nom_imprime, numero, taille, poste, quantite. */
+function parseRoster(csv: string): RosterEntry[] {
+  const lines = csv.split(/\r?\n/).filter((l) => l.trim());
+  const separator = (lines[0] ?? "").includes(";") ? ";" : ",";
+  const header = (lines[0] ?? "").split(separator).map((h) => h.trim().toLowerCase());
+  const missing = ["nom", "numero", "taille"].filter((c) => !header.includes(c));
+  if (!lines.length || missing.length) throw problem(422, "Fichier d’effectif invalide", "UNPROCESSABLE", `Colonnes manquantes : ${missing.join(", ") || "nom, numero, taille"}`);
+  return lines.slice(1).map((line, i) => {
+    const cells = line.split(separator).map((c) => c.trim());
+    const get = (key: string) => cells[header.indexOf(key)] ?? "";
+    const quantity = get("quantite") ? Number(get("quantite")) : 1;
+    if (!get("nom")) throw problem(422, "Fichier d’effectif invalide", "UNPROCESSABLE", `Ligne ${i + 2} : nom manquant`);
+    if (!Number.isInteger(quantity) || quantity < 1) throw problem(422, "Fichier d’effectif invalide", "UNPROCESSABLE", `Ligne ${i + 2} : quantité invalide`);
+    return { playerName: get("nom"), displayName: get("nom_imprime") || get("nom").toUpperCase(), number: get("numero") || null, size: get("taille").toUpperCase(), quantity, role: get("poste") || null };
+  });
 }
 
 // Sites web : rangés à part (images téléversées en data URL), sous une clé dédiée du navigateur.
@@ -1149,6 +1238,161 @@ export const mockClient: ApiClient = {
       const name = data.names.find((n) => n.id === project.chosenNameId);
       const dto: PublicKit = { ...kitToDto(kit), projectName: projectName(project), acronym: name?.acronym ?? null, meaning: name?.meaning ?? null, entityType: project.entityType };
       return dto;
+    },
+  },
+
+  apparel: {
+    async templates() {
+      return structuredClone(DEFAULT_TEMPLATES);
+    },
+    async rulePresets() {
+      return { disclaimer: RULES_DISCLAIMER, presets: structuredClone(MOCK_PRESETS) };
+    },
+    async list(pid) {
+      requireRole(projectOr404(pid).workspaceId, "VIEWER");
+      return apparelDesigns()
+        .filter((d) => d.projectId === pid)
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+        .map((d) => ({
+          id: d.id,
+          templateId: d.templateId,
+          name: d.name,
+          technique: d.technique,
+          garmentColor: d.garmentColor,
+          status: d.status,
+          updatedAt: d.updatedAt,
+          template: { name: d.template.name, category: d.template.category },
+          _count: { elements: d.elements.length },
+        }));
+    },
+    async create(pid, input) {
+      await wait();
+      requireRole(projectOr404(pid).workspaceId, "EDITOR");
+      const template = apparelTemplate(input.templateId);
+      const preset = input.rulePresetId ? MOCK_PRESETS.find((p) => p.id === input.rulePresetId) : null;
+      if (input.rulePresetId && !preset) throw problem(404, "Préréglage introuvable", "NOT_FOUND");
+      const design: ApparelDesign = {
+        id: id("ad"),
+        projectId: pid,
+        templateId: template.id,
+        rulePresetId: preset?.id ?? null,
+        name: input.name.trim(),
+        technique: input.technique,
+        garmentColor: input.garmentColor,
+        status: "DRAFT",
+        proofToken: null,
+        approvedAt: null,
+        createdAt: now(),
+        updatedAt: now(),
+        template: { id: template.id, name: template.name, category: template.category },
+        rulePreset: preset ?? null,
+        elements: [],
+        roster: null,
+      };
+      saveApparel([design, ...apparelDesigns()]);
+      logActivity(pid, `a créé la tenue « ${design.name} »`);
+      return structuredClone(design);
+    },
+    async get(did) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "VIEWER");
+      return structuredClone(design);
+    },
+    async update(did, patch) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      if (patch.rulePresetId !== undefined) {
+        const preset = patch.rulePresetId ? MOCK_PRESETS.find((p) => p.id === patch.rulePresetId) : null;
+        if (patch.rulePresetId && !preset) throw problem(404, "Préréglage introuvable", "NOT_FOUND");
+        Object.assign(design, { rulePresetId: preset?.id ?? null, rulePreset: preset ?? null });
+      }
+      if (patch.name) design.name = patch.name.trim();
+      if (patch.technique) design.technique = patch.technique;
+      if (patch.garmentColor) design.garmentColor = patch.garmentColor;
+      unlockApparel(design);
+      saveApparel(apparelDesigns());
+      return structuredClone(design);
+    },
+    async remove(did) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      saveApparel(apparelDesigns().filter((d) => d.id !== did));
+    },
+    async saveElements(did, elements) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      const keys = new Set(apparelTemplate(design.templateId).zones.map((z) => z.key));
+      const unknown = [...new Set(elements.filter((e) => !keys.has(e.zoneKey)).map((e) => e.zoneKey))];
+      if (unknown.length) throw problem(400, `Zones absentes de ce support : ${unknown.join(", ")}`, "BAD_REQUEST");
+      design.elements = elements.map((e, i) => ({ ...structuredClone(e), id: id("el"), rotationDeg: e.rotationDeg ?? 0, zIndex: e.zIndex ?? i }));
+      unlockApparel(design);
+      saveApparel(apparelDesigns());
+      return structuredClone(design);
+    },
+    async check(did) {
+      await wait();
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      return apparelCheck(design);
+    },
+    async importRoster(did, csv, name) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      const entries = parseRoster(csv);
+      const issues = rosterIssues(entries, apparelTemplate(design.templateId).sizes.map((s) => s.label));
+      if (issues.length) throw new ApiError({ status: 422, title: "Effectif non conforme", detail: issues[0]!.message, code: "UNPROCESSABLE", issues });
+      design.roster = { name: name?.trim() || "Effectif", entries };
+      unlockApparel(design);
+      saveApparel(apparelDesigns());
+      const bySize: Record<string, number> = {};
+      for (const e of entries) bySize[e.size] = (bySize[e.size] ?? 0) + e.quantity;
+      return { roster: structuredClone(design.roster), summary: { players: entries.length, garments: Object.values(bySize).reduce((a, b) => a + b, 0), bySize } };
+    },
+    async proof(did) {
+      await wait();
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      if (design.status === "APPROVED" || design.status === "IN_PRODUCTION") throw problem(409, "Cette tenue est déjà approuvée", "CONFLICT");
+      const report = apparelCheck(design);
+      if (!report.ok) throw new ApiError({ status: 422, title: "BAT refusé", detail: "Corrigez les erreurs avant d’envoyer le BAT", code: "UNPROCESSABLE", issues: report.errors });
+      design.proofToken ??= id().replace(/-/g, "").slice(0, 32);
+      design.status = "PROOF_SENT";
+      saveApparel(apparelDesigns());
+      return { token: design.proofToken, url: `${window.location.origin}/bat/${design.proofToken}` };
+    },
+    async revokeProof(did) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      design.proofToken = null;
+      if (design.status === "PROOF_SENT") design.status = "DRAFT";
+      saveApparel(apparelDesigns());
+      return { revoked: true as const };
+    },
+    async publicProof(token) {
+      await wait();
+      const design = apparelDesigns().find((d) => d.proofToken === token);
+      if (!design) throw problem(404, "BAT introuvable ou révoqué", "NOT_FOUND");
+      const template = apparelTemplate(design.templateId);
+      return structuredClone({
+        name: design.name,
+        technique: design.technique,
+        garmentColor: design.garmentColor,
+        status: design.status,
+        approvedAt: design.approvedAt,
+        template: { name: template.name, category: template.category, zones: template.zones },
+        elements: design.elements,
+        roster: design.roster ? { name: design.roster.name, entries: design.roster.entries.map(({ displayName, number, size, quantity }) => ({ displayName, number, size, quantity })) } : null,
+      });
+    },
+    async approveProof(token) {
+      await wait();
+      const design = apparelDesigns().find((d) => d.proofToken === token);
+      if (!design) throw problem(404, "BAT introuvable ou révoqué", "NOT_FOUND");
+      if (design.status === "APPROVED") return { status: design.status, approvedAt: design.approvedAt };
+      if (design.status !== "PROOF_SENT") throw problem(410, "Ce BAT n’est plus en attente d’approbation", "GONE");
+      Object.assign(design, { status: "APPROVED", approvedAt: now() });
+      saveApparel(apparelDesigns());
+      return { status: design.status, approvedAt: design.approvedAt };
     },
   },
 

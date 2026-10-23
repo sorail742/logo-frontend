@@ -76,10 +76,24 @@ function ElementPreview({ el, onPick, picking }: { el: ImageElement; picking: bo
  * Atelier photo : réglages, courbes, filtres, recadrage et détourage d'une photo du Studio, avec
  * aperçu avant/après et histogramme du résultat. Tout est enregistré en une étape d'annulation.
  */
-export function PhotoEditor({ el, initialTab = "adjust", onApply, onClose }: { el: ImageElement; initialTab?: PhotoTab; onApply: (el: ImageElement) => void; onClose: () => void }) {
+export function PhotoEditor({
+  el,
+  initialTab = "adjust",
+  onApply,
+  onClose,
+  projectId: project,
+}: {
+  el: ImageElement;
+  initialTab?: PhotoTab;
+  onApply: (el: ImageElement) => void;
+  onClose: () => void;
+  /** Projet facturé pour le détourage IA (par défaut : celui de la création du Studio ouverte). */
+  projectId?: string;
+}) {
   const t = useTranslations("studio.photo");
   const onError = useApiErrorToast();
-  const projectId = useStudio((s) => s.meta?.projectId);
+  const studioProject = useStudio((s) => s.meta?.projectId);
+  const projectId = project ?? studioProject;
   const [tab, setTab] = useState<PhotoTab>(initialTab);
   const [draft, setDraft] = useState<ImageElement>(el);
   const [comparing, setComparing] = useState(false);

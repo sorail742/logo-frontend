@@ -1,0 +1,284 @@
+{
+  "status": {
+    "DRAFT": "Brouillon",
+    "PROOF_SENT": "BAT envoyé",
+    "APPROVED": "Approuvé",
+    "IN_PRODUCTION": "En production"
+  },
+  "views": {
+    "FRONT": "Devant",
+    "BACK": "Dos",
+    "LEFT_SLEEVE": "Manche gauche",
+    "RIGHT_SLEEVE": "Manche droite",
+    "SHORTS_FRONT": "Short",
+    "OTHER": "Autre"
+  },
+  "kinds": {
+    "LOGO": "Logo",
+    "SPONSOR": "Sponsor",
+    "TEXT": "Texte",
+    "PLAYER_NAME": "Nom du joueur",
+    "PLAYER_NUMBER": "Numéro",
+    "IMAGE": "Image",
+    "PATTERN": "Motif"
+  },
+  "techniques": {
+    "DTF": {
+      "name": "DTF (transfert numérique)",
+      "hint": "Polyvalent : photos, dégradés et petits détails sur coton ou polyester, clair ou foncé."
+    },
+    "SCREEN_PRINT": {
+      "name": "Sérigraphie",
+      "hint": "Idéale en série : un écran par couleur, aplats éclatants et très résistants."
+    },
+    "DTG": {
+      "name": "Impression directe (DTG)",
+      "hint": "Photos sur coton sans minimum ; sous-couche blanche nécessaire sur tissu foncé."
+    },
+    "HEAT_TRANSFER_VINYL": {
+      "name": "Flex (vinyle découpé)",
+      "hint": "Noms et numéros de maillots : couleurs unies, traits d'au moins 2 mm, ni photo ni dégradé."
+    },
+    "FLOCK": {
+      "name": "Flocage (velours)",
+      "hint": "Rendu velouté en relief : couleurs unies, traits d'au moins 3 mm."
+    },
+    "SUBLIMATION": {
+      "name": "Sublimation",
+      "hint": "Tout le vêtement imprimé, sans toucher : polyester clair uniquement."
+    },
+    "EMBROIDERY": {
+      "name": "Broderie",
+      "hint": "Haut de gamme pour polos et casquettes : textes d'au moins 5 mm, peu de couleurs."
+    }
+  },
+  "editor": {
+    "canvas": "Vêtement : cliquez sur une zone pour la viser, sur une impression pour la sélectionner",
+    "rotate": "Faire pivoter (Maj : par 15°)",
+    "previewSize": "Aperçu en taille {size} : repassez en {ref} pour modifier",
+    "proofReset": "Tenue modifiée : le BAT envoyé est révoqué, renvoyez-le pour validation.",
+    "saved": "Enregistré",
+    "pending": "Modifications en attente",
+    "saving": "Enregistrement…",
+    "saveError": "Échec de l'enregistrement",
+    "readOnly": "Lecture seule",
+    "undo": "Annuler (Ctrl+Z)",
+    "redo": "Rétablir (Ctrl+Maj+Z)",
+    "zones": "Afficher les zones d'impression",
+    "size": "Taille affichée",
+    "sizeHint": "Voir le rendu sur une autre taille : les zones proportionnelles s'agrandissent avec le vêtement",
+    "refSize": "Taille {size}",
+    "back": "Retour au projet",
+    "notFound": "Cette tenue n'existe pas ou n'est plus accessible.",
+    "importing": "Préparation de l'image…",
+    "imported": "Image ajoutée",
+    "rightsReminder": "Attestez détenir ses droits avant d'envoyer le BAT.",
+    "importFailed": "Image illisible ou trop lourde",
+    "views": "Vues du vêtement"
+  },
+  "add": {
+    "title": "Ajouter",
+    "zone": "Zone d'impression",
+    "logo": "Logo du projet",
+    "variants": {
+      "color": "Couleur",
+      "white": "Blanc",
+      "black": "Noir",
+      "icon": "Symbole",
+      "horizontal": "Horizontal",
+      "vertical": "Vertical"
+    },
+    "recommended": "Conseillé",
+    "noLogo": "Créez d'abord un logo dans le projet : il apparaîtra ici dans toutes ses déclinaisons.",
+    "texts": "Textes",
+    "text": "Texte",
+    "name": "Nom",
+    "number": "Numéro",
+    "slogan": "Slogan",
+    "noSlogan": "Choisissez un slogan dans le projet",
+    "image": "Image",
+    "upload": "Importer une image",
+    "imageHint": "PNG transparent conseillé, 300 dpi à la taille imprimée. Collez aussi une image (Ctrl+V).",
+    "layers": "Calques · {view}",
+    "forward": "Avancer",
+    "backward": "Reculer",
+    "remove": "Supprimer",
+    "noLayers": "Aucune impression sur cette vue."
+  },
+  "inspector": {
+    "title": "Propriétés",
+    "placement": "Position",
+    "zone": "Zone",
+    "width": "Largeur (mm)",
+    "height": "Hauteur (mm)",
+    "offsetX": "Depuis le bord gauche de la zone (mm)",
+    "offsetY": "Depuis le haut de la zone (mm)",
+    "rotation": "Rotation (°)",
+    "centerH": "Centrer",
+    "centerV": "Milieu",
+    "fit": "Remplir la zone",
+    "duplicate": "Dupliquer (Ctrl+D)",
+    "text": "Texte",
+    "content": "Texte imprimé",
+    "nameHint": "Avec un effectif, chaque maillot reçoit le nom imprimé de son joueur.",
+    "weight": "Graisse",
+    "weights": {
+      "400": "Normal",
+      "600": "Demi-gras",
+      "700": "Gras",
+      "800": "Extra-gras",
+      "900": "Noir"
+    },
+    "fill": "Couleur",
+    "outline": "Contour",
+    "outlineColor": "Couleur du contour",
+    "spacing": "Espacement",
+    "arc": "Arc",
+    "logo": "Logo",
+    "variant": "Déclinaison",
+    "inks": "{count, plural, =0 {Aucune encre détectée} one {# encre} other {# encres}}",
+    "monochrome": "Une seule couleur",
+    "monochromeHint": "Flex, flocage et broderie : passez le logo en une couleur de vinyle ou de fil.",
+    "restoreColors": "Couleurs d'origine",
+    "photo": "Photo",
+    "dpiUnknown": "Résolution inconnue",
+    "dpi": "{dpi} dpi à la taille imprimée ({min} dpi requis)",
+    "retouch": "Retoucher",
+    "filters": "Filtres",
+    "crop": "Recadrer",
+    "cutout": "Détourer",
+    "auto": "Auto",
+    "flipX": "Miroir",
+    "flipY": "Retourner",
+    "separation": "Tons directs (sérigraphie)",
+    "separationHint": "Réduit la photo retouchée à quelques encres unies, rendues à 300 dpi : un écran par couleur, sans demi-teinte.",
+    "inkCount": "Encres",
+    "separate": "Séparer les couleurs",
+    "separated": "{count, plural, one {Photo réduite à # encre} other {Photo réduite à # encres}}",
+    "restorePhoto": "Revenir à la photo d'origine",
+    "rights": "Droits",
+    "rightsLabel": "J'atteste détenir les droits sur cette image ou l'autorisation écrite de son titulaire (marques, logos de clubs, photos)."
+  },
+  "settings": {
+    "design": "Tenue",
+    "name": "Nom",
+    "support": "Support : {name}",
+    "technique": "Technique d'impression",
+    "fabric": "Couleur du tissu",
+    "brandColors": "Couleurs de la marque",
+    "rules": "Règlement",
+    "noRules": "Aucun (t-shirt, loisir)"
+  },
+  "roster": {
+    "title": "Effectif",
+    "summary": "{name} : {players, plural, one {# joueur} other {# joueurs}}, {garments, plural, one {# tenue} other {# tenues}}",
+    "empty": "Importez la liste des joueurs : noms imprimés, numéros et tailles, contrôlés avant le BAT.",
+    "import": "Importer un effectif (CSV)",
+    "description": "Une ligne par joueur. Les numéros en double et les tailles absentes du support sont refusés.",
+    "name": "Nom de l'effectif",
+    "namePlaceholder": "Effectif seniors",
+    "csv": "Fichier CSV",
+    "example": "Exemple",
+    "file": "Choisir un fichier",
+    "columns": "Colonnes : nom, nom_imprime, numero, taille, poste (facultatif), quantite (facultatif). Séparateur virgule ou point-virgule.",
+    "result": "{players, plural, one {# joueur} other {# joueurs}} · {garments, plural, one {# tenue} other {# tenues}} à produire",
+    "close": "Fermer",
+    "imported": "{count, plural, one {# joueur importé} other {# joueurs importés}}"
+  },
+  "checks": {
+    "title": "Contrôles",
+    "ok": "Tout est conforme pour cette technique.",
+    "empty": "Ajoutez un logo, un texte ou une image.",
+    "summary": "{errors, plural, =0 {Aucune erreur} one {# erreur} other {# erreurs}}, {warnings, plural, =0 {aucun avertissement} one {# avertissement} other {# avertissements}}",
+    "screens": "{count, plural, one {# écran de sérigraphie} other {# écrans de sérigraphie}}",
+    "full": "Contrôle complet",
+    "fullOk": "Contrôle complet réussi (taille de référence {size}).",
+    "fullErrors": "{count, plural, one {# erreur bloque le BAT} other {# erreurs bloquent le BAT}}"
+  },
+  "proof": {
+    "send": "Envoyer le BAT",
+    "title": "Bon à tirer",
+    "description": "Votre client consulte la tenue et l'approuve sans créer de compte ; son nom et la date sont enregistrés.",
+    "approved": "Le client a approuvé cette tenue : elle peut partir en production.",
+    "checking": "Contrôle de la tenue…",
+    "blocked": "{count, plural, one {# erreur à corriger avant l'envoi :} other {# erreurs à corriger avant l'envoi :}}",
+    "ready": "Lien du BAT prêt : envoyez-le à votre client.",
+    "link": "Lien du BAT",
+    "copy": "Copier le lien",
+    "copied": "Lien copié",
+    "open": "Ouvrir le BAT",
+    "editRevokes": "Toute modification de la tenue révoque ce lien : il faudra renvoyer le BAT.",
+    "revoke": "Révoquer le lien",
+    "revoked": "Lien du BAT révoqué",
+    "close": "Fermer"
+  },
+  "export": {
+    "title": "Exporter",
+    "mockup": "Maquette de la vue (PNG)",
+    "mockupHint": "Vêtement réaliste pour présenter au client",
+    "board": "Planche de toutes les vues (PNG)",
+    "boardHint": "Devant, dos et manches côte à côte",
+    "print": "Fichiers d'impression (PNG 300 dpi)",
+    "printHint": "Un fichier par zone, taille réelle, fond transparent",
+    "nothing": "Aucune impression à exporter.",
+    "printDone": "{count, plural, one {# fichier d'impression exporté} other {# fichiers d'impression exportés}}"
+  },
+  "list": {
+    "title": "Textile",
+    "description": "T-shirts, polos et maillots à vos couleurs : zones d'impression réelles, contrôles par technique et BAT approuvé par le client.",
+    "new": "Nouvelle tenue",
+    "quick": "Choisir un support",
+    "zonesCount": "{count, plural, one {# zone} other {# zones}}",
+    "mine": "Tenues du projet",
+    "emptyTitle": "Habillez votre équipe ou vos clients",
+    "emptyBody": "Placez le logo, les noms et les numéros sur le vêtement, vérifiez l'impression puis envoyez le BAT.",
+    "features": {
+      "realistic": {
+        "title": "Rendu réaliste",
+        "body": "Plis, maille et couleur du tissu : l'encre se fond dans le vêtement."
+      },
+      "zones": {
+        "title": "Zones en millimètres",
+        "body": "Cœur, dos, manches, numéros : chaque zone a ses dimensions réelles, par taille."
+      },
+      "print": {
+        "title": "Prêt pour l'atelier",
+        "body": "Contrôles par technique, 300 dpi, tons directs et fichiers d'impression."
+      },
+      "proof": {
+        "title": "BAT en ligne",
+        "body": "Le client approuve d'un clic, sans compte ; toute modification relance la validation."
+      }
+    },
+    "newTitle": "Nouvelle tenue",
+    "newDescription": "Choisissez le support, la couleur du tissu et la technique d'impression : tout reste modifiable ensuite.",
+    "support": "Support",
+    "create": "Créer la tenue",
+    "actions": "Actions",
+    "delete": "Supprimer",
+    "deleted": "Tenue supprimée",
+    "deleteTitle": "Supprimer la tenue ?",
+    "deleteBody": "« {name} », son effectif et son BAT seront supprimés définitivement.",
+    "cancel": "Annuler"
+  },
+  "public": {
+    "notFound": "BAT introuvable",
+    "notFoundBody": "Ce lien a été révoqué ou la tenue a été modifiée : demandez un nouveau lien à votre interlocuteur.",
+    "kicker": "Bon à tirer",
+    "views": "Vues du vêtement",
+    "screenNotice": "Les couleurs à l'écran sont indicatives : le rendu final dépend du tissu et de la technique d'impression.",
+    "roster": "Effectif : {name}",
+    "printedName": "Nom imprimé",
+    "number": "Numéro",
+    "size": "Taille",
+    "quantity": "Quantité",
+    "approval": "Approbation",
+    "approvedOn": "BAT approuvé le {date}.",
+    "approvalHint": "Vérifiez l'orthographe des noms, les numéros, les tailles et les couleurs avant d'approuver.",
+    "approver": "Votre nom et votre fonction",
+    "approverPlaceholder": "Mamadou Diallo, président du club",
+    "confirm": "J'ai vérifié la tenue et j'autorise sa production.",
+    "approve": "Approuver le BAT",
+    "notPending": "Ce BAT n'est plus en attente d'approbation."
+  }
+}

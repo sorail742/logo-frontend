@@ -7,6 +7,8 @@ export interface ProblemDetails {
   code?: string;
   /** Détail des champs refusés : liste de messages (API NestJS) ou messages par champ. */
   errors?: string[] | Record<string, string[]>;
+  /** Anomalies bloquantes d'un contrôle (BAT textile refusé, effectif non conforme). */
+  issues?: unknown[];
 }
 
 export class ApiError extends Error {
