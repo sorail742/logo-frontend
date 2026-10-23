@@ -41,10 +41,15 @@ import type {
   SloganKind,
   SloganTone,
   User,
+  Website,
+  WebsiteBrand,
+  WebsiteMedia,
+  WebsiteMessage,
   Workspace,
   WorkspaceRole,
 } from "@/lib/types";
 import type { ArtworkStyle } from "@/lib/render/artwork";
+import type { SiteContent } from "@/lib/render/site";
 import type { DesignDoc, StudioDesign, StudioDesignSummary } from "@/lib/studio/types";
 
 // Contrat du client API : une méthode par route REST (§13). Deux implémentations :
@@ -283,6 +288,29 @@ export interface ApiClient {
     requestExport(sdid: string, input: StudioExportInput, idempotencyKey: string): Promise<JobAccepted>;
     /** Lot de 4 images (1 crédit), produit par le worker ; URL dans le résultat de la tâche. */
     generateImages(pid: string, input: StudioImagesInput, idempotencyKey: string): Promise<JobAccepted>;
+  };
+
+  websites: {
+    /** Site du projet, ou null s'il n'a pas encore été créé. */
+    get(pid: string): Promise<Website | null>;
+    /** Site de départ tiré du projet (nom, brief, slogan, logo, signature e-mail). 400 NO_LOGO sans logo. */
+    create(pid: string): Promise<Website>;
+    /** Sauvegarde (automatique) : contenu, adresse publique, logo affiché. */
+    update(webid: string, patch: { content?: SiteContent; slug?: string; logoId?: string | null }): Promise<Website>;
+    /** Logo et symbole pour l'aperçu de l'éditeur. */
+    brand(webid: string): Promise<WebsiteBrand>;
+    /** Publication ou republication des modifications. */
+    publish(webid: string): Promise<Website>;
+    unpublish(webid: string): Promise<Website>;
+    remove(webid: string): Promise<void>;
+    addMedia(webid: string, input: { dataUrl: string; alt?: string }): Promise<Pick<WebsiteMedia, "id" | "url" | "alt">>;
+    /** Retire aussi l'image des sections qui l'utilisent. */
+    removeMedia(webid: string, mid: string): Promise<Website>;
+    messages(webid: string): Promise<WebsiteMessage[]>;
+    markMessage(webid: string, msgid: string, read: boolean): Promise<WebsiteMessage>;
+    removeMessage(webid: string, msgid: string): Promise<void>;
+    /** Archive autonome du site (offres payantes) : URL signée de téléchargement. */
+    exportZip(webid: string): Promise<{ url: string }>;
   };
 
   jobs: {

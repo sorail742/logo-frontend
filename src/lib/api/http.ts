@@ -2,7 +2,7 @@ import type { ApiClient, ApiFeature, Session } from "./contract";
 import { ApiError, problem, type ProblemDetails } from "./errors";
 import { tokenStore } from "./token";
 import { PLANS } from "@/lib/plans";
-import type { GenerationJob, JobEvent, JobStatus, Plan } from "@/lib/types";
+import type { GenerationJob, JobEvent, JobStatus, Plan, Website, WebsiteMessage } from "@/lib/types";
 
 // Client de l'API NestJS (/api/v1). Le jeton d'accès vit en mémoire ;
 // le jeton de rafraîchissement est un cookie httpOnly posé par l'API (§14.1).
@@ -317,6 +317,22 @@ export const httpClient: ApiClient = {
     remove: (sdid) => del(`/studio-designs/${sdid}`),
     requestExport: (sdid, input, key) => post(`/studio-designs/${sdid}/export`, input, key),
     generateImages: (pid, input, key) => post(`/projects/${pid}/studio-images`, input, key),
+  },
+
+  websites: {
+    get: async (pid) => (await get<{ website: Website | null }>(`/projects/${pid}/website`)).website,
+    create: (pid) => post(`/projects/${pid}/website`),
+    update: (webid, input) => patch(`/websites/${webid}`, input),
+    brand: (webid) => get(`/websites/${webid}/brand`),
+    publish: (webid) => post(`/websites/${webid}/publish`),
+    unpublish: (webid) => post(`/websites/${webid}/unpublish`),
+    remove: (webid) => del(`/websites/${webid}`),
+    addMedia: (webid, input) => post(`/websites/${webid}/media`, input),
+    removeMedia: (webid, mid) => del(`/websites/${webid}/media/${mid}`),
+    messages: async (webid) => (await get<{ items: WebsiteMessage[] }>(`/websites/${webid}/messages`)).items,
+    markMessage: (webid, msgid, read) => patch(`/websites/${webid}/messages/${msgid}`, { read }),
+    removeMessage: (webid, msgid) => del(`/websites/${webid}/messages/${msgid}`),
+    exportZip: (webid) => post(`/websites/${webid}/export`),
   },
 
   jobs: {

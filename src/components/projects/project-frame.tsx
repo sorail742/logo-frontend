@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/common/empty-state";
 import { useProject } from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
-import { FileQuestion, Sparkles } from "lucide-react";
+import { FileQuestion, Globe, Sparkles, type LucideIcon } from "lucide-react";
 
 const STEPS = [
   { id: "overview", path: "", done: null },
@@ -19,7 +19,16 @@ const STEPS = [
   { id: "signatures", path: "/signatures", done: "signatures" },
   { id: "kit", path: "/kit", done: "kit" },
   { id: "studio", path: "/studio", done: null },
+  { id: "site", path: "/site", done: "site" },
 ] as const;
+
+/** Étapes facultatives, repérées par une icône plutôt que par un numéro. */
+const STEP_ICONS: Partial<Record<(typeof STEPS)[number]["id"], LucideIcon>> = { studio: Sparkles, site: Globe };
+
+function StepMarker({ id, index, done }: { id: (typeof STEPS)[number]["id"]; index: number; done: boolean }) {
+  const Icon = done ? Check : STEP_ICONS[id];
+  return Icon ? <Icon className="size-3" /> : index;
+}
 
 export function ProjectFrame({ children }: { children: ReactNode }) {
   const t = useTranslations();
@@ -65,7 +74,7 @@ export function ProjectFrame({ children }: { children: ReactNode }) {
                     )}
                     aria-hidden="true"
                   >
-                    {done ? <Check className="size-3" /> : step.id === "studio" ? <Sparkles className="size-3" /> : index}
+                    <StepMarker id={step.id} index={index} done={Boolean(done)} />
                   </span>
                   {t(`app.steps.${step.id}`)}
                 </Link>

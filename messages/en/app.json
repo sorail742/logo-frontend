@@ -71,7 +71,8 @@
     "logos": "Logo",
     "signatures": "Signatures",
     "kit": "Brand kit",
-    "studio": "Studio"
+    "studio": "Studio",
+    "site": "Website"
   },
   "newProject": {
     "title": "New project",

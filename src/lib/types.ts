@@ -1,6 +1,9 @@
 // Types côté front, alignés sur le schéma Prisma du cahier des charges (§12).
 // À terme, ils seront importés depuis packages/shared.
 
+import type { BrandAssets } from "@/lib/render/compose";
+import type { SiteContent } from "@/lib/render/site";
+
 export type PlatformRole = "USER" | "SUPPORT" | "ADMIN" | "SUPER_ADMIN";
 export type WorkspaceRole = "OWNER" | "EDITOR" | "VIEWER";
 export type WorkspaceKind = "PERSONAL" | "ORGANIZATION";
@@ -114,7 +117,7 @@ export interface Project {
   updatedAt: string;
   deletedAt: string | null;
   // Avancement du parcours (calculé par l'API)
-  progress: { brief: boolean; name: boolean; logo: boolean; signatures: boolean; kit: boolean };
+  progress: { brief: boolean; name: boolean; logo: boolean; signatures: boolean; kit: boolean; site?: boolean };
   previewSpec?: LogoSpec | null;
 }
 
@@ -365,7 +368,7 @@ export interface Invoice {
 
 export interface AppNotification {
   id: string;
-  type: "INVITATION" | "COMMENT" | "EXPORT_READY" | "LOW_CREDITS" | "PAYMENT";
+  type: "INVITATION" | "COMMENT" | "EXPORT_READY" | "LOW_CREDITS" | "PAYMENT" | "SITE_MESSAGE";
   title: string;
   body: string;
   href: string | null;
@@ -481,4 +484,61 @@ export interface LibraryFont {
   category: "sans" | "serif" | "display" | "script";
   license: "OFL";
   isActive: boolean;
+}
+
+// ─── Site web de la marque ───
+
+/** Image téléversée pour le site (URL publique servie par l'API, data URL en simulation). */
+export interface WebsiteMedia {
+  id: string;
+  url: string;
+  alt: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export interface Website {
+  id: string;
+  projectId: string;
+  /** Adresse publique : /site/<slug>. */
+  slug: string;
+  /** Logo choisi ; null : le favori ou le plus récent du projet. */
+  logoId: string | null;
+  content: SiteContent;
+  published: boolean;
+  publishedAt: string | null;
+  /** Modifications enregistrées depuis la dernière publication. */
+  dirty: boolean;
+  views: number;
+  url: string;
+  /** Point d'envoi du formulaire de contact. */
+  formUrl: string;
+  /** Base des routes publiques (polices, images) ; vide en simulation. */
+  assetsUrl: string;
+  media: WebsiteMedia[];
+  unreadMessages: number;
+  /** Logo affiché ; null si le projet n'en a plus. */
+  displayedLogoId: string | null;
+  /** Offre gratuite : mention de la plateforme imposée, export réservé aux offres payantes. */
+  free: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WebsiteMessage {
+  id: string;
+  websiteId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  message: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
+/** Logo et symbole du site en toutes couleurs (texte vectorisé par l'API). */
+export interface WebsiteBrand {
+  name: string;
+  logoId: string;
+  assets: BrandAssets;
 }
