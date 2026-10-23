@@ -3,6 +3,7 @@
 
 import type { BrandAssets } from "@/lib/render/compose";
 import type { SiteContent } from "@/lib/render/site";
+import type { FontCategory } from "@/lib/render/fonts";
 
 export type PlatformRole = "USER" | "SUPPORT" | "ADMIN" | "SUPER_ADMIN";
 export type WorkspaceRole = "OWNER" | "EDITOR" | "VIEWER";
@@ -483,7 +484,9 @@ export interface LibraryCapabilities {
 export interface LibraryFont {
   id: string;
   name: string;
-  category: "sans" | "serif" | "display" | "script";
+  category: FontCategory;
+  /** Écritures entièrement couvertes (latin, pular, nko), d'après l'API. */
+  scripts?: string[];
   license: "OFL";
   isActive: boolean;
 }

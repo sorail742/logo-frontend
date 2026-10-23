@@ -3,7 +3,7 @@
 // Lettres absentes d'une police : même repli que le rendu serveur (assets/fonts du back) — le
 // latin étendu de la police, puis Montserrat, puis Noto Sans NKo pour l'écriture N'Ko.
 
-export type FontCategory = "sans" | "serif" | "display" | "script";
+export type FontCategory = "sans" | "serif" | "display" | "script" | "sport";
 
 export interface LibraryFontDef {
   id: string;
@@ -68,12 +68,51 @@ export const FONTS: LibraryFontDef[] = [
   { id: "caveat", name: "Caveat", cssVar: "--font-caveat", category: "script", license: "OFL", weights: [400, 700], widthFactor: 0.42, ascent: 0.96, descent: 0.3 },
   { id: "permanent-marker", name: "Permanent Marker", cssVar: "--font-permanent-marker", category: "script", license: "OFL", weights: [400], widthFactor: 0.62, ascent: 1.109, descent: 0.317 },
   { id: "kaushan-script", name: "Kaushan Script", cssVar: "--font-kaushan-script", category: "script", license: "OFL", weights: [400], widthFactor: 0.49, ascent: 1.084, descent: 0.367 },
+  // Maillots et sport : numéros et noms de joueurs (collège, condensées, liseré, pochoir, relief).
+  { id: "graduate", name: "Graduate", cssVar: "--font-graduate", category: "sport", license: "OFL", weights: [400], widthFactor: 0.66, ascent: 0.953, descent: 0.186 },
+  { id: "big-shoulders", name: "Big Shoulders", cssVar: "--font-big-shoulders", category: "sport", license: "OFL", weights: [400, 700, 900], widthFactor: 0.4, ascent: 0.984, descent: 0.213 },
+  { id: "big-shoulders-inline", name: "Big Shoulders Inline", cssVar: "--font-big-shoulders-inline", category: "sport", license: "OFL", weights: [700, 900], widthFactor: 0.41, ascent: 0.984, descent: 0.213 },
+  { id: "big-shoulders-stencil", name: "Big Shoulders Stencil", cssVar: "--font-big-shoulders-stencil", category: "sport", license: "OFL", weights: [700, 900], widthFactor: 0.41, ascent: 0.984, descent: 0.213 },
+  { id: "bungee", name: "Bungee", cssVar: "--font-bungee", category: "sport", license: "OFL", weights: [400], widthFactor: 0.71, ascent: 1.02, descent: 0.3 },
+  { id: "bungee-inline", name: "Bungee Inline", cssVar: "--font-bungee-inline", category: "sport", license: "OFL", weights: [400], widthFactor: 0.71, ascent: 1.02, descent: 0.3 },
+  { id: "bungee-shade", name: "Bungee Shade", cssVar: "--font-bungee-shade", category: "sport", license: "OFL", weights: [400], widthFactor: 0.81, ascent: 1.02, descent: 0.3 },
+  { id: "russo-one", name: "Russo One", cssVar: "--font-russo-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.63, ascent: 0.926, descent: 0.279 },
+  { id: "squada-one", name: "Squada One", cssVar: "--font-squada-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.44, ascent: 0.861, descent: 0.196 },
+  { id: "staatliches", name: "Staatliches", cssVar: "--font-staatliches", category: "sport", license: "OFL", weights: [400], widthFactor: 0.44, ascent: 0.95, descent: 0.3 },
+  { id: "saira-condensed", name: "Saira Condensed", cssVar: "--font-saira-condensed", category: "sport", license: "OFL", weights: [500, 700, 900], widthFactor: 0.44, ascent: 1.135, descent: 0.439 },
+  { id: "saira-extra-condensed", name: "Saira Extra Condensed", cssVar: "--font-saira-extra-condensed", category: "sport", license: "OFL", weights: [500, 700, 900], widthFactor: 0.38, ascent: 1.135, descent: 0.439 },
+  { id: "saira-stencil", name: "Saira Stencil One", cssVar: "--font-saira-stencil", category: "sport", license: "OFL", weights: [400], widthFactor: 0.6, ascent: 1.135, descent: 0.439 },
+  { id: "chakra-petch", name: "Chakra Petch", cssVar: "--font-chakra-petch", category: "sport", license: "OFL", weights: [500, 700], widthFactor: 0.59, ascent: 0.992, descent: 0.308 },
+  { id: "black-ops-one", name: "Black Ops One", cssVar: "--font-black-ops-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.66, ascent: 0.914, descent: 0.336 },
+  { id: "racing-sans-one", name: "Racing Sans One", cssVar: "--font-racing-sans-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.57, ascent: 0.976, descent: 0.284 },
+  { id: "orbitron", name: "Orbitron", cssVar: "--font-orbitron", category: "sport", license: "OFL", weights: [500, 700, 900], widthFactor: 0.73, ascent: 1.011, descent: 0.243 },
+  { id: "audiowide", name: "Audiowide", cssVar: "--font-audiowide", category: "sport", license: "OFL", weights: [400], widthFactor: 0.71, ascent: 0.99, descent: 0.285 },
+  { id: "kanit", name: "Kanit", cssVar: "--font-kanit", category: "sport", license: "OFL", weights: [500, 700, 900], widthFactor: 0.59, ascent: 1.1, descent: 0.395 },
+  { id: "rajdhani", name: "Rajdhani", cssVar: "--font-rajdhani", category: "sport", license: "OFL", weights: [500, 700], widthFactor: 0.5, ascent: 0.93, descent: 0.346 },
+  { id: "exo-2", name: "Exo 2", cssVar: "--font-exo-2", category: "sport", license: "OFL", weights: [500, 700, 900], widthFactor: 0.59, ascent: 0.999, descent: 0.201 },
+  { id: "changa-one", name: "Changa One", cssVar: "--font-changa-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.56, ascent: 0.882, descent: 0.18 },
+  { id: "bowlby-one-sc", name: "Bowlby One SC", cssVar: "--font-bowlby-one-sc", category: "sport", license: "OFL", weights: [400], widthFactor: 0.72, ascent: 1.098, descent: 0.428 },
+  { id: "holtwood-one-sc", name: "Holtwood One SC", cssVar: "--font-holtwood-one-sc", category: "sport", license: "OFL", weights: [400], widthFactor: 0.83, ascent: 1.2, descent: 0.428 },
+  { id: "monoton", name: "Monoton", cssVar: "--font-monoton", category: "sport", license: "OFL", weights: [400], widthFactor: 0.77, ascent: 1.155, descent: 0.401 },
+  { id: "tourney", name: "Tourney", cssVar: "--font-tourney", category: "sport", license: "OFL", weights: [600, 800], widthFactor: 0.6, ascent: 0.9, descent: 0.2 },
+  { id: "goldman", name: "Goldman", cssVar: "--font-goldman", category: "sport", license: "OFL", weights: [400, 700], widthFactor: 0.72, ascent: 0.9, descent: 0.3 },
+  { id: "zen-dots", name: "Zen Dots", cssVar: "--font-zen-dots", category: "sport", license: "OFL", weights: [400], widthFactor: 0.81, ascent: 0.93, descent: 0.27 },
+  { id: "michroma", name: "Michroma", cssVar: "--font-michroma", category: "sport", license: "OFL", weights: [400], widthFactor: 0.88, ascent: 1.156, descent: 0.266 },
+  { id: "anta", name: "Anta", cssVar: "--font-anta", category: "sport", license: "OFL", weights: [400], widthFactor: 0.59, ascent: 0.96, descent: 0.261 },
+  { id: "oxanium", name: "Oxanium", cssVar: "--font-oxanium", category: "sport", license: "OFL", weights: [500, 700, 800], widthFactor: 0.6, ascent: 0.79, descent: 0.21 },
+  { id: "tektur", name: "Tektur", cssVar: "--font-tektur", category: "sport", license: "OFL", weights: [500, 700, 900], widthFactor: 0.6, ascent: 1.0, descent: 0.3 },
+  { id: "bevan", name: "Bevan", cssVar: "--font-bevan", category: "sport", license: "OFL", weights: [400], widthFactor: 0.73, ascent: 1.155, descent: 0.452 },
+  { id: "sarpanch", name: "Sarpanch", cssVar: "--font-sarpanch", category: "sport", license: "OFL", weights: [500, 700, 900], widthFactor: 0.64, ascent: 1.05, descent: 0.35 },
+  { id: "jockey-one", name: "Jockey One", cssVar: "--font-jockey-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.45, ascent: 1.079, descent: 0.319 },
+  { id: "passion-one", name: "Passion One", cssVar: "--font-passion-one", category: "sport", license: "OFL", weights: [400, 700, 900], widthFactor: 0.5, ascent: 0.835, descent: 0.266 },
+  { id: "fugaz-one", name: "Fugaz One", cssVar: "--font-fugaz-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.61, ascent: 1.046, descent: 0.422 },
+  { id: "days-one", name: "Days One", cssVar: "--font-days-one", category: "sport", license: "OFL", weights: [400], widthFactor: 0.7, ascent: 0.996, descent: 0.277 },
 ];
 
 /** Polices qui écrivent tout le pular (ɓ ɗ ŋ ƴ et capitales), d'après le manifeste de l'API. */
-export const PULAR_FONTS = new Set(["montserrat", "nunito", "merriweather", "great-vibes", "inter", "anton", "unbounded", "libre-baskerville"]);
+export const PULAR_FONTS = new Set(["montserrat", "nunito", "merriweather", "great-vibes", "inter", "anton", "unbounded", "libre-baskerville", "tektur"]);
 /** Polices sans sous-ensemble latin étendu (pas de variable « -ext »). */
-const LATIN_ONLY = new Set(["satisfy", "permanent-marker"]);
+const LATIN_ONLY = new Set(["satisfy", "permanent-marker", "graduate", "squada-one", "orbitron", "changa-one", "fugaz-one", "days-one"]);
 
 /** Lettres pular (fula) hors de l'alphabet latin de base. */
 export const PULAR_LETTERS = /[ɓɗŋƴƁƊŊƳ]/gu;

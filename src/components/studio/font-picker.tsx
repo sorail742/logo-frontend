@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 // Choix de la police avec aperçu dans chaque police, recherche et polices de la marque en tête.
 
-const CATEGORIES: FontCategory[] = ["sans", "serif", "display", "script"];
+const CATEGORIES: FontCategory[] = ["sport", "sans", "serif", "display", "script"];
 
 const NO_FONTS: string[] = [];
 
