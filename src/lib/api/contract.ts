@@ -288,6 +288,8 @@ export interface ApiClient {
     requestExport(sdid: string, input: StudioExportInput, idempotencyKey: string): Promise<JobAccepted>;
     /** Lot de 4 images (1 crédit), produit par le worker ; URL dans le résultat de la tâche. */
     generateImages(pid: string, input: StudioImagesInput, idempotencyKey: string): Promise<JobAccepted>;
+    /** Détourage par IA (1 crédit) : masque PNG en niveaux de gris, blanc = sujet conservé. */
+    cutout(pid: string, input: { image: string }, idempotencyKey: string): Promise<{ mask: string; costCredits: number }>;
   };
 
   websites: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import {
   AlignCenter,
@@ -24,7 +24,11 @@ import {
   ImageUp,
   Lock,
   LockOpen,
+  Scissors,
   Shuffle,
+  SlidersHorizontal,
+  Sparkles,
+  SwatchBook,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,25 +38,20 @@ import { getFont } from "@/lib/render/fonts";
 import { documentColors } from "@/lib/studio/doc";
 import { aabb, union } from "@/lib/studio/geometry";
 import { relayout } from "@/lib/studio/text";
-import type { BlendMode, DesignElement, ImageElement, ImageFilters, ShapeElement, SvgElement, TextElement } from "@/lib/studio/types";
+import { PHOTO_PRESETS } from "@/lib/render/photo";
+import { autoAdjust, downscale } from "@/lib/studio/pixels";
+import { BLEND_MODES, type BlendMode, type DesignElement, type ImageElement, type ShapeElement, type SvgElement, type TextElement } from "@/lib/studio/types";
 import { selectedElements, useStudio } from "@/stores/studio";
 import { useStudioContext } from "./context";
 import { NumberField, Section, SliderField, ToggleButtons } from "./fields";
 import { FontPicker } from "./font-picker";
 import { ColorPicker, PaintPicker } from "./paint-picker";
+import { PhotoEditor, type PhotoTab } from "./photo/photo-editor";
 
 // Inspecteur : propriétés de la sélection (ou de la page), regroupées par section.
 
-const BLENDS: BlendMode[] = ["normal", "multiply", "screen", "overlay", "darken", "lighten", "soft-light"];
-const NEUTRAL_FILTERS: ImageFilters = { brightness: 1, contrast: 1, saturation: 1, blur: 0 };
-const FILTER_PRESETS: { id: string; filters: ImageFilters }[] = [
-  { id: "original", filters: NEUTRAL_FILTERS },
-  { id: "mono", filters: { brightness: 1.02, contrast: 1.12, saturation: 0, blur: 0 } },
-  { id: "vivid", filters: { brightness: 1.03, contrast: 1.12, saturation: 1.45, blur: 0 } },
-  { id: "soft", filters: { brightness: 1.06, contrast: 0.9, saturation: 0.85, blur: 0 } },
-  { id: "dramatic", filters: { brightness: 0.94, contrast: 1.35, saturation: 0.75, blur: 0 } },
-  { id: "dreamy", filters: { brightness: 1.08, contrast: 0.95, saturation: 1.1, blur: 1.5 } },
-];
+/** Filtres proposés d'un clic dans l'inspecteur (la galerie complète est dans l'atelier photo). */
+const QUICK_PRESETS = ["original", "vivid", "warm", "mono", "vintage", "dramatic"];
 
 type Updater = (fn: (el: DesignElement) => DesignElement, mergeKey?: string) => void;
 
@@ -226,7 +225,7 @@ export function Inspector() {
         <div className="grid grid-cols-[5.5rem_1fr] items-center gap-2">
           <span className="text-xs text-muted-foreground">{t("blend")}</span>
           <NativeSelect value={single?.blend ?? "normal"} onChange={(e) => update((el) => ({ ...el, blend: e.target.value as BlendMode }))} aria-label={t("blend")}>
-            {BLENDS.map((b) => (
+            {BLEND_MODES.map((b) => (
               <option key={b} value={b}>
                 {t(`blends.${b}`)}
               </option>
@@ -413,17 +412,25 @@ function ShapeSection({ el, update, colorProps }: { el: ShapeElement; update: Up
 
 function ImageSection({ el, update }: { el: ImageElement; update: Updater }) {
   const t = useTranslations("studio.inspector");
+  const tp = useTranslations("studio.photo");
   const { pickImages } = useStudioContext();
+  const [editing, setEditing] = useState<PhotoTab | null>(null);
+  const [enhancing, setEnhancing] = useState(false);
   const image = (fn: (el: ImageElement) => ImageElement, key?: string) => update((e) => (e.type === "image" ? fn(e) : e), key);
-  const filters = el.filters ?? NEUTRAL_FILTERS;
-  const setFilter = (key: keyof ImageFilters, value: number) => image((e) => ({ ...e, filters: { ...(e.filters ?? NEUTRAL_FILTERS), [key]: value } }), `filter-${key}`);
+  const retouched = Boolean(el.adjust || el.filters || el.crop || el.cutout || el.straighten || el.outline || el.glow);
+  const enhance = () => {
+    setEnhancing(true);
+    downscale(el.src, 320)
+      .then(({ pixels }) => image((e) => ({ ...e, filters: undefined, adjust: { ...e.adjust, ...autoAdjust(pixels) } })))
+      .finally(() => setEnhancing(false));
+  };
   return (
     <>
       <Section title={t("photo")}>
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" onClick={() => useStudio.getState().setCrop(el.id)}>
+          <Button variant="outline" size="sm" onClick={() => useStudio.getState().setCrop(el.id)} title={t("reframeHint")}>
             <Crop />
-            {t("crop")}
+            {t("reframe")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => pickImages(el.id)}>
             <ImageUp />
@@ -453,18 +460,62 @@ function ImageSection({ el, update }: { el: ImageElement; update: Updater }) {
         {el.mask === "rounded" && <SliderField label={t("radius")} value={Math.round(el.radius ?? Math.min(el.width, el.height) * 0.12)} min={0} max={Math.round(Math.min(el.width, el.height) / 2)} onChange={(v) => image((e) => ({ ...e, radius: v }), "radius")} />}
       </Section>
       <Section title={t("filters")}>
+        <div className="grid grid-cols-2 gap-1.5">
+          <Button size="sm" onClick={() => setEditing("adjust")}>
+            <SlidersHorizontal />
+            {tp("open")}
+          </Button>
+          <Button size="sm" variant="outline" disabled={enhancing} onClick={enhance}>
+            <Sparkles />
+            {tp("auto")}
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setEditing("presets")}>
+            <SwatchBook />
+            {tp("tabs.presets")}
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setEditing("crop")}>
+            <Crop />
+            {tp("tabs.crop")}
+          </Button>
+          <Button size="sm" variant="outline" className="col-span-2" onClick={() => setEditing("cutout")}>
+            <Scissors />
+            {tp("removeBackground")}
+          </Button>
+        </div>
         <div className="grid grid-cols-3 gap-1.5">
-          {FILTER_PRESETS.map((preset) => (
-            <Button key={preset.id} variant="outline" size="xs" onClick={() => image((e) => ({ ...e, filters: preset.id === "original" ? undefined : preset.filters }))}>
-              {t(`filterPresets.${preset.id}`)}
+          {QUICK_PRESETS.map((id) => (
+            <Button
+              key={id}
+              variant="ghost"
+              size="xs"
+              onClick={() => image((e) => ({ ...e, filters: undefined, adjust: id === "original" ? undefined : structuredClone(PHOTO_PRESETS.find((p) => p.id === id)?.adjust) }))}
+            >
+              {tp(`presets.${id}`)}
             </Button>
           ))}
         </div>
-        <SliderField label={t("brightness")} value={Math.round(filters.brightness * 100)} min={40} max={160} format={(v) => `${v} %`} onChange={(v) => setFilter("brightness", v / 100)} />
-        <SliderField label={t("contrast")} value={Math.round(filters.contrast * 100)} min={40} max={180} format={(v) => `${v} %`} onChange={(v) => setFilter("contrast", v / 100)} />
-        <SliderField label={t("saturation")} value={Math.round(filters.saturation * 100)} min={0} max={200} format={(v) => `${v} %`} onChange={(v) => setFilter("saturation", v / 100)} />
-        <SliderField label={t("blur")} value={filters.blur} min={0} max={20} step={0.5} onChange={(v) => setFilter("blur", v)} />
+        {retouched && (
+          <Button
+            variant="ghost"
+            size="xs"
+            className="justify-self-start text-muted-foreground"
+            onClick={() => image((e) => ({ ...e, filters: undefined, adjust: undefined, crop: null, straighten: undefined, cutout: null, outline: null, glow: null }))}
+          >
+            {tp("resetAll")}
+          </Button>
+        )}
       </Section>
+      {editing && (
+        <PhotoEditor
+          el={el}
+          initialTab={editing}
+          onClose={() => setEditing(null)}
+          onApply={(next) => {
+            image(() => next);
+            setEditing(null);
+          }}
+        />
+      )}
     </>
   );
 }

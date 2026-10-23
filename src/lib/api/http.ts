@@ -317,6 +317,7 @@ export const httpClient: ApiClient = {
     remove: (sdid) => del(`/studio-designs/${sdid}`),
     requestExport: (sdid, input, key) => post(`/studio-designs/${sdid}/export`, input, key),
     generateImages: (pid, input, key) => post(`/projects/${pid}/studio-images`, input, key),
+    cutout: (pid, input, key) => post(`/projects/${pid}/studio-cutout`, input, key),
   },
 
   websites: {

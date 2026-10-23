@@ -4,7 +4,7 @@ import type { StudioBrand } from "./brand";
 import { isNeutral, nearestColor } from "./color";
 import { mapElements, mapPage } from "./doc";
 import { aabb, intersects } from "./geometry";
-import { imagePlacement } from "./render";
+import { photoPlacement } from "@/lib/render/photo";
 import { backdropColor } from "./smart";
 import { relayout } from "./text";
 import type { DesignDoc, DesignElement, DesignPage, Paint, TextElement } from "./types";
@@ -237,7 +237,9 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
 
     // Résolution des photos : 150 dpi minimum à l'impression, pas d'agrandissement à l'écran.
     if (el.type === "image") {
-      const place = imagePlacement(el);
+      // Agrandissement du redressement compris : il réduit la résolution effective.
+      const { image, zoom } = photoPlacement(el);
+      const place = { width: image.width * zoom };
       const scale = place.width / el.naturalWidth;
       if (mm) {
         const dpi = (el.naturalWidth / (place.width * mm)) * 25.4;

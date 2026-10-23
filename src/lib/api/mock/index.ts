@@ -956,6 +956,9 @@ export const mockClient: ApiClient = {
     async requestExport() {
       throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Le PDF d'impression est produit par le serveur de la plateforme.");
     },
+    async cutout() {
+      throw problem(501, "Détourage IA non activé", "NOT_AVAILABLE", "Le détourage par IA est fourni par le serveur de la plateforme : utilisez le fond uni, la baguette ou les pinceaux.");
+    },
     async generateImages(pid, input, key) {
       await wait();
       const project = projectOr404(pid);
@@ -1506,7 +1509,7 @@ export const mockClient: ApiClient = {
     // Démonstration locale : visuels génératifs, pas de banque de photos (elle demande une clé côté serveur).
     async capabilities() {
       await wait(80);
-      return { aiImages: { provider: "demo", demo: true }, photos: false };
+      return { aiImages: { provider: "demo", demo: true }, photos: false, cutout: false };
     },
     async photos() {
       await wait(120);

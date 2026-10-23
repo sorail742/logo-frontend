@@ -1,4 +1,5 @@
 import { cssFontFamily, getFont } from "@/lib/render/fonts";
+import { adjustFilter, effectsFilter, photoPlacement, vignetteGradient } from "@/lib/render/photo";
 import { escapeXml } from "@/lib/render/svg";
 import type {
   DesignDoc,
@@ -236,15 +237,9 @@ export function imageMaskShape(el: ImageElement) {
   }
 }
 
-/** Position de l'image dans sa boîte (recouvrement cadré ou contenu centré). */
+/** Image entière dans le repère de l'élément (recadrage compris, avant redressement). */
 export function imagePlacement(el: ImageElement) {
-  const scale =
-    el.fit === "cover" ? Math.max(el.width / el.naturalWidth, el.height / el.naturalHeight) : Math.min(el.width / el.naturalWidth, el.height / el.naturalHeight);
-  const width = el.naturalWidth * scale;
-  const height = el.naturalHeight * scale;
-  const fx = el.fit === "cover" ? (el.focusX ?? 0.5) : 0.5;
-  const fy = el.fit === "cover" ? (el.focusY ?? 0.5) : 0.5;
-  return { x: (el.width - width) * fx, y: (el.height - height) * fy, width, height };
+  return photoPlacement(el).image;
 }
 
 function imageFilter(id: string, el: ImageElement) {
@@ -259,11 +254,33 @@ function imageFilter(id: string, el: ImageElement) {
 }
 
 function renderImage(el: ImageElement, pid: string, defs: string[]) {
-  const place = imagePlacement(el);
+  const place = photoPlacement(el);
+  const { image, region } = place;
   defs.push(`<clipPath id="${pid}-clip">${imageMaskShape(el)}</clipPath>`);
-  const filter = imageFilter(`${pid}-img`, el);
+  // Réglages de retouche ; à défaut, les anciens filtres simples (documents existants).
+  const filter = el.adjust ? adjustFilter(`${pid}-img`, el.adjust, Math.max(region.width, region.height)) : imageFilter(`${pid}-img`, el);
   if (filter) defs.push(filter);
-  return `<g clip-path="url(#${pid}-clip)"><image href="${escapeXml(el.src)}" x="${n(place.x)}" y="${n(place.y)}" width="${n(place.width)}" height="${n(place.height)}" preserveAspectRatio="none"${filter ? ` filter="url(#${pid}-img)"` : ""}/></g>`;
+  const box = `x="${n(image.x)}" y="${n(image.y)}" width="${n(image.width)}" height="${n(image.height)}"`;
+  let body = `<image href="${escapeXml(el.src)}" ${box} preserveAspectRatio="none"${filter ? ` filter="url(#${pid}-img)"` : ""}/>`;
+  const vignette = el.adjust?.vignette ?? 0;
+  if (vignette) {
+    defs.push(vignetteGradient(`${pid}-vig`, vignette, region));
+    body += `<rect x="${n(region.x)}" y="${n(region.y)}" width="${n(region.width)}" height="${n(region.height)}" fill="url(#${pid}-vig)"/>`;
+  }
+  if (el.cutout) {
+    defs.push(`<mask id="${pid}-cut" maskUnits="userSpaceOnUse" ${box}><image href="${escapeXml(el.cutout)}" ${box} preserveAspectRatio="none"/></mask>`);
+    body = `<g mask="url(#${pid}-cut)">${body}</g>`;
+  }
+  if (el.crop) {
+    defs.push(`<clipPath id="${pid}-crop"><rect x="${n(region.x)}" y="${n(region.y)}" width="${n(region.width)}" height="${n(region.height)}"/></clipPath>`);
+    body = `<g clip-path="url(#${pid}-crop)">${body}</g>`;
+  }
+  if (place.transform) body = `<g transform="${place.transform}">${body}</g>`;
+  const framed = `<g clip-path="url(#${pid}-clip)">${body}</g>`;
+  const effects = effectsFilter(`${pid}-fx`, el.outline, el.glow, el);
+  if (!effects) return framed;
+  defs.push(effects);
+  return `<g filter="url(#${pid}-fx)">${framed}</g>`;
 }
 
 /** Dimensions et contenu d'un SVG (sans la racine ni le titre). */

@@ -24,7 +24,8 @@ import {
   type Handle,
   type Point,
 } from "@/lib/studio/geometry";
-import { elementTransform, imagePlacement, renderBackground, renderElement } from "@/lib/studio/render";
+import { photoPlacement } from "@/lib/render/photo";
+import { elementTransform, renderBackground, renderElement } from "@/lib/studio/render";
 import { isFrame } from "@/lib/studio/smart";
 import { naturalWidth, relayout } from "@/lib/studio/text";
 import type { DesignElement, DesignPage, ImageElement, TextElement } from "@/lib/studio/types";
@@ -532,7 +533,8 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
       }
       case "crop": {
         const el = g.original;
-        const place = imagePlacement(el);
+        // Cadrage dans la zone recadrée (l'image entière quand elle n'est pas recadrée).
+        const place = photoPlacement(el).region;
         const local = rotatePoint({ x: p.x - g.start.x, y: p.y - g.start.y }, { x: 0, y: 0 }, -el.rotation);
         const overflowX = place.width - el.width;
         const overflowY = place.height - el.height;
@@ -792,11 +794,13 @@ export function StudioCanvas({ onDropFiles, onRequestImage }: CanvasProps) {
 
 /** Photo entière en transparence pendant le recadrage. */
 function CropGhost({ el }: { el: ImageElement }) {
-  const place = imagePlacement(el);
+  const { image, region, transform } = photoPlacement(el);
   return (
     <g transform={elementTransform(el)} opacity={0.4}>
-      <image href={el.src} x={place.x} y={place.y} width={place.width} height={place.height} preserveAspectRatio="none" />
-      <rect x={place.x} y={place.y} width={place.width} height={place.height} className="fill-none stroke-primary" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />
+      <g transform={transform ?? undefined}>
+        <image href={el.src} x={image.x} y={image.y} width={image.width} height={image.height} preserveAspectRatio="none" />
+        <rect x={region.x} y={region.y} width={region.width} height={region.height} className="fill-none stroke-primary" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />
+      </g>
     </g>
   );
 }

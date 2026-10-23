@@ -133,6 +133,9 @@ export function scaleElement<T extends DesignElement>(el: T, s: number, sx = s, 
     case "image":
       if (scaled.radius) scaled.radius = scaled.radius * s;
       if (scaled.filters?.blur) scaled.filters = { ...scaled.filters, blur: scaled.filters.blur * s };
+      if (scaled.adjust?.blur) scaled.adjust = { ...scaled.adjust, blur: Math.min(100, scaled.adjust.blur * s) };
+      if (scaled.outline) scaled.outline = { ...scaled.outline, width: scaled.outline.width * s };
+      if (scaled.glow) scaled.glow = { ...scaled.glow, size: scaled.glow.size * s };
       break;
   }
   return scaled as T;
