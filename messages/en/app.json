@@ -135,13 +135,14 @@
     "languages": "Name languages",
     "styles": "Name styles",
     "maxLength": "Maximum length",
-    "maxLengthHint": "In characters, empty = no limit",
+    "maxLengthHint": "Between 3 and 30 characters, empty = no limit",
     "mustInclude": "Words to include",
     "mustAvoid": "Words to avoid",
     "tone": "Desired tone",
     "tonePlaceholder": "E.g. committed, serious, warm",
     "saved": "Brief saved",
-    "saveAndContinue": "Save and generate names"
+    "saveAndContinue": "Save and generate names",
+    "tagCount": "{count} / {max}"
   },
   "nameStyles": {
     "DESCRIPTIVE": "Descriptive",

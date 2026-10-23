@@ -135,13 +135,14 @@
     "languages": "Langues des noms",
     "styles": "Styles de nom",
     "maxLength": "Longueur maximale",
-    "maxLengthHint": "En nombre de caractères, vide = sans limite",
+    "maxLengthHint": "Entre 3 et 30 caractères, vide = sans limite",
     "mustInclude": "Mots à inclure",
     "mustAvoid": "Mots à éviter",
     "tone": "Ton souhaité",
     "tonePlaceholder": "Ex. engagé, sérieux, chaleureux",
     "saved": "Brief enregistré",
-    "saveAndContinue": "Enregistrer et générer des noms"
+    "saveAndContinue": "Enregistrer et générer des noms",
+    "tagCount": "{count} / {max}"
   },
   "nameStyles": {
     "DESCRIPTIVE": "Descriptif",

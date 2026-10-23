@@ -8,19 +8,22 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/common/field";
-import { api, errorMessage } from "@/lib/api";
+import { PasswordInput, PasswordStrength } from "@/components/common/password-input";
+import { api, errorMessage, fieldErrors } from "@/lib/api";
 import { AuthCard } from "./auth-card";
 
 export function ForgotPasswordForm() {
   const t = useTranslations("auth");
   const [email, setEmail] = useState("");
+  const [error, setError] = useState<string>();
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const submit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      toast.error(t("errors.email"));
+      setError(t("errors.email"));
+      document.getElementById("email")?.focus();
       return;
     }
     setBusy(true);
@@ -28,8 +31,10 @@ export function ForgotPasswordForm() {
       await api.auth.forgotPassword(email);
       // Réponse identique que le compte existe ou non (pas d'énumération des comptes)
       setSent(true);
-    } catch (error) {
-      toast.error(errorMessage(error));
+    } catch (failure) {
+      const fields = fieldErrors(failure);
+      if (fields.email) setError(fields.email);
+      else toast.error(errorMessage(failure));
     } finally {
       setBusy(false);
     }
@@ -51,8 +56,18 @@ export function ForgotPasswordForm() {
         </output>
       ) : (
         <form onSubmit={(event) => void submit(event)} className="grid gap-4" noValidate>
-          <Field label={t("login.email")} htmlFor="email">
-            <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Field label={t("login.email")} htmlFor="email" error={error}>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              maxLength={254}
+              value={email}
+              onChange={(e) => {
+                setError(undefined);
+                setEmail(e.target.value);
+              }}
+            />
           </Field>
           <Button type="submit" size="lg" disabled={busy}>
             {t("forgot.submit")}
@@ -69,6 +84,7 @@ export function ResetPasswordForm() {
   const token = useSearchParams().get("token");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [errors, setErrors] = useState<{ password?: string; confirm?: string }>({});
   const [busy, setBusy] = useState(false);
 
   if (!token) {
@@ -81,12 +97,13 @@ export function ResetPasswordForm() {
 
   const submit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (password.length < 8) {
-      toast.error(t("errors.password"));
-      return;
-    }
-    if (password !== confirm) {
-      toast.error(t("errors.mismatch"));
+    const invalid = {
+      password: password.length < 8 ? t("errors.password") : undefined,
+      confirm: password.length >= 8 && password !== confirm ? t("errors.mismatch") : undefined,
+    };
+    if (invalid.password || invalid.confirm) {
+      setErrors(invalid);
+      document.getElementById(invalid.password ? "password" : "confirm")?.focus();
       return;
     }
     setBusy(true);
@@ -95,7 +112,9 @@ export function ResetPasswordForm() {
       toast.success(t("reset.done"));
       router.replace("/connexion");
     } catch (error) {
-      toast.error(errorMessage(error));
+      const fields = fieldErrors(error);
+      if (fields.password) setErrors({ password: fields.password });
+      else toast.error(errorMessage(error));
     } finally {
       setBusy(false);
     }
@@ -104,11 +123,30 @@ export function ResetPasswordForm() {
   return (
     <AuthCard title={t("reset.title")}>
       <form onSubmit={(event) => void submit(event)} className="grid gap-4" noValidate>
-        <Field label={t("reset.password")} htmlFor="password">
-          <Input id="password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <Field label={t("reset.password")} htmlFor="password" error={errors.password}>
+          <PasswordInput
+            id="password"
+            autoComplete="new-password"
+            maxLength={128}
+            value={password}
+            onChange={(e) => {
+              setErrors({});
+              setPassword(e.target.value);
+            }}
+          />
         </Field>
-        <Field label={t("reset.confirm")} htmlFor="confirm">
-          <Input id="confirm" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <PasswordStrength password={password} />
+        <Field label={t("reset.confirm")} htmlFor="confirm" error={errors.confirm}>
+          <PasswordInput
+            id="confirm"
+            autoComplete="new-password"
+            maxLength={128}
+            value={confirm}
+            onChange={(e) => {
+              setErrors({});
+              setConfirm(e.target.value);
+            }}
+          />
         </Field>
         <Button type="submit" size="lg" disabled={busy}>
           {t("reset.submit")}

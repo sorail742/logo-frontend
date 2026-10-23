@@ -1,10 +1,15 @@
+"use client"
+
 import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
 import { cn } from "cn"
+import { useFieldControl } from "@/components/common/field"
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+  const field = useFieldControl(props.id)
   return (
     <InputPrimitive
+      {...field}
       type={type}
       data-slot="input"
       className={cn(

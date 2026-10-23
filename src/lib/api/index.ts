@@ -13,4 +13,4 @@ export function newIdempotencyKey() {
 }
 
 export type * from "./contract";
-export { ApiError, errorMessage } from "./errors";
+export { ApiError, errorMessage, fieldErrors } from "./errors";

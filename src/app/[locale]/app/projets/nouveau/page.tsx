@@ -10,9 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/common/field";
 import { PageHeader } from "@/components/common/page-header";
-import { useApiErrorToast } from "@/hooks/use-api-error";
+import { useFormErrors } from "@/hooks/use-form-errors";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { ENTITY_TYPES, type EntityType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +26,8 @@ const TYPE_ICONS: Record<EntityType, typeof HandHeart> = {
 };
 
 type Path = "full" | "hasName" | "hasLogo" | "emailOnly";
+const FIELDS = ["title", "existingName"] as const;
+
 const PATHS: { id: Path; icon: typeof Route }[] = [
   { id: "full", icon: Route },
   { id: "hasName", icon: Type },
@@ -37,7 +39,7 @@ export default function NewProjectPage() {
   const t = useTranslations();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const onError = useApiErrorToast();
+  const { errors, setErrors, onError, clear } = useFormErrors(FIELDS);
   const { workspace } = useWorkspace();
   const [entityType, setEntityType] = useState<EntityType>("ASSOCIATION");
   const [title, setTitle] = useState("");
@@ -62,7 +64,13 @@ export default function NewProjectPage() {
       };
       router.push(next[path]);
     },
-    onError,
+    onError: (error) => {
+      // Nom saisi refusé par la modération : message sous le champ.
+      if (path === "hasName" && error instanceof ApiError && error.status === 422) {
+        setErrors({ existingName: error.message });
+        document.getElementById("existingName")?.focus();
+      } else onError(error);
+    },
   });
 
   const canSubmit = Boolean(workspace) && (path !== "hasName" || existingName.trim().length >= 2);
@@ -100,8 +108,17 @@ export default function NewProjectPage() {
           </div>
         </fieldset>
 
-        <Field label={t("app.newProject.workingTitle")} htmlFor="title">
-          <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("app.newProject.workingTitlePlaceholder")} />
+        <Field label={t("app.newProject.workingTitle")} htmlFor="title" error={errors.title}>
+          <Input
+            id="title"
+            value={title}
+            maxLength={120}
+            onChange={(e) => {
+              clear("title");
+              setTitle(e.target.value);
+            }}
+            placeholder={t("app.newProject.workingTitlePlaceholder")}
+          />
         </Field>
 
         <fieldset className="grid gap-3">
@@ -125,8 +142,17 @@ export default function NewProjectPage() {
             ))}
           </div>
           {path === "hasName" && (
-            <Field label={t("app.newProject.existingName")} htmlFor="existingName">
-              <Input id="existingName" value={existingName} onChange={(e) => setExistingName(e.target.value)} autoFocus />
+            <Field label={t("app.newProject.existingName")} htmlFor="existingName" error={errors.existingName}>
+              <Input
+                id="existingName"
+                value={existingName}
+                maxLength={40}
+                onChange={(e) => {
+                  clear("existingName");
+                  setExistingName(e.target.value);
+                }}
+                autoFocus
+              />
             </Field>
           )}
         </fieldset>
