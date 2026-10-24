@@ -318,6 +318,8 @@ export interface ApiClient {
     /** Toute modification après l'envoi du BAT le révoque (nouvelle validation nécessaire). */
     update(did: string, patch: Partial<Omit<ApparelDesignInput, "templateId">>): Promise<ApparelDesign>;
     remove(did: string): Promise<void>;
+    /** Copie en brouillon (impressions et effectif) : variante, nouvelle saison, fête suivante. */
+    duplicate(did: string): Promise<ApparelDesign>;
     /** Remplace tous les éléments (sauvegarde automatique de l'éditeur). */
     saveElements(did: string, elements: ApparelElement[]): Promise<ApparelDesign>;
     /** Contrôle complet : zones, technique, règlement sportif, effectif. */

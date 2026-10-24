@@ -603,7 +603,11 @@
     "working": "Preparing…",
     "download": "Download",
     "done": "Export ready",
-    "failed": "The export failed."
+    "failed": "The export failed.",
+    "tshirt": "On a T-shirt",
+    "tshirtHint": "Creates a project outfit with this page printed on the front (transparent background if checked), to refine in the apparel editor.",
+    "tshirtDone": "T-shirt created: adjust the print in the apparel editor",
+    "tshirtFailed": "No T-shirt available for this project."
   },
   "resize": {
     "title": "Magic resize",

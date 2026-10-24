@@ -329,6 +329,7 @@ export const httpClient: ApiClient = {
     get: (did) => get(`/apparel-designs/${did}`),
     update: (did, input) => patch(`/apparel-designs/${did}`, input),
     remove: (did) => del(`/apparel-designs/${did}`),
+    duplicate: (did) => post(`/apparel-designs/${did}/duplicate`, {}),
     // Champs attendus seulement : les identifiants locaux de l'éditeur sont remplacés par l'API.
     saveElements: (did, elements) =>
       put(`/apparel-designs/${did}/elements`, {

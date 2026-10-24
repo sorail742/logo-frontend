@@ -1310,6 +1310,24 @@ export const mockClient: ApiClient = {
       requireRole(projectOr404(design.projectId).workspaceId, "VIEWER");
       return structuredClone(design);
     },
+    async duplicate(did) {
+      await wait();
+      const source = apparelDesign(did);
+      requireRole(projectOr404(source.projectId).workspaceId, "EDITOR");
+      const copy: ApparelDesign = {
+        ...structuredClone(source),
+        id: id("ad"),
+        name: `${source.name} (copie)`.slice(0, 120),
+        status: "DRAFT",
+        proofToken: null,
+        approvedAt: null,
+        createdAt: now(),
+        updatedAt: now(),
+      };
+      saveApparel([copy, ...apparelDesigns()]);
+      logActivity(source.projectId, `a dupliqué la tenue « ${source.name} »`);
+      return structuredClone(copy);
+    },
     async update(did, patch) {
       const design = apparelDesign(did);
       requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");

@@ -281,7 +281,9 @@
     "deleted": "Tenue supprimée",
     "deleteTitle": "Supprimer la tenue ?",
     "deleteBody": "« {name} », son effectif et son BAT seront supprimés définitivement.",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "duplicate": "Dupliquer",
+    "duplicated": "Tenue dupliquée : la copie est en brouillon"
   },
   "public": {
     "notFound": "BAT introuvable",

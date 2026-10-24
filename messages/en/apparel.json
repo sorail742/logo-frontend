@@ -281,7 +281,9 @@
     "deleted": "Design deleted",
     "deleteTitle": "Delete this design?",
     "deleteBody": "“{name}”, its roster and its proof will be permanently deleted.",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "duplicate": "Duplicate",
+    "duplicated": "Outfit duplicated: the copy is a draft"
   },
   "public": {
     "notFound": "Proof not found",

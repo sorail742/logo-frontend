@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormatter, useNow, useTranslations } from "next-intl";
-import { BadgeCheck, Loader2, MoreHorizontal, Plus, Printer, Ruler, Shirt, Trash2 } from "lucide-react";
+import { BadgeCheck, Copy, Loader2, MoreHorizontal, Plus, Printer, Ruler, Shirt, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { NativeSelect } from "@/components/common/native-select";
 import { PageHeader } from "@/components/common/page-header";
@@ -210,6 +210,17 @@ function DesignCard({
     enabled: design._count.elements > 0,
     staleTime: 60_000,
   });
+  const router = useRouter();
+  // Copie en brouillon : la tenue validée reste intacte, la copie se personnalise librement.
+  const duplicate = useMutation({
+    mutationFn: () => api.apparel.duplicate(design.id),
+    onSuccess: (copy) => {
+      toast.success(t("list.duplicated"));
+      void queryClient.invalidateQueries({ queryKey: qk.apparel(pid) });
+      router.push(`/textile/${copy.id}`);
+    },
+    onError,
+  });
   const remove = useMutation({
     mutationFn: () => api.apparel.remove(design.id),
     onSuccess: () => {
@@ -267,6 +278,10 @@ function DesignCard({
             <MoreHorizontal />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem disabled={duplicate.isPending} onClick={() => duplicate.mutate()}>
+              <Copy />
+              {t("list.duplicate")}
+            </DropdownMenuItem>
             <DropdownMenuItem variant="destructive" onClick={() => setConfirm(true)}>
               <Trash2 />
               {t("list.delete")}

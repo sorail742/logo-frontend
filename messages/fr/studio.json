@@ -603,7 +603,11 @@
     "working": "Préparation…",
     "download": "Télécharger",
     "done": "Export prêt",
-    "failed": "L'export n'a pas abouti."
+    "failed": "L'export n'a pas abouti.",
+    "tshirt": "Sur un t-shirt",
+    "tshirtHint": "Crée une tenue du projet avec cette page imprimée au devant (fond transparent si l’option est cochée), à retravailler dans l’éditeur textile.",
+    "tshirtDone": "T-shirt créé : ajustez l’impression dans l’éditeur textile",
+    "tshirtFailed": "Aucun t-shirt disponible pour ce projet."
   },
   "resize": {
     "title": "Redimensionnement magique",
