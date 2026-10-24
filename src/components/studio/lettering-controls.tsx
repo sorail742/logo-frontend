@@ -80,7 +80,8 @@ function LayerRow({ label, children }: Readonly<{ label: string; children: React
   return (
     <div className="grid gap-1.5">
       <span className="text-muted-foreground text-[11px]">{label}</span>
-      <div className="flex items-center gap-2">{children}</div>
+      {/* Retour à la ligne : quatre réglages (texture, liseré) ne tiennent pas dans un panneau étroit. */}
+      <div className="flex flex-wrap items-center gap-2">{children}</div>
     </div>
   );
 }
