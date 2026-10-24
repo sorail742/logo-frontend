@@ -1,10 +1,15 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowDown,
   ArrowUp,
+  Cake,
+  Flag,
+  GraduationCap,
   Hash,
+  Heart,
   ImagePlus,
   Quote,
   Shapes,
@@ -14,13 +19,23 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/common/native-select";
 import { contrastRatio, luminance } from "@/lib/render/color";
+import {
+  CELEBRATION_KITS,
+  KIT_FONTS,
+  celebrationKit,
+  type CelebrationKit,
+  type KitCopy,
+} from "@/lib/apparel/celebrations";
 import { createLogoElement, createTextElement, type TextKind } from "@/lib/apparel/elements";
 import type { ElementKind } from "@/lib/apparel/types";
 import type { BrandLogos } from "@/lib/studio/brand";
+import { COUNTRIES, getCountry } from "@/lib/studio/countries";
 import { ensureFonts } from "@/lib/studio/text";
 import { cn } from "@/lib/utils";
 import { useApparel } from "@/stores/apparel";
+import { useSessionStore } from "@/stores/session";
 import { useApparelEditor } from "./editor";
 
 // Panneau d'ajout : zone visée, logos du projet, textes (nom, numéro, slogan), image importée,
@@ -38,11 +53,21 @@ const KIND_ICONS: Record<ElementKind, LucideIcon> = {
 
 const LOGO_ORDER: (keyof BrandLogos)[] = ["color", "white", "black", "icon", "horizontal", "vertical"];
 
+const KIT_ICONS: Record<CelebrationKit, LucideIcon> = {
+  independence: Flag,
+  birthday: Cake,
+  graduation: GraduationCap,
+  team: Heart,
+};
+
 const svgSrc = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
 export function AddPanel() {
   const t = useTranslations("apparel.add");
   const tv = useTranslations("apparel");
+  const locale = useLocale();
+  const userCountry = useSessionStore((s) => s.user?.country);
+  const [kitCountry, setKitCountry] = useState(() => getCountry(userCountry).code);
   const { template, canEdit, logos, slogan, brandColors, zone, pickImage } = useApparelEditor();
   const design = useApparel((s) => s.design)!;
   const view = useApparel((s) => s.view);
@@ -65,6 +90,35 @@ export function AddPanel() {
     await ensureFonts([{ fontId: base.content.fontId!, fontWeight: base.content.fontWeight ?? 700 }]);
     useApparel.getState().add(createTextElement(kind, zone, { fill: ink, ...(text ? { text } : {}) }));
   };
+
+  // T-shirt de fête : éléments ordinaires (modifiables un à un), ajoutés en une seule étape.
+  const addKit = async (kit: CelebrationKit) => {
+    if (!zone) return;
+    await ensureFonts(KIT_FONTS);
+    const second = brandColors.find((c) => c.toLowerCase() !== ink.toLowerCase()) ?? ink;
+    const kitElements = celebrationKit(
+      {
+        kit,
+        ink,
+        second,
+        locale,
+        garment: design.garmentColor,
+        country: kitCountry,
+        copy: t.raw("kitCopy") as KitCopy,
+      },
+      zone,
+    );
+    const store = useApparel.getState();
+    store.change((current) => [...current, ...kitElements]);
+    store.select(kitElements[0]?.id ?? null);
+  };
+
+  const countries = useMemo(() => {
+    const names = new Intl.DisplayNames([locale], { type: "region" });
+    return COUNTRIES.map((c) => ({ code: c.code, name: names.of(c.code) ?? c.code })).sort((a, b) =>
+      a.name.localeCompare(b.name, locale),
+    );
+  }, [locale]);
 
   const addLogo = (key: keyof BrandLogos) => {
     const svg = logos[key];
@@ -175,6 +229,44 @@ export function AddPanel() {
         </div>
       </section>
 
+      <section className="grid min-w-0 gap-2" aria-labelledby="apparel-kits">
+        <h2 id="apparel-kits" className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          {t("kits")}
+        </h2>
+        <div className="grid grid-cols-2 gap-1.5">
+          {CELEBRATION_KITS.map((kit) => {
+            const Icon = KIT_ICONS[kit];
+            return (
+              <Button
+                key={kit}
+                variant="outline"
+                size="sm"
+                disabled={disabled}
+                onClick={() => void addKit(kit)}
+                className="min-w-0"
+              >
+                <Icon />
+                <span className="truncate">{t(`kitNames.${kit}`)}</span>
+              </Button>
+            );
+          })}
+        </div>
+        <NativeSelect
+          aria-label={t("kitCountry")}
+          title={t("kitCountry")}
+          value={kitCountry}
+          onChange={(e) => setKitCountry(e.target.value)}
+          className="h-8 min-w-0 text-xs"
+        >
+          {countries.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
+        </NativeSelect>
+        <p className="text-muted-foreground text-[11px]">{t("kitsHint")}</p>
+      </section>
+
       <section className="grid gap-2" aria-labelledby="apparel-image">
         <h2
           id="apparel-image"
@@ -197,7 +289,7 @@ export function AddPanel() {
           {t("layers", { view: tv(`views.${view}`) })}
         </h2>
         {layers.length ? (
-          <ul className="grid gap-1">
+          <ul className="grid grid-cols-1 gap-1">
             {layers.map((el) => {
               const Icon = KIND_ICONS[el.kind];
               const label = el.content.text ?? tv(`kinds.${el.kind}`);

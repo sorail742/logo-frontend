@@ -244,7 +244,11 @@
       "new-year-gold": "Nouvel an doré",
       "graduation-cap": "Remise de diplômes",
       "christmas-tree": "Joyeux Noël",
-      "baby-welcome": "Naissance et baptême"
+      "baby-welcome": "Naissance et baptême",
+      "independence-photo": "Indépendance — cadre photo",
+      "birthday-photo": "Anniversaire — cadre photo",
+      "wedding-photo": "Mariage — cadre photo",
+      "graduation-photo": "Diplômé — cadre photo"
     },
     "pages": "{count} pages",
     "applied": "Modèle appliqué",
@@ -344,7 +348,9 @@
       "babyName": "Aminata",
       "babyBody": "Née le 8 novembre, pour le plus grand bonheur de ses parents."
     },
-    "country": "Pays de la fête"
+    "country": "Pays de la fête",
+    "edition": "Édition",
+    "editionYears": "{year} — {years} ans"
   },
   "elements": {
     "shapes": "Formes",

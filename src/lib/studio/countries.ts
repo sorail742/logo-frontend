@@ -412,6 +412,57 @@ export const COUNTRIES: Country[] = [
   },
 ];
 
+/**
+ * Devises nationales, dans la langue officielle du pays (omises quand il n'y en a pas d'officielle
+ * ou qu'elle est incertaine) : ligne facultative des modèles d'indépendance.
+ */
+const MOTTOS: Record<string, string> = {
+  GN: "Travail – Justice – Solidarité",
+  SN: "Un Peuple – Un But – Une Foi",
+  ML: "Un Peuple – Un But – Une Foi",
+  CI: "Union – Discipline – Travail",
+  SL: "Unity – Freedom – Justice",
+  LR: "The love of liberty brought us here",
+  BF: "La Patrie ou la mort, nous vaincrons",
+  NE: "Fraternité – Travail – Progrès",
+  TD: "Unité – Travail – Progrès",
+  BJ: "Fraternité – Justice – Travail",
+  TG: "Travail – Liberté – Patrie",
+  CM: "Paix – Travail – Patrie",
+  GA: "Union – Travail – Justice",
+  CG: "Unité – Travail – Progrès",
+  GH: "Freedom and Justice",
+  NG: "Unity and Faith, Peace and Progress",
+  GM: "Progress – Peace – Prosperity",
+  GW: "Unidade – Luta – Progresso",
+  MR: "Honneur – Fraternité – Justice",
+  MA: "Dieu – La Patrie – Le Roi",
+  DZ: "Par le peuple et pour le peuple",
+  TN: "Liberté – Ordre – Justice",
+  MG: "Fitiavana – Tanindrazana – Fandrosoana",
+  RW: "Unité – Travail – Patriotisme",
+  HT: "L’union fait la force",
+  US: "In God We Trust",
+  BR: "Ordem e Progresso",
+  AR: "En unión y libertad",
+  CO: "Libertad y Orden",
+  PE: "Firme y feliz por la unión",
+  ID: "Bhinneka Tunggal Ika",
+  IN: "Satyameva Jayate",
+  PK: "Iman – Ittihad – Nazm",
+  FR: "Liberté – Égalité – Fraternité",
+  BE: "L’union fait la force",
+  CA: "D’un océan à l’autre",
+  DE: "Einigkeit und Recht und Freiheit",
+  ES: "Plus Ultra",
+  NL: "Je maintiendrai",
+};
+
+/** Devise nationale du pays, s'il en a une. */
+export function nationalMotto(code: string) {
+  return MOTTOS[code] ?? null;
+}
+
 export function getCountry(code: string | null | undefined) {
   return COUNTRIES.find((c) => c.code === code) ?? COUNTRIES[0];
 }
@@ -618,10 +669,28 @@ export function flagPalette(flag: Flag) {
   ];
 }
 
+/** Bandes au plus dans des lettres aux couleurs d'un drapeau (lettrage « drapeau »). */
+export const MAX_FLAG_BANDS = 7;
+
+/** Bandes de lettres d'un drapeau : ses bandes verticales ou horizontales, sinon toutes ses couleurs. */
+export function flagBands(flag: Flag): { colors: string[]; angle: number } {
+  if (flag.layout === "horizontal") return { colors: flag.colors.slice(0, MAX_FLAG_BANDS), angle: 90 };
+  if (flag.layout === "vertical") return { colors: flag.colors.slice(0, MAX_FLAG_BANDS), angle: 0 };
+  return { colors: flagPalette(flag).slice(0, MAX_FLAG_BANDS), angle: 0 };
+}
+
 /** Couleurs vives d'un drapeau (sans le blanc), pour les confettis. */
 export function flagColors(flag: Flag) {
   const vivid = flagPalette(flag).filter((c) => c !== "#ffffff");
   return vivid.length ? vivid : ["#111111"];
+}
+
+/** Célébration d'une année donnée : date et nombre d'années depuis l'origine. */
+export function celebrationOf(country: Country, year: number) {
+  return {
+    date: new Date(year, country.month - 1, country.day),
+    years: country.year ? year - country.year : null,
+  };
 }
 
 /** Prochaine célébration (aujourd'hui compris) : date et nombre d'années depuis l'origine. */
@@ -629,8 +698,5 @@ export function nextCelebration(country: Country, today = new Date()) {
   const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   let year = today.getFullYear();
   if (new Date(year, country.month - 1, country.day) < start) year += 1;
-  return {
-    date: new Date(year, country.month - 1, country.day),
-    years: country.year ? year - country.year : null,
-  };
+  return celebrationOf(country, year);
 }

@@ -103,7 +103,27 @@
     "forward": "Avancer",
     "backward": "Reculer",
     "remove": "Supprimer",
-    "noLayers": "Aucune impression sur cette vue."
+    "noLayers": "Aucune impression sur cette vue.",
+    "kits": "T-shirts de fête",
+    "kitNames": {
+      "independence": "Indépendance",
+      "birthday": "Anniversaire",
+      "graduation": "Promo",
+      "team": "Team"
+    },
+    "kitCountry": "Pays de la fête",
+    "kitsHint": "Drapeau, nom du pays en lettres drapeau, années et devise, ou textes d’anniversaire, de promo et de « Team » : chaque élément se modifie ensuite.",
+    "kitCopy": {
+      "years": "{years} ANS",
+      "birthday": "Joyeux anniversaire",
+      "name": "PRÉNOM",
+      "age": "30",
+      "promo": "PROMO {year}",
+      "school": "NOM DE L’ÉCOLE",
+      "graduate": "Diplômé",
+      "team": "TEAM",
+      "teamName": "Mariée"
+    }
   },
   "inspector": {
     "title": "Propriétés",

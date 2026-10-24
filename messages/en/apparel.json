@@ -103,7 +103,27 @@
     "forward": "Bring forward",
     "backward": "Send backward",
     "remove": "Delete",
-    "noLayers": "Nothing printed on this view."
+    "noLayers": "Nothing printed on this view.",
+    "kits": "Celebration tees",
+    "kitNames": {
+      "independence": "Independence",
+      "birthday": "Birthday",
+      "graduation": "Class of",
+      "team": "Team"
+    },
+    "kitCountry": "Country of the celebration",
+    "kitsHint": "Flag, country name in flag lettering, years and motto, or birthday, class and “Team” texts: every element stays editable.",
+    "kitCopy": {
+      "years": "{years} YEARS",
+      "birthday": "Happy birthday",
+      "name": "NAME",
+      "age": "30",
+      "promo": "CLASS OF {year}",
+      "school": "SCHOOL NAME",
+      "graduate": "Graduate",
+      "team": "TEAM",
+      "teamName": "Bride"
+    }
   },
   "inspector": {
     "title": "Properties",

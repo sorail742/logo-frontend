@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Minus, Plus } from "lucide-react";
 import { cssFontFamily } from "@/lib/render/fonts";
 import { contrastRatio, readableOn } from "@/lib/render/color";
-import { COUNTRIES, flagPalette, getCountry, type Flag } from "@/lib/studio/countries";
+import { COUNTRIES, MAX_FLAG_BANDS, flagBands, getCountry } from "@/lib/studio/countries";
 import {
   LETTERING_PRESETS,
   PATTERN_KINDS,
@@ -26,19 +26,10 @@ import { NumberField } from "./fields";
 import { ColorPicker } from "./paint-picker";
 
 const NO_COLORS: string[] = [];
-/** Bandes au plus dans les lettres (couleur principale et six autres). */
-const MAX_BANDS = 7;
 /** Textures orientables (angle réglable). */
 const ANGLED = new Set<PatternKind>(["stripes", "claws", "bands", "holo"]);
 /** Peintures sans motif : pas de taille de motif à régler. */
 const PAINTED = new Set<PatternKind>(["bands", "holo"]);
-
-/** Bandes de lettres d'un drapeau : ses bandes verticales ou horizontales, sinon toutes ses couleurs. */
-function flagBands(flag: Flag): FlagBands {
-  if (flag.layout === "horizontal") return { colors: flag.colors.slice(0, MAX_BANDS), angle: 90 };
-  if (flag.layout === "vertical") return { colors: flag.colors.slice(0, MAX_BANDS), angle: 0 };
-  return { colors: flagPalette(flag).slice(0, MAX_BANDS), angle: 0 };
-}
 
 /** Bandes après la première, repérées par leur position (deux bandes peuvent avoir la même couleur). */
 const bandSlots = (colors: string[] | undefined) =>
@@ -399,7 +390,7 @@ export function LetteringControls({
               </button>
             </span>
           ))}
-          {(effects.pattern.colors?.length ?? 0) + 1 < MAX_BANDS && (
+          {(effects.pattern.colors?.length ?? 0) + 1 < MAX_FLAG_BANDS && (
             <button
               type="button"
               title={t("addBand")}

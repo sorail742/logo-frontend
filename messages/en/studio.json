@@ -244,7 +244,11 @@
       "new-year-gold": "Golden New Year",
       "graduation-cap": "Graduation",
       "christmas-tree": "Merry Christmas",
-      "baby-welcome": "Birth and naming"
+      "baby-welcome": "Birth and naming",
+      "independence-photo": "Independence — photo frame",
+      "birthday-photo": "Birthday — photo frame",
+      "wedding-photo": "Wedding — photo frame",
+      "graduation-photo": "Graduate — photo frame"
     },
     "pages": "{count} pages",
     "applied": "Template applied",
@@ -344,7 +348,9 @@
       "babyName": "Aminata",
       "babyBody": "Born on November 8, to the great joy of her parents."
     },
-    "country": "Country of the celebration"
+    "country": "Country of the celebration",
+    "edition": "Edition",
+    "editionYears": "{year} — {years} years"
   },
   "elements": {
     "shapes": "Shapes",

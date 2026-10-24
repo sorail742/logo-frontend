@@ -1,7 +1,16 @@
 import { contrastRatio, luminance, mix } from "@/lib/render/color";
 import type { FontChoice } from "./brand";
 import { readableFrom } from "./color";
-import { flagColors, flagPalette, flagSvg, getCountry, nextCelebration, type Country } from "./countries";
+import {
+  celebrationOf,
+  flagColors,
+  flagPalette,
+  flagSvg,
+  getCountry,
+  nationalMotto,
+  nextCelebration,
+  type Country,
+} from "./countries";
 import {
   balloons,
   bunting,
@@ -67,11 +76,17 @@ export interface Occasion {
   /** Année du prochain nouvel an et année en cours (promotion). */
   newYear: number;
   year: number;
+  /** Devise nationale, s'il y en a une. */
+  motto: string | null;
 }
 
-export function occasionFor(code: string, locale = "fr", today = new Date()): Occasion {
+/**
+ * Fête choisie : celle du pays `code`, la prochaine ou celle de l'année `edition` (édition passée
+ * ou à venir : 67e, 68e anniversaire…).
+ */
+export function occasionFor(code: string, locale = "fr", today = new Date(), edition?: number): Occasion {
   const country = getCountry(code);
-  const next = nextCelebration(country, today);
+  const next = edition ? celebrationOf(country, edition) : nextCelebration(country, today);
   const long = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" });
   const short = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long" });
   let name = country.code;
@@ -88,7 +103,8 @@ export function occasionFor(code: string, locale = "fr", today = new Date()): Oc
     since: country.year ? long.format(new Date(country.year, country.month - 1, country.day)) : null,
     years: next.years,
     newYear: today.getMonth() >= 6 ? today.getFullYear() + 1 : today.getFullYear(),
-    year: today.getFullYear(),
+    year: edition ?? today.getFullYear(),
+    motto: nationalMotto(country.code),
   };
 }
 
@@ -227,6 +243,18 @@ const caps = (font: FontChoice, size: number, color: string, spacing = 0.2) =>
 
 // ─── Indépendance et fête nationale ───
 
+/** Devise nationale entre guillemets, en italique de fête, si le pays en a une. */
+function mottoLine(o: Occasion, size: number, color: string, width: number) {
+  if (!o.motto) return null;
+  return single(
+    text(
+      `« ${o.motto} »`,
+      { size, color, font: SERIF, align: "center", lineHeight: 1.2, role: "info" },
+      width,
+    ),
+  );
+}
+
 const independenceFlag: StudioTemplate = {
   id: "independence-flag",
   category: "celebration",
@@ -323,6 +351,7 @@ const independenceFlag: StudioTemplate = {
               ),
             )
           : null,
+        mottoLine(o, 3.4 * u * k, accent, t.width),
         single(
           text(
             copy.independenceBody,
@@ -432,6 +461,7 @@ const independenceBunting: StudioTemplate = {
               ),
             )
           : null,
+        mottoLine(o, 3.4 * u * k, accent, width),
         single(
           text(
             copy.independenceBody,
@@ -1154,15 +1184,418 @@ const graduationCapTemplate: StudioTemplate = {
   },
 };
 
+// ─── Cadres photo : la photo de la personne fêtée, importée dans le cadre ───
+
+/** Anneau aux couleurs du drapeau (arcs égaux, de midi dans le sens des aiguilles), autour d'un cadre rond. */
+function flagRing(colors: string[], thickness: number) {
+  const size = 200;
+  const r = (size - thickness) / 2;
+  const c = size / 2;
+  const at = (deg: number) => {
+    const a = ((deg - 90) * Math.PI) / 180;
+    return `${(c + r * Math.cos(a)).toFixed(2)} ${(c + r * Math.sin(a)).toFixed(2)}`;
+  };
+  const step = 360 / colors.length;
+  const arcs =
+    colors.length === 1
+      ? `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${colors[0]}" stroke-width="${thickness}"/>`
+      : colors
+          .map(
+            (color, i) =>
+              `<path d="M${at(i * step)}A${r} ${r} 0 ${step > 180 ? 1 : 0} 1 ${at((i + 1) * step)}" fill="none" stroke="${color}" stroke-width="${thickness}"/>`,
+          )
+          .join("");
+  return {
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}">${arcs}</svg>`,
+    width: size,
+    height: size,
+  };
+}
+
+interface PhotoLayout {
+  /** Cadre photo et zone de texte, côte à côte (formats larges) ou empilés. */
+  photo: Box;
+  text: { x: number; width: number; top: number; bottom: number };
+  wide: boolean;
+}
+
+/** Cadre photo carré (rond) ou en portrait (arche, rectangle) et zone de texte. */
+function photoLayout(f: Frame, shape: "ellipse" | "arch" | "rect"): PhotoLayout {
+  const wide = f.o === "banner" || f.o === "landscape";
+  const ratio = shape === "ellipse" ? 1 : 0.8;
+  if (wide) {
+    const height = f.h - 2 * f.m;
+    const width = Math.min(height * ratio, f.w * 0.42);
+    return {
+      wide,
+      photo: { width, x: f.m, y: (f.h - width / ratio) / 2, height: width / ratio },
+      text: { x: f.m * 2 + width, width: f.w - width - f.m * 3, top: f.m * 0.6, bottom: f.h - f.m * 0.6 },
+    };
+  }
+  const height = f.h * (f.o === "story" ? 0.42 : 0.46);
+  const width = Math.min(height * ratio, f.w - 2 * f.m);
+  const photo = { width, x: (f.w - width) / 2, y: f.m, height: width / ratio };
+  return {
+    wide,
+    photo,
+    text: { x: f.m, width: f.w - 2 * f.m, top: photo.y + photo.height + 3 * f.u, bottom: f.h - f.m * 0.8 },
+  };
+}
+
+/** Cadre photo : une photo importée pendant qu'il est sélectionné (ou déposée dessus) le remplit. */
+const photoShape = (shape: "ellipse" | "arch" | "rect", box: Box, color: string, radius = 0) =>
+  createShape(shape, { ...box, fill: solid(color), radius, role: "photo" });
+
+const independencePhoto: StudioTemplate = {
+  id: "independence-photo",
+  category: "celebration",
+  build(ctx) {
+    const f = frame(ctx);
+    const u = textUnit(f);
+    const { brand, copy } = ctx;
+    const o = occasionOf(ctx);
+    const { flag } = o.country;
+    const vivid = flagColors(flag);
+    const deep = [...vivid].sort((a, b) => luminance(a) - luminance(b))[0];
+    const bg = mix(deep, "#000000", 0.66);
+    const accent = brightOn(vivid, bg, 3.5);
+    const layout = photoLayout(f, "ellipse");
+    const p = layout.photo;
+    const ring = 3.2 * f.u;
+    const ringBox = { x: p.x - ring, y: p.y - ring, width: p.width + ring * 2, height: p.height + ring * 2 };
+    const badge = p.width * 0.3;
+    const decor: DesignElement[] = [
+      place(sunburst(accent), square(center(p), p.width * 1.9), "contain", { opacity: 0.1 }),
+      photoShape("ellipse", p, mix(accent, bg, 0.55)),
+      place(flagRing(flagPalette(flag), 14), ringBox),
+      createSvg(flagSvg(flag), "graphic", {
+        x: p.x + p.width - badge * 0.9,
+        y: p.y + p.height - badge * 0.62,
+        width: badge,
+        height: badge / 1.5,
+        rotation: -6,
+        role: "decor",
+      }),
+    ];
+    const t = layout.text;
+    const independence = o.years !== null;
+    const content = column(
+      (k) => [
+        single(
+          label(independence ? copy.independenceKicker : copy.nationalKicker, {
+            ...caps(brand.body, 3.2 * u * k, accent, 0.18),
+            font: { ...brand.body, fontWeight: 700 },
+          }),
+        ),
+        single(
+          lettered(
+            independence ? `${o.years} ${copy.independenceYears}` : o.dayMonth,
+            ROUND,
+            11 * u * k,
+            t.width,
+            {
+              fill: solid(accent),
+              outline: "#ffffff",
+              depth: mix(deep, "#000000", 0.35),
+            },
+          ),
+        ),
+        single(
+          fitLines(
+            text(
+              o.name,
+              {
+                font: brand.heading,
+                size: 7.5 * u * k,
+                color: "#ffffff",
+                align: "center",
+                lineHeight: 1.05,
+                role: "title",
+              },
+              t.width,
+            ),
+            2,
+          ),
+        ),
+        mottoLine(o, 3.2 * u * k, mix("#ffffff", bg, 0.15), t.width),
+        single(
+          text(
+            o.date,
+            {
+              font: brand.body,
+              size: 3.2 * u * k,
+              color: mix("#ffffff", bg, 0.25),
+              align: "center",
+              role: "info",
+            },
+            t.width,
+          ),
+        ),
+        single(logo(brand, bg, 5 * u * k, t.width * 0.35)),
+      ],
+      t,
+      { align: "center", valign: layout.wide ? "center" : "start", gap: 1.8 * f.u },
+    );
+    return [page(solid(bg), [...decor, ...content, ...flagBand(ctx, f, flagPalette(flag), 1.4 * f.u)])];
+  },
+};
+
+const birthdayPhoto: StudioTemplate = {
+  id: "birthday-photo",
+  category: "celebration",
+  build(ctx) {
+    const f = frame(ctx);
+    const u = textUnit(f);
+    const { brand, copy } = ctx;
+    const colors = partyColors(ctx);
+    const primary = brand.colors.primary;
+    const bg = mix(primary, "#ffffff", 0.88);
+    const ink = readableFrom([brand.colors.text, primary, "#1f2937"], bg);
+    const title = readableFrom([primary, brand.colors.text], bg, 3);
+    const gold = brightOn(colors.slice(1), bg, 1.8, "#f59e0b");
+    const layout = photoLayout(f, "ellipse");
+    const p = layout.photo;
+    const decor: DesignElement[] = [
+      place(balloons(colors, { seed: 5, count: 3 }), {
+        x: p.x - p.width * 0.42,
+        y: p.y - p.height * 0.08,
+        width: p.width * 0.5,
+        height: p.height * 0.9,
+      }),
+      place(balloons([...colors].reverse(), { seed: 8, count: 3 }), {
+        x: p.x + p.width * 0.92,
+        y: p.y + p.height * 0.1,
+        width: p.width * 0.5,
+        height: p.height * 0.9,
+      }),
+      createShape("ellipse", {
+        x: p.x - 1.6 * f.u,
+        y: p.y - 1.6 * f.u,
+        width: p.width + 3.2 * f.u,
+        height: p.height + 3.2 * f.u,
+        fill: solid(gold),
+        role: "decor",
+      }),
+      photoShape("ellipse", p, mix(primary, bg, 0.65)),
+    ];
+    const t = layout.text;
+    const content = column(
+      (k) => [
+        single(
+          fitLines(
+            text(
+              copy.birthdayTitle,
+              {
+                font: PARTY,
+                size: 7.5 * u * k,
+                color: title,
+                align: "center",
+                lineHeight: 1.2,
+                role: "title",
+              },
+              t.width,
+            ),
+            2,
+          ),
+        ),
+        single(
+          fitLines(
+            text(
+              copy.birthdayName,
+              {
+                font: brand.heading,
+                size: 7 * u * k,
+                color: ink,
+                align: "center",
+                lineHeight: 1.05,
+                role: "subtitle",
+              },
+              t.width,
+            ),
+            2,
+          ),
+        ),
+        single(
+          lettered(copy.birthdayAge, ROUND, 14 * u * k, t.width * 0.6, {
+            fill: solid(gold),
+            outline: "#ffffff",
+            depth: mix(primary, "#000000", 0.25),
+          }),
+        ),
+        single(logo(brand, bg, 4.5 * u * k, t.width * 0.3)),
+      ],
+      t,
+      { align: "center", valign: layout.wide ? "center" : "start", gap: 1.8 * f.u },
+    );
+    const confettis = scatter(
+      (size) => confetti(colors, { ...size, seed: 31, count: 50 }),
+      full(f),
+      bounds([...content, ...decor], 1.2 * f.u),
+    );
+    return [page(solid(bg), [confettis, ...decor, ...content])];
+  },
+};
+
+const weddingPhoto: StudioTemplate = {
+  id: "wedding-photo",
+  category: "celebration",
+  build(ctx) {
+    const f = frame(ctx);
+    const u = textUnit(f);
+    const { copy } = ctx;
+    const bg = "#fbf8f3";
+    const gold = "#b8912f";
+    const ink = "#3f3a33";
+    const layout = photoLayout(f, "arch");
+    const p = layout.photo;
+    const edge = 1.4 * f.u;
+    const decor: DesignElement[] = [
+      createShape("arch", {
+        x: p.x - edge,
+        y: p.y - edge,
+        width: p.width + edge * 2,
+        height: p.height + edge * 2,
+        fill: solid("#ffffff"),
+        stroke: { color: gold, width: 0.5 * f.u },
+        role: "decor",
+      }),
+      photoShape("arch", p, "#e9e1d3"),
+    ];
+    const t = layout.text;
+    const content = column(
+      (k) => [
+        single(label(copy.weddingKicker, caps(SERIF, 3.2 * u * k, gold, 0.3))),
+        single(
+          fitLines(
+            text(
+              copy.weddingNames,
+              { font: SCRIPT, size: 11 * u * k, color: ink, align: "center", lineHeight: 1.1, role: "title" },
+              t.width,
+            ),
+            2,
+          ),
+        ),
+        single(place(flourish(gold), { x: 0, y: 0, width: t.width * 0.5, height: 5 * u * k })),
+        single(label(copy.weddingDate, caps(ELEGANT, 3.6 * u * k, ink, 0.12))),
+        single(
+          text(
+            copy.weddingPlace,
+            { font: SERIF, size: 3.6 * u * k, color: mix(ink, bg, 0.2), align: "center", role: "info" },
+            t.width,
+          ),
+        ),
+      ],
+      t,
+      { align: "center", valign: layout.wide ? "center" : "start", gap: 1.8 * f.u },
+    );
+    return [page(solid(bg), [...decor, ...content])];
+  },
+};
+
+const graduationPhoto: StudioTemplate = {
+  id: "graduation-photo",
+  category: "celebration",
+  build(ctx) {
+    const f = frame(ctx);
+    const u = textUnit(f);
+    const { brand, copy } = ctx;
+    const o = occasionOf(ctx);
+    const primary = brand.colors.primary;
+    const bg = luminance(primary) < 0.2 ? primary : mix(primary, "#0f172a", 0.62);
+    const gold = "#f5b301";
+    const layout = photoLayout(f, "rect");
+    const p = layout.photo;
+    const cap = p.width * 0.42;
+    const decor: DesignElement[] = [
+      createShape("rect", {
+        x: p.x + 1.8 * f.u,
+        y: p.y + 1.8 * f.u,
+        width: p.width,
+        height: p.height,
+        radius: 2 * f.u,
+        fill: solid(gold),
+        role: "decor",
+      }),
+      photoShape("rect", p, mix(primary, "#ffffff", 0.3), 2 * f.u),
+      place(
+        graduationCap("#111827", gold),
+        { x: p.x - cap * 0.3, y: p.y - cap * 0.42, width: cap, height: cap * 0.75 },
+        "contain",
+        {
+          rotation: -14,
+        },
+      ),
+    ];
+    const t = layout.text;
+    const content = column(
+      (k) => [
+        single(label(copy.graduationKicker, caps(brand.body, 3.2 * u * k, gold, 0.2))),
+        single(
+          fitLines(
+            text(
+              copy.graduationName,
+              {
+                font: brand.heading,
+                size: 8 * u * k,
+                color: "#ffffff",
+                align: "center",
+                lineHeight: 1.05,
+                role: "title",
+              },
+              t.width,
+            ),
+            2,
+          ),
+        ),
+        single(
+          lettered(copy.graduationClass.replace("{year}", String(o.year)), ROUND, 7 * u * k, t.width, {
+            fill: solid(gold),
+            outline: "#ffffff",
+            depth: mix(bg, "#000000", 0.4),
+          }),
+        ),
+        single(
+          text(
+            copy.graduationDegree,
+            {
+              font: brand.body,
+              size: 3.6 * u * k,
+              color: mix("#ffffff", bg, 0.12),
+              align: "center",
+              lineHeight: 1.3,
+              role: "body",
+            },
+            t.width * 0.9,
+          ),
+        ),
+        single(logo(brand, bg, 4.5 * u * k, t.width * 0.3)),
+      ],
+      t,
+      { align: "center", valign: layout.wide ? "center" : "start", gap: 1.8 * f.u },
+    );
+    const confettis = scatter(
+      (size) => confetti([gold, "#ffffff", brand.colors.secondary], { ...size, seed: 41, count: 45 }),
+      full(f),
+      bounds([...content, ...decor], 1.2 * f.u),
+      { opacity: 0.8 },
+    );
+    return [page(solid(bg), [confettis, ...decor, ...content])];
+  },
+};
+
 export const CELEBRATION_TEMPLATES: StudioTemplate[] = [
   independenceFlag,
   independenceBunting,
+  independencePhoto,
   birthdayBalloons,
+  birthdayPhoto,
   weddingElegant,
+  weddingPhoto,
   eidMubarak,
   ramadanKareem,
   newYearGold,
   graduationCapTemplate,
+  graduationPhoto,
   christmasCard,
   babyWelcome,
 ];

@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { NativeSelect } from "@/components/common/native-select";
 import { CELEBRATION_FONTS, CELEBRATION_TEMPLATES, occasionFor } from "@/lib/studio/celebrations";
-import { COUNTRIES, getCountry } from "@/lib/studio/countries";
+import { COUNTRIES, getCountry, nextCelebration } from "@/lib/studio/countries";
 import { clonePage } from "@/lib/studio/doc";
 import { renderPage } from "@/lib/studio/render";
 import { TEMPLATE_CATEGORIES, TEMPLATES, suggestedTemplates, type TemplateCategory, type TemplateCopy } from "@/lib/studio/templates";
@@ -35,6 +35,13 @@ export function TemplatesPanel() {
   const [category, setCategory] = useState<TemplateCategory | "all">("all");
   const [ready, setReady] = useState(false);
   const [country, setCountry] = useState(() => getCountry(userCountry).code);
+  // Édition de la fête : la prochaine par défaut, ou une année passée ou à venir (67e, 69e…).
+  const [edition, setEdition] = useState<number | null>(null);
+  const editions = useMemo(() => {
+    const target = getCountry(country);
+    const next = nextCelebration(target).date.getFullYear();
+    return [next - 1, next, next + 1, next + 2].map((year) => ({ year, years: target.year ? year - target.year : null }));
+  }, [country]);
   const countries = useMemo(() => {
     const names = new Intl.DisplayNames([locale], { type: "region" });
     return COUNTRIES.map((c) => ({ code: c.code, name: names.of(c.code) ?? c.code })).sort((a, b) => a.name.localeCompare(b.name, locale));
@@ -55,7 +62,7 @@ export function TemplatesPanel() {
   const built = useMemo(() => {
     if (!brand || !ready || !width) return [];
     const suggested = suggestedTemplates(format);
-    const occasion = occasionFor(country, locale);
+    const occasion = occasionFor(country, locale, new Date(), edition ?? undefined);
     const ordered = [...TEMPLATES, ...CELEBRATION_TEMPLATES].sort((a, b) => {
       const ia = suggested.indexOf(a.id);
       const ib = suggested.indexOf(b.id);
@@ -63,7 +70,7 @@ export function TemplatesPanel() {
     });
     return ordered.map((template) => ({ template, pages: template.build({ brand, width, height, print, copy, locale, occasion }) }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, ready, width, height, print, format, country, locale]);
+  }, [brand, ready, width, height, print, format, country, locale, edition]);
 
   const apply = (pages: DesignPage[]) => {
     const state = useStudio.getState();
@@ -98,10 +105,33 @@ export function TemplatesPanel() {
       {category === "celebration" && (
         <label className="grid gap-1 text-[11px] text-muted-foreground">
           {t("country")}
-          <NativeSelect value={country} onChange={(e) => setCountry(e.target.value)} className="h-8 text-xs">
+          <NativeSelect
+            value={country}
+            onChange={(e) => {
+              setCountry(e.target.value);
+              setEdition(null);
+            }}
+            className="h-8 text-xs"
+          >
             {countries.map((c) => (
               <option key={c.code} value={c.code}>
                 {c.name}
+              </option>
+            ))}
+          </NativeSelect>
+        </label>
+      )}
+      {category === "celebration" && (
+        <label className="grid gap-1 text-[11px] text-muted-foreground">
+          {t("edition")}
+          <NativeSelect
+            value={edition ?? editions[1].year}
+            onChange={(e) => setEdition(Number(e.target.value))}
+            className="h-8 text-xs"
+          >
+            {editions.map((e) => (
+              <option key={e.year} value={e.year}>
+                {e.years === null ? e.year : t("editionYears", { year: e.year, years: e.years })}
               </option>
             ))}
           </NativeSelect>
