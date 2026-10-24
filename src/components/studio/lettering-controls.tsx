@@ -1,34 +1,56 @@
 "use client";
 
-import { useId, type ReactNode } from "react";
-import { useTranslations } from "next-intl";
+import { useId, useMemo, type ReactNode } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { Minus, Plus } from "lucide-react";
 import { cssFontFamily } from "@/lib/render/fonts";
 import { contrastRatio, readableOn } from "@/lib/render/color";
+import { COUNTRIES, flagPalette, getCountry, type Flag } from "@/lib/studio/countries";
 import {
   LETTERING_PRESETS,
   PATTERN_KINDS,
   letteringLayers,
   presetOf,
   presetStyle,
+  type FlagBands,
   type LetteringPreset,
   type LetteringStyle,
   type PatternKind,
+  type PresetColors,
   type TextEffects,
 } from "@/lib/studio/lettering";
+import { useSessionStore } from "@/stores/session";
 import { NativeSelect } from "@/components/common/native-select";
 import { cn } from "@/lib/utils";
 import { NumberField } from "./fields";
 import { ColorPicker } from "./paint-picker";
 
 const NO_COLORS: string[] = [];
+/** Bandes au plus dans les lettres (couleur principale et six autres). */
+const MAX_BANDS = 7;
+/** Textures orientables (angle réglable). */
+const ANGLED = new Set<PatternKind>(["stripes", "claws", "bands", "holo"]);
+/** Peintures sans motif : pas de taille de motif à régler. */
+const PAINTED = new Set<PatternKind>(["bands", "holo"]);
+
+/** Bandes de lettres d'un drapeau : ses bandes verticales ou horizontales, sinon toutes ses couleurs. */
+function flagBands(flag: Flag): FlagBands {
+  if (flag.layout === "horizontal") return { colors: flag.colors.slice(0, MAX_BANDS), angle: 90 };
+  if (flag.layout === "vertical") return { colors: flag.colors.slice(0, MAX_BANDS), angle: 0 };
+  return { colors: flagPalette(flag).slice(0, MAX_BANDS), angle: 0 };
+}
+
+/** Bandes après la première, repérées par leur position (deux bandes peuvent avoir la même couleur). */
+const bandSlots = (colors: string[] | undefined) =>
+  (colors ?? []).map((color, position) => ({ color, position }));
 
 /** Couleurs d'accent d'un préréglage : lisibles sur le remplissage, la marque en second. */
-function presetColors(fill: string, brandColors: string[]) {
+function presetColors(fill: string, brandColors: string[], flag: FlagBands): PresetColors {
   const accent = readableOn(fill);
   const second =
     brandColors.find((c) => contrastRatio(c, accent) >= 2 && contrastRatio(c, fill) >= 1.5) ??
     (accent === "#ffffff" ? "#111111" : "#ffffff");
-  return { accent, second };
+  return { accent, second, fill, flag };
 }
 
 /** Aperçu d'un préréglage : « 10 » en police de maillot. */
@@ -40,7 +62,7 @@ function PresetPreview({
 }: Readonly<{
   preset: LetteringPreset;
   fill: string;
-  colors: { accent: string; second: string };
+  colors: PresetColors;
   uid: string;
 }>) {
   const size = 26;
@@ -76,6 +98,22 @@ function PresetPreview({
   );
 }
 
+function Toggle({ on, onClick, children }: Readonly<{ on: boolean; onClick(): void; children: ReactNode }>) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={cn(
+        "hover:bg-muted h-8 shrink-0 rounded-md border px-2 text-[11px]",
+        on && "border-primary bg-accent",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 function LayerRow({ label, children }: Readonly<{ label: string; children: ReactNode }>) {
   return (
     <div className="grid gap-1.5">
@@ -108,8 +146,17 @@ export function LetteringControls({
   documentColors?: string[];
 }>) {
   const t = useTranslations("studio.lettering");
+  const locale = useLocale();
   const uid = useId().replaceAll(":", "");
-  const colors = presetColors(fill, brandColors);
+  const userCountry = useSessionStore((s) => s.user?.country);
+  const flag = useMemo(() => flagBands(getCountry(userCountry).flag), [userCountry]);
+  const countries = useMemo(() => {
+    const names = new Intl.DisplayNames([locale], { type: "region" });
+    return COUNTRIES.map((c) => ({ code: c.code, name: names.of(c.code) ?? c.code })).sort((a, b) =>
+      a.name.localeCompare(b.name, locale),
+    );
+  }, [locale]);
+  const colors = presetColors(fill, brandColors, flag);
   const active = presetOf(value);
   const { stroke } = value;
   const effects: TextEffects = value.effects ?? {};
@@ -189,22 +236,29 @@ export function LetteringControls({
           {thickness(t("width"), effects.outline2.width, (v) =>
             setEffects({ outline2: v ? { ...effects.outline2!, width: v } : null }, "lettering-o2-w"),
           )}
-          <button
-            type="button"
-            aria-pressed={Boolean(effects.outline2.notched)}
+          {/* Bord cranté ou dentelé : l'un exclut l'autre. */}
+          <Toggle
+            on={Boolean(effects.outline2.notched)}
             onClick={() =>
               setEffects(
-                { outline2: { ...effects.outline2!, notched: !effects.outline2!.notched } },
+                { outline2: { ...effects.outline2!, notched: !effects.outline2!.notched, dotted: false } },
                 "lettering-o2-n",
               )
             }
-            className={cn(
-              "hover:bg-muted h-8 shrink-0 rounded-md border px-2 text-[11px]",
-              effects.outline2.notched && "border-primary bg-accent",
-            )}
           >
             {t("notched")}
-          </button>
+          </Toggle>
+          <Toggle
+            on={Boolean(effects.outline2.dotted)}
+            onClick={() =>
+              setEffects(
+                { outline2: { ...effects.outline2!, dotted: !effects.outline2!.dotted, notched: false } },
+                "lettering-o2-d",
+              )
+            }
+          >
+            {t("dotted")}
+          </Toggle>
         </LayerRow>
       )}
       {effects.inline && (
@@ -231,6 +285,17 @@ export function LetteringControls({
             max={6}
             onChange={(v) => setEffects({ inline: { ...effects.inline!, lines: v } }, "lettering-in-l")}
           />
+          <Toggle
+            on={Boolean(effects.inline.dashed)}
+            onClick={() =>
+              setEffects(
+                { inline: { ...effects.inline!, dashed: !effects.inline!.dashed } },
+                "lettering-in-d",
+              )
+            }
+          >
+            {t("dashed")}
+          </Toggle>
         </LayerRow>
       )}
       {effects.extrude && (
@@ -262,12 +327,13 @@ export function LetteringControls({
             aria-label={t("pattern")}
             className="w-28 shrink-0"
             value={effects.pattern.kind}
-            onChange={(e) =>
-              setEffects(
-                { pattern: { ...effects.pattern!, kind: e.target.value as PatternKind } },
-                "lettering-pt-k",
-              )
-            }
+            onChange={(e) => {
+              const kind = e.target.value as PatternKind;
+              // Bandes : au moins deux couleurs, sinon les lettres resteraient unies.
+              const bandColors =
+                kind === "bands" && !effects.pattern!.colors?.length ? { colors: [colors.second] } : {};
+              setEffects({ pattern: { ...effects.pattern!, kind, ...bandColors } }, "lettering-pt-k");
+            }}
           >
             {PATTERN_KINDS.map((kind) => (
               <option key={kind} value={kind}>
@@ -275,13 +341,15 @@ export function LetteringControls({
               </option>
             ))}
           </NativeSelect>
-          {color(t("pattern"), effects.pattern.color, (c) =>
-            setEffects({ pattern: { ...effects.pattern!, color: c } }, "lettering-pt"),
-          )}
-          {thickness(t("patternSize"), effects.pattern.size, (v) =>
-            setEffects({ pattern: { ...effects.pattern!, size: Math.max(0.5, v) } }, "lettering-pt-s"),
-          )}
-          {(effects.pattern.kind === "stripes" || effects.pattern.kind === "claws") && (
+          {effects.pattern.kind !== "holo" &&
+            color(t("pattern"), effects.pattern.color, (c) =>
+              setEffects({ pattern: { ...effects.pattern!, color: c } }, "lettering-pt"),
+            )}
+          {!PAINTED.has(effects.pattern.kind) &&
+            thickness(t("patternSize"), effects.pattern.size, (v) =>
+              setEffects({ pattern: { ...effects.pattern!, size: Math.max(0.5, v) } }, "lettering-pt-s"),
+            )}
+          {ANGLED.has(effects.pattern.kind) && (
             <NumberField
               label="∠"
               title={t("angle")}
@@ -292,6 +360,107 @@ export function LetteringControls({
               suffix="°"
               onChange={(v) => setEffects({ pattern: { ...effects.pattern!, angle: v } }, "lettering-pt-a")}
             />
+          )}
+        </LayerRow>
+      )}
+      {effects.pattern?.kind === "bands" && (
+        <LayerRow label={t("bands")}>
+          {bandSlots(effects.pattern.colors).map(({ color: band, position: i }) => (
+            <span key={i} className="flex items-center gap-0.5">
+              {color(`${t("bands")} ${i + 2}`, band, (c) =>
+                setEffects(
+                  {
+                    pattern: {
+                      ...effects.pattern!,
+                      colors: effects.pattern!.colors!.map((old, k) => (k === i ? c : old)),
+                    },
+                  },
+                  "lettering-bd",
+                ),
+              )}
+              <button
+                type="button"
+                title={t("removeBand")}
+                aria-label={t("removeBand")}
+                onClick={() =>
+                  setEffects(
+                    {
+                      pattern: {
+                        ...effects.pattern!,
+                        colors: effects.pattern!.colors!.filter((_, k) => k !== i),
+                      },
+                    },
+                    "lettering-bd-r",
+                  )
+                }
+                className="hover:bg-muted text-muted-foreground grid size-6 place-items-center rounded"
+              >
+                <Minus className="size-3" aria-hidden="true" />
+              </button>
+            </span>
+          ))}
+          {(effects.pattern.colors?.length ?? 0) + 1 < MAX_BANDS && (
+            <button
+              type="button"
+              title={t("addBand")}
+              aria-label={t("addBand")}
+              onClick={() =>
+                setEffects(
+                  {
+                    pattern: {
+                      ...effects.pattern!,
+                      colors: [...(effects.pattern!.colors ?? []), colors.second],
+                    },
+                  },
+                  "lettering-bd-a",
+                )
+              }
+              className="hover:bg-muted grid size-8 place-items-center rounded-md border"
+            >
+              <Plus className="size-3.5" aria-hidden="true" />
+            </button>
+          )}
+          <NativeSelect
+            aria-label={t("flagOf")}
+            title={t("flagOf")}
+            className="w-36 shrink-0"
+            value=""
+            onChange={(e) => {
+              const bands = flagBands(getCountry(e.target.value).flag);
+              setEffects(
+                {
+                  pattern: {
+                    ...effects.pattern!,
+                    color: bands.colors[0],
+                    colors: bands.colors.slice(1),
+                    angle: bands.angle,
+                  },
+                },
+                "lettering-bd-f",
+              );
+            }}
+          >
+            <option value="" disabled>
+              {t("flagPick")}
+            </option>
+            {countries.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </NativeSelect>
+        </LayerRow>
+      )}
+      {effects.glow && (
+        <LayerRow label={t("glow")}>
+          {color(t("glow"), effects.glow.color, (c) =>
+            setEffects({ glow: { ...effects.glow!, color: c } }, "lettering-gl"),
+          )}
+          {thickness(
+            t("glowSize"),
+            effects.glow.size,
+            (v) => setEffects({ glow: v ? { ...effects.glow!, size: v } : null }, "lettering-gl-s"),
+            max,
           )}
         </LayerRow>
       )}

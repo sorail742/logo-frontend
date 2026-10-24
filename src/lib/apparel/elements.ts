@@ -42,16 +42,18 @@ export function textWidthMm(content: ApparelContent, heightMm: number) {
 function effectsWidthMm(effects: TextEffects | null | undefined) {
   if (!effects) return 0;
   const extrude = effects.extrude ? Math.abs(Math.cos((effects.extrude.angle * Math.PI) / 180)) * effects.extrude.depth : 0;
-  return (effects.outline2?.width ?? 0) * 2 + extrude;
+  return ((effects.outline2?.width ?? 0) + (effects.glow?.size ?? 0)) * 2 + extrude;
 }
 
 /** Famille de style des règles d'impression (STYLE_TECHNIQUES de l'API) d'après la forme du lettrage. */
 export function letteringFamily(stroke: unknown, effects: TextEffects | null | undefined) {
+  // Halo néon et reflet holographique : transparences, impression numérique seulement.
+  if (effects?.glow || effects?.pattern?.kind === "holo") return "GLOW";
   if (effects?.halftone) return "HALFTONE";
   if (effects?.pattern) return "TEXTURED";
   if (effects?.extrude) return "RIBBON_3D";
   if (effects?.inline) return "GEOMETRIC_INLINE";
-  if (effects?.outline2?.notched) return "NOTCHED";
+  if (effects?.outline2?.notched || effects?.outline2?.dotted) return "NOTCHED";
   if (effects?.outline2 || stroke) return "CLASSIC_OUTLINE";
   return undefined;
 }

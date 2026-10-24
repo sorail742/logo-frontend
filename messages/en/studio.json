@@ -1112,7 +1112,17 @@
       "stripes": "Stripes",
       "carbon": "Carbon",
       "distressed": "Distressed",
-      "claws": "Claws"
+      "claws": "Claws",
+      "stitched": "Stitched",
+      "scalloped": "Scalloped",
+      "neon": "Neon",
+      "flag": "Flag",
+      "twoTone": "Two-tone",
+      "holo": "Holographic",
+      "pixels": "Pixels",
+      "stars": "Stars",
+      "camo": "Camo",
+      "bands": "Color bands"
     },
     "outline": "Outline",
     "outline2": "Second outline",
@@ -1127,6 +1137,15 @@
     "notched": "Notched",
     "lines": "Number of lines",
     "pattern": "Texture",
-    "patternSize": "Pattern size"
+    "patternSize": "Pattern size",
+    "dotted": "Scalloped",
+    "dashed": "Stitched",
+    "glow": "Neon glow",
+    "glowSize": "Glow size",
+    "bands": "Band colors",
+    "addBand": "Add a band",
+    "removeBand": "Remove this band",
+    "flagOf": "Flag colors",
+    "flagPick": "Choose a country"
   }
 }

@@ -1112,7 +1112,17 @@
       "stripes": "Rayures",
       "carbon": "Carbone",
       "distressed": "Usé",
-      "claws": "Griffes"
+      "claws": "Griffes",
+      "stitched": "Couture",
+      "scalloped": "Dentelé",
+      "neon": "Néon",
+      "flag": "Drapeau",
+      "twoTone": "Deux tons",
+      "holo": "Holographique",
+      "pixels": "Pixels",
+      "stars": "Étoiles",
+      "camo": "Camouflage",
+      "bands": "Bandes de couleurs"
     },
     "outline": "Contour",
     "outline2": "Second contour",
@@ -1127,6 +1137,15 @@
     "notched": "Cranté",
     "lines": "Nombre de lignes",
     "pattern": "Texture",
-    "patternSize": "Taille du motif"
+    "patternSize": "Taille du motif",
+    "dotted": "Dentelé",
+    "dashed": "Couture",
+    "glow": "Halo néon",
+    "glowSize": "Taille du halo",
+    "bands": "Couleurs des bandes",
+    "addBand": "Ajouter une bande",
+    "removeBand": "Retirer cette bande",
+    "flagOf": "Couleurs du drapeau",
+    "flagPick": "Choisir un pays"
   }
 }
