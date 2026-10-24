@@ -60,6 +60,7 @@ import type {
   ApparelRoster,
   ApparelStatus,
   ApparelTemplate,
+  ProductionExportInput,
   PublicProof,
   RosterSummary,
   RulePreset,
@@ -87,7 +88,9 @@ export type ApiFeature =
   | "smsLogin"
   | "googleLogin"
   /** Exports du Studio produits par le serveur : PDF d'impression, SVG au texte vectorisé. */
-  | "studioExport";
+  | "studioExport"
+  /** Pack atelier du textile (planches de transfert, découpe, films) produit par le serveur. */
+  | "productionPack";
 
 export interface JobAccepted {
   jobId: string;
@@ -326,6 +329,8 @@ export interface ApiClient {
     revokeProof(did: string): Promise<{ revoked: true }>;
     publicProof(token: string): Promise<PublicProof>;
     approveProof(token: string, approverName: string): Promise<{ status: ApparelStatus; approvedAt: string | null }>;
+    /** Pack atelier : fichiers du support d'impression, un par joueur, fiche technique (tâche). */
+    productionExport(did: string, input: ProductionExportInput, idempotencyKey?: string): Promise<{ jobId: string; costCredits: number }>;
   };
 
   websites: {

@@ -316,6 +316,10 @@ export interface GenerationJob {
     provider?: string;
     /** Fournisseur de démonstration : visuels génératifs. */
     demo?: boolean;
+    /** Pack atelier : pièces, planches et points à vérifier. */
+    pieces?: number;
+    sheets?: number;
+    warnings?: string[];
   } | null;
   createdAt: string;
   finishedAt: string | null;

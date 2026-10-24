@@ -25,6 +25,64 @@ export const TECHNIQUES: PrintTechnique[] = [
   "EMBROIDERY",
 ];
 
+/**
+ * Support intermédiaire du pack atelier : ce n'est pas le vêtement qui sort de l'imprimante,
+ * mais le film, le papier ou le flex posé ensuite sous la presse (API : production-pack.ts).
+ */
+export type PrintSupport =
+  | "DTF_FILM"
+  | "TRANSFER_LIGHT"
+  | "TRANSFER_DARK"
+  | "SUBLIMATION_PAPER"
+  | "FLEX"
+  | "FLOCK"
+  | "SCREEN_FILM"
+  | "DTG"
+  | "EMBROIDERY";
+export type SheetFormat = "A4" | "A3" | "A3_PLUS" | "ROLL";
+
+/** Réglages conseillés de chaque support : miroir, planche, repères de coupe (mêmes que l'API). */
+export const SUPPORT_DEFAULTS: Record<
+  PrintSupport,
+  { mirror: boolean; sheet: SheetFormat | null; rollWidthMm?: number; cutMarks: boolean }
+> = {
+  DTF_FILM: { mirror: false, sheet: "ROLL", rollWidthMm: 580, cutMarks: false },
+  TRANSFER_LIGHT: { mirror: true, sheet: "A4", cutMarks: true },
+  TRANSFER_DARK: { mirror: false, sheet: "A4", cutMarks: true },
+  SUBLIMATION_PAPER: { mirror: true, sheet: "A3", cutMarks: false },
+  FLEX: { mirror: true, sheet: "ROLL", rollWidthMm: 500, cutMarks: false },
+  FLOCK: { mirror: true, sheet: "ROLL", rollWidthMm: 500, cutMarks: false },
+  SCREEN_FILM: { mirror: false, sheet: null, cutMarks: false },
+  DTG: { mirror: false, sheet: null, cutMarks: false },
+  EMBROIDERY: { mirror: false, sheet: null, cutMarks: false },
+};
+export const PRINT_SUPPORTS = Object.keys(SUPPORT_DEFAULTS) as PrintSupport[];
+
+/** Support conseillé pour la technique de la tenue. */
+export const TECHNIQUE_SUPPORT: Record<PrintTechnique, PrintSupport> = {
+  DTF: "DTF_FILM",
+  DTG: "DTG",
+  SUBLIMATION: "SUBLIMATION_PAPER",
+  HEAT_TRANSFER_VINYL: "FLEX",
+  FLOCK: "FLOCK",
+  SCREEN_PRINT: "SCREEN_FILM",
+  EMBROIDERY: "EMBROIDERY",
+};
+
+export interface ProductionExportInput {
+  support?: PrintSupport;
+  mirror?: boolean;
+  sheetFormat?: SheetFormat;
+  rollWidthMm?: number;
+  rollPageMm?: number;
+  cutMarks?: boolean;
+  /** Joueurs à exporter ; tout l'effectif par défaut. */
+  entryIds?: string[];
+  /** Sans effectif : nombre de vêtements identiques et leur taille. */
+  copies?: number;
+  copiesSize?: string;
+}
+
 export interface PrintZone {
   key: string;
   view: GarmentView;
@@ -127,6 +185,8 @@ export interface RulePreset {
 }
 
 export interface RosterEntry {
+  /** Identifiant attribué par l'API (export d'un seul joueur, TEX-44). */
+  id?: string;
   playerName: string;
   /** Nom imprimé au dos. */
   displayName: string;

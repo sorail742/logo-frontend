@@ -546,7 +546,7 @@ function kitToDto(kit: ReturnType<typeof db>["brandKits"][number]): BrandKit {
 
 export const mockClient: ApiClient = {
   mode: "mock",
-  isAvailable: (feature) => feature !== "googleLogin" && feature !== "studioExport",
+  isAvailable: (feature) => feature !== "googleLogin" && feature !== "studioExport" && feature !== "productionPack",
 
   auth: {
     async register({ fullName, email, password }) {
@@ -1406,6 +1406,9 @@ export const mockClient: ApiClient = {
       Object.assign(design, { status: "APPROVED", approvedAt: now() });
       saveApparel(apparelDesigns());
       return { status: design.status, approvedAt: design.approvedAt };
+    },
+    async productionExport() {
+      throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Le pack atelier (planches de transfert, découpe, films) est produit par le serveur de la plateforme.");
     },
   },
 

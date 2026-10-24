@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { FileImage, Images, Loader2, Printer } from "lucide-react";
+import { FileImage, Images, Loader2, PackageCheck, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +21,11 @@ import { renderElement } from "@/lib/studio/render";
 import { useApparel } from "@/stores/apparel";
 import { useSizing } from "./canvas";
 import { useApparelEditor } from "./editor";
+import { ProductionDialog } from "./production-dialog";
 
 // Exports : maquette de la vue (présentation au client), planche de toutes les vues et fichiers
-// d'impression par zone — PNG à 300 dpi, fond transparent, à la taille réelle.
+// d'impression par zone — PNG à 300 dpi, fond transparent, à la taille réelle — et pack atelier
+// (supports de transfert, découpe, films, un fichier par joueur), produit par l'API.
 
 const MOCKUP_SIZE = 2400;
 const BOARD_GAP = 60;
@@ -34,6 +36,7 @@ export function ExportMenu({ children }: Readonly<{ children: ReactNode }>) {
   const { template } = useApparelEditor();
   const sizing = useSizing(template);
   const [busy, setBusy] = useState(false);
+  const [production, setProduction] = useState(false);
 
   const run = async (task: () => Promise<void>) => {
     setBusy(true);
@@ -128,33 +131,43 @@ export function ExportMenu({ children }: Readonly<{ children: ReactNode }>) {
     });
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" size="sm" disabled={busy} />}>
-        {busy ? <Loader2 className="animate-spin" /> : children}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuItem onClick={() => void mockup()}>
-          <FileImage />
-          <span className="grid">
-            <span>{t("mockup")}</span>
-            <span className="text-muted-foreground text-[11px]">{t("mockupHint")}</span>
-          </span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => void board()}>
-          <Images />
-          <span className="grid">
-            <span>{t("board")}</span>
-            <span className="text-muted-foreground text-[11px]">{t("boardHint")}</span>
-          </span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => void printFiles()}>
-          <Printer />
-          <span className="grid">
-            <span>{t("print")}</span>
-            <span className="text-muted-foreground text-[11px]">{t("printHint")}</span>
-          </span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button variant="outline" size="sm" disabled={busy} />}>
+          {busy ? <Loader2 className="animate-spin" /> : children}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuItem onClick={() => void mockup()}>
+            <FileImage />
+            <span className="grid">
+              <span>{t("mockup")}</span>
+              <span className="text-muted-foreground text-[11px]">{t("mockupHint")}</span>
+            </span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => void board()}>
+            <Images />
+            <span className="grid">
+              <span>{t("board")}</span>
+              <span className="text-muted-foreground text-[11px]">{t("boardHint")}</span>
+            </span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => void printFiles()}>
+            <Printer />
+            <span className="grid">
+              <span>{t("print")}</span>
+              <span className="text-muted-foreground text-[11px]">{t("printHint")}</span>
+            </span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setProduction(true)}>
+            <PackageCheck />
+            <span className="grid">
+              <span>{t("production")}</span>
+              <span className="text-muted-foreground text-[11px]">{t("productionHint")}</span>
+            </span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {production && <ProductionDialog open={production} onOpenChange={setProduction} />}
+    </>
   );
 }

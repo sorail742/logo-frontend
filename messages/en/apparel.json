@@ -221,7 +221,9 @@
     "print": "Print files (PNG 300 dpi)",
     "printHint": "One file per zone, actual size, transparent background",
     "nothing": "Nothing to export.",
-    "printDone": "{count, plural, one {# print file exported} other {# print files exported}}"
+    "printDone": "{count, plural, one {# print file exported} other {# print files exported}}",
+    "production": "Workshop pack (printing)",
+    "productionHint": "DTF film, transfer paper, vinyl, films: one file per player"
   },
   "list": {
     "title": "Apparel",
@@ -280,5 +282,74 @@
     "confirm": "I have checked the design and authorise its production.",
     "approve": "Approve the proof",
     "notPending": "This proof is no longer awaiting approval."
+  },
+  "production": {
+    "title": "Workshop pack: print files",
+    "description": "The printer doesn't output the jersey itself: the platform prepares the carrier you then heat-press (film, paper, vinyl), with one file per player, the tech sheet and 1:1 placement templates.",
+    "support": "Print carrier",
+    "supports": {
+      "DTF_FILM": {
+        "label": "DTF film",
+        "hint": "Any colours and photos, any fabric"
+      },
+      "TRANSFER_LIGHT": {
+        "label": "Transfer paper, light fabric",
+        "hint": "Desktop printer, mirrored"
+      },
+      "TRANSFER_DARK": {
+        "label": "Transfer paper, dark fabric",
+        "hint": "White layer, not mirrored"
+      },
+      "SUBLIMATION_PAPER": {
+        "label": "Sublimation paper",
+        "hint": "Light polyester, mirrored"
+      },
+      "FLEX": {
+        "label": "Heat transfer vinyl",
+        "hint": "One file per colour, for cutters"
+      },
+      "FLOCK": {
+        "label": "Flock vinyl",
+        "hint": "Cut, velvet finish"
+      },
+      "SCREEN_FILM": {
+        "label": "Screen printing films",
+        "hint": "One film per colour, large runs"
+      },
+      "DTG": {
+        "label": "Direct to garment (DTG)",
+        "hint": "Printed straight on the garment"
+      },
+      "EMBROIDERY": {
+        "label": "Embroidery",
+        "hint": "Artwork for the digitizer"
+      }
+    },
+    "mirror": "Mirror",
+    "mirrorAdvised": "Recommended: the carrier is pressed face down on the fabric.",
+    "mirrorNotAdvised": "Not recommended for this carrier (unless your shop asks).",
+    "sheet": "Sheet",
+    "sheetHint": "Pieces nested, 1 cm gap for cutting",
+    "sheets": {
+      "A4": "A4 (21 × 29.7 cm)",
+      "A3": "A3 (29.7 × 42 cm)",
+      "A3_PLUS": "A3+ (32.9 × 48.3 cm)",
+      "ROLL": "Roll"
+    },
+    "rollWidth": "Roll width (mm)",
+    "cutMarks": "Cut marks",
+    "cutMarksHint": "Corners around each piece, to cut with scissors",
+    "players": "{count, plural, =0 {No player} one {# player} other {# players}} of {total}",
+    "playersHint": "One file per player, named NUMBER_NAME_SIZE. Tick a single player to reprint their jersey.",
+    "copies": "Number of garments",
+    "copiesHint": "Without a roster: identical garments in this size",
+    "size": "Size",
+    "generate": "Prepare the pack",
+    "working": "Preparing…",
+    "close": "Close",
+    "ready": "Pack ready: {pieces, plural, one {# piece} other {# pieces}}, {sheets, plural, =0 {no sheet} one {# sheet} other {# sheets}}.",
+    "downloadAgain": "Download again",
+    "failed": "The workshop pack could not be prepared.",
+    "serverOnly": "The workshop pack is produced by the platform's server (not available in the demo)."
   }
 }

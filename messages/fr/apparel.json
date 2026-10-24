@@ -221,7 +221,9 @@
     "print": "Fichiers d'impression (PNG 300 dpi)",
     "printHint": "Un fichier par zone, taille réelle, fond transparent",
     "nothing": "Aucune impression à exporter.",
-    "printDone": "{count, plural, one {# fichier d'impression exporté} other {# fichiers d'impression exportés}}"
+    "printDone": "{count, plural, one {# fichier d'impression exporté} other {# fichiers d'impression exportés}}",
+    "production": "Pack atelier (impression)",
+    "productionHint": "Film DTF, papier transfert, flex, films : un fichier par joueur"
   },
   "list": {
     "title": "Textile",
@@ -280,5 +282,74 @@
     "confirm": "J'ai vérifié la tenue et j'autorise sa production.",
     "approve": "Approuver le BAT",
     "notPending": "Ce BAT n'est plus en attente d'approbation."
+  },
+  "production": {
+    "title": "Pack atelier : fichiers d'impression",
+    "description": "Ce n'est pas le maillot qui sort de l'imprimante : la plateforme prépare le support à poser ensuite sous la presse (film, papier, flex), avec un fichier par joueur, la fiche technique et les gabarits 1:1.",
+    "support": "Support d'impression",
+    "supports": {
+      "DTF_FILM": {
+        "label": "Film DTF",
+        "hint": "Toutes couleurs et photos, tous tissus"
+      },
+      "TRANSFER_LIGHT": {
+        "label": "Papier transfert, tissu clair",
+        "hint": "Imprimante de bureau, en miroir"
+      },
+      "TRANSFER_DARK": {
+        "label": "Papier transfert, tissu foncé",
+        "hint": "Couche blanche, sans miroir"
+      },
+      "SUBLIMATION_PAPER": {
+        "label": "Papier sublimation",
+        "hint": "Polyester clair, en miroir"
+      },
+      "FLEX": {
+        "label": "Flex à découper",
+        "hint": "Un fichier par couleur, pour plotter"
+      },
+      "FLOCK": {
+        "label": "Flocage velours",
+        "hint": "Découpe, rendu velours"
+      },
+      "SCREEN_FILM": {
+        "label": "Films de sérigraphie",
+        "hint": "Un film par couleur, grandes séries"
+      },
+      "DTG": {
+        "label": "Impression directe (DTG)",
+        "hint": "Directement sur le vêtement"
+      },
+      "EMBROIDERY": {
+        "label": "Broderie",
+        "hint": "Dessin à transmettre au numériseur"
+      }
+    },
+    "mirror": "Miroir",
+    "mirrorAdvised": "Conseillé : le support est pressé face contre le tissu.",
+    "mirrorNotAdvised": "Non conseillé pour ce support (sauf demande de l'atelier).",
+    "sheet": "Planche",
+    "sheetHint": "Pièces imbriquées, 1 cm d'espace pour la découpe",
+    "sheets": {
+      "A4": "A4 (21 × 29,7 cm)",
+      "A3": "A3 (29,7 × 42 cm)",
+      "A3_PLUS": "A3+ (32,9 × 48,3 cm)",
+      "ROLL": "Rouleau"
+    },
+    "rollWidth": "Laize du rouleau (mm)",
+    "cutMarks": "Repères de coupe",
+    "cutMarksHint": "Coins autour de chaque pièce, pour découper aux ciseaux",
+    "players": "{count, plural, =0 {Aucun joueur} one {# joueur} other {# joueurs}} sur {total}",
+    "playersHint": "Un fichier par joueur, nommé NUMÉRO_NOM_TAILLE. Cochez un seul joueur pour réimprimer son maillot.",
+    "copies": "Nombre de vêtements",
+    "copiesHint": "Sans effectif : vêtements identiques, de cette taille",
+    "size": "Taille",
+    "generate": "Préparer le pack",
+    "working": "Préparation…",
+    "close": "Fermer",
+    "ready": "Pack prêt : {pieces, plural, one {# pièce} other {# pièces}}, {sheets, plural, =0 {sans planche} one {# planche} other {# planches}}.",
+    "downloadAgain": "Télécharger de nouveau",
+    "failed": "Le pack atelier n'a pas pu être préparé.",
+    "serverOnly": "Le pack atelier est produit par le serveur de la plateforme (indisponible en démonstration)."
   }
 }

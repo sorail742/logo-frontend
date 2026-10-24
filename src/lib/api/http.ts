@@ -22,6 +22,7 @@ const FEATURES: Record<ApiFeature, boolean> = {
   smsLogin: false,
   googleLogin: Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID),
   studioExport: true,
+  productionPack: true,
 };
 
 /** Action d'un module pas encore servi par l'API. */
@@ -339,6 +340,7 @@ export const httpClient: ApiClient = {
     revokeProof: (did) => post(`/apparel-designs/${did}/proof`, { revoke: true }),
     publicProof: (token) => request(`/public/proofs/${encodeURIComponent(token)}`, { auth: false }),
     approveProof: (token, approverName) => request(`/public/proofs/${encodeURIComponent(token)}/approve`, { method: "POST", body: { approverName }, auth: false }),
+    productionExport: (did, input, key) => post(`/apparel-designs/${did}/production-export`, input, key),
   },
 
   websites: {
