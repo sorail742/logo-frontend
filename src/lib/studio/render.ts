@@ -66,8 +66,8 @@ function shadowFilter(id: string, shadow: Shadow) {
 
 // ─── Formes ───
 
-/** Générateur pseudo-aléatoire déterministe (formes organiques). */
-function mulberry32(seed: number) {
+/** Générateur pseudo-aléatoire déterministe (formes organiques, décors). */
+export function mulberry32(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;

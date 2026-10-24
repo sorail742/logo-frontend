@@ -5,6 +5,7 @@ import { createIcon, createPage, createShape, createSvg, createText, solid } fro
 import { svgParts } from "./render";
 import { TEMPLATE_ICONS, type TemplateIconId } from "./template-icons";
 import { naturalWidth, relayout } from "./text";
+import type { Occasion } from "./celebrations";
 import type { DesignElement, DesignPage, ElementRole, Paint, PrintSpec, TextElement } from "./types";
 
 // Modèles à la marque : chaque modèle compose ses pages à partir de l'identité du projet
@@ -46,6 +47,37 @@ export interface TemplateCopy {
   email: string;
   website: string;
   address: string;
+  independenceKicker: string;
+  nationalKicker: string;
+  independenceYears: string;
+  independenceBody: string;
+  birthdayTitle: string;
+  birthdayAge: string;
+  birthdayName: string;
+  birthdayBody: string;
+  weddingKicker: string;
+  weddingNames: string;
+  weddingDate: string;
+  weddingPlace: string;
+  weddingBody: string;
+  eidKicker: string;
+  eidTitle: string;
+  eidBody: string;
+  ramadanKicker: string;
+  ramadanTitle: string;
+  ramadanBody: string;
+  newYearTitle: string;
+  newYearBody: string;
+  graduationKicker: string;
+  graduationName: string;
+  /** « Promotion {year} ». */
+  graduationClass: string;
+  graduationDegree: string;
+  christmasTitle: string;
+  christmasBody: string;
+  babyKicker: string;
+  babyName: string;
+  babyBody: string;
 }
 
 export interface TemplateContext {
@@ -54,9 +86,13 @@ export interface TemplateContext {
   height: number;
   print?: PrintSpec | null;
   copy: TemplateCopy;
+  /** Langue des dates et des noms de pays (modèles de fête). */
+  locale?: string;
+  /** Fête choisie (pays, prochaine date) pour les modèles de fête. */
+  occasion?: Occasion;
 }
 
-export type TemplateCategory = "announce" | "promo" | "event" | "quote" | "hiring" | "info" | "minimal" | "card" | "carousel";
+export type TemplateCategory = "announce" | "promo" | "event" | "quote" | "hiring" | "info" | "minimal" | "card" | "carousel" | "celebration";
 
 export interface StudioTemplate {
   id: string;
@@ -77,7 +113,7 @@ function orientation(width: number, height: number): Orientation {
   return "portrait";
 }
 
-interface Frame {
+export interface Frame {
   w: number;
   h: number;
   /** 1 % du petit côté. */
@@ -87,7 +123,7 @@ interface Frame {
   o: Orientation;
 }
 
-function frame(ctx: TemplateContext): Frame {
+export function frame(ctx: TemplateContext): Frame {
   const { width: w, height: h } = ctx;
   const u = Math.min(w, h) / 100;
   const safe = ctx.print ? (5 / ctx.print.widthMm) * w : 0;
@@ -96,7 +132,7 @@ function frame(ctx: TemplateContext): Frame {
 
 // ─── Briques ───
 
-interface TextStyle {
+export interface TextStyle {
   font: FontChoice;
   size: number;
   color: string;
@@ -108,7 +144,7 @@ interface TextStyle {
   highlight?: TextElement["highlight"];
 }
 
-function text(content: string, style: TextStyle, width: number): TextElement {
+export function text(content: string, style: TextStyle, width: number): TextElement {
   return relayout(
     createText({
       text: content,
@@ -128,7 +164,7 @@ function text(content: string, style: TextStyle, width: number): TextElement {
 }
 
 /** Texte réduit jusqu'à tenir sur `maxLines` lignes. */
-function fitLines(el: TextElement, maxLines: number, minSize = 8): TextElement {
+export function fitLines(el: TextElement, maxLines: number, minSize = 8): TextElement {
   let current = el;
   while ((current.lines?.length ?? 1) > maxLines && current.fontSize > minSize) {
     current = relayout({ ...current, fontSize: current.fontSize * 0.92 });
@@ -137,7 +173,7 @@ function fitLines(el: TextElement, maxLines: number, minSize = 8): TextElement {
 }
 
 /** Texte à sa largeur naturelle (étiquettes, boutons). */
-function label(content: string, style: TextStyle): TextElement {
+export function label(content: string, style: TextStyle): TextElement {
   const probe = createText({
     text: content,
     fontId: style.font.fontId,
@@ -150,15 +186,15 @@ function label(content: string, style: TextStyle): TextElement {
 }
 
 /** Groupe d'éléments placés relativement à son origine. */
-interface Block {
+export interface Block {
   items: DesignElement[];
   width: number;
   height: number;
 }
 
-const single = (el: DesignElement): Block => ({ items: [{ ...el, x: 0, y: 0 }], width: el.width, height: el.height });
+export const single = (el: DesignElement): Block => ({ items: [{ ...el, x: 0, y: 0 }], width: el.width, height: el.height });
 
-function button(content: string, font: FontChoice, size: number, fill: string, color: string, role: ElementRole = "cta"): Block {
+export function button(content: string, font: FontChoice, size: number, fill: string, color: string, role: ElementRole = "cta"): Block {
   const caption = label(content, { font: { ...font, fontWeight: Math.max(font.fontWeight, 600) }, size, color, role });
   const padX = size * 1.1;
   const padY = size * 0.55;
@@ -168,7 +204,7 @@ function button(content: string, font: FontChoice, size: number, fill: string, c
   return { items: [{ ...pill, x: 0, y: 0 }, { ...caption, x: padX, y: padY }], width, height };
 }
 
-function iconRow(icon: TemplateIconId, content: string, style: TextStyle, width: number, iconColor: string): Block {
+export function iconRow(icon: TemplateIconId, content: string, style: TextStyle, width: number, iconColor: string): Block {
   const size = style.size * 1.25;
   const gap = style.size * 0.6;
   const caption = text(content, style, width - size - gap);
@@ -184,7 +220,7 @@ function iconRow(icon: TemplateIconId, content: string, style: TextStyle, width:
 }
 
 /** Logo de la marque (SVG), ou son nom si le projet n'a pas encore de logo. */
-function logo(brand: StudioBrand, background: string, height: number, maxWidth: number, prefer: "full" | "icon" = "full"): DesignElement {
+export function logo(brand: StudioBrand, background: string, height: number, maxWidth: number, prefer: "full" | "icon" = "full"): DesignElement {
   const dark = luminance(background) < 0.35;
   const svg =
     prefer === "icon"
@@ -206,7 +242,7 @@ function logo(brand: StudioBrand, background: string, height: number, maxWidth: 
  * Empile des blocs dans une colonne, alignés horizontalement et répartis verticalement ;
  * réduit le tout (k) jusqu'à tenir dans la hauteur disponible.
  */
-function column(
+export function column(
   make: (k: number) => (Block | null)[],
   area: { x: number; width: number; top: number; bottom: number },
   options: { align?: "start" | "center" | "end"; valign?: "start" | "center" | "end"; gap: number },
@@ -232,12 +268,12 @@ function column(
   return out;
 }
 
-function page(background: Paint, elements: DesignElement[]): DesignPage {
+export function page(background: Paint, elements: DesignElement[]): DesignPage {
   return { ...createPage(background), elements };
 }
 
 /** Accent lisible sur un fond (secondaire, sinon fond éclairci). */
-function accentOn(brand: StudioBrand, background: string) {
+export function accentOn(brand: StudioBrand, background: string) {
   const { secondary, primary } = brand.colors;
   if (contrastRatio(secondary, background) >= 1.8) return secondary;
   if (contrastRatio(primary, background) >= 1.8) return primary;
@@ -760,7 +796,7 @@ const carouselTips: StudioTemplate = {
 
 export const TEMPLATES: StudioTemplate[] = [boldAnnounce, splitPromo, eventGradient, quoteSerif, hiringList, photoFrame, keyFigures, minimalLogo, carouselTips, businessCard];
 
-export const TEMPLATE_CATEGORIES: TemplateCategory[] = ["announce", "promo", "event", "quote", "hiring", "info", "minimal", "carousel", "card"];
+export const TEMPLATE_CATEGORIES: TemplateCategory[] = ["celebration", "announce", "promo", "event", "quote", "hiring", "info", "minimal", "carousel", "card"];
 
 /** Modèles conseillés en premier pour un format. */
 export function suggestedTemplates(formatId: string) {

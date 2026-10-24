@@ -36,6 +36,7 @@ import { Switch } from "@/components/ui/switch";
 import { NativeSelect } from "@/components/common/native-select";
 import { closestWeight, getFont } from "@/lib/render/fonts";
 import { paintColor } from "@/lib/studio/color";
+import { replaceColor, svgColors } from "@/lib/studio/decor";
 import { documentColors } from "@/lib/studio/doc";
 import { aabb, union } from "@/lib/studio/geometry";
 import { relayout } from "@/lib/studio/text";
@@ -137,7 +138,7 @@ export function Inspector() {
         </Section>
       )}
       {single?.type === "image" && <ImageSection el={single} update={update} />}
-      {single?.type === "svg" && <SvgSection el={single} update={update} />}
+      {single?.type === "svg" && <SvgSection el={single} update={update} colorProps={colorProps} />}
 
       <Section title={t("layout")}>
         <div className="grid grid-cols-2 gap-2">
@@ -520,11 +521,35 @@ function ImageSection({ el, update }: Readonly<{ el: ImageElement; update: Updat
   );
 }
 
-function SvgSection({ el, update }: Readonly<{ el: SvgElement; update: Updater }>) {
+/** Couleurs d'un décor ou d'un cachet : chacune se remplace partout dans le dessin. */
+function GraphicColors({ el, update, colorProps }: Readonly<{ el: SvgElement; update: Updater; colorProps: ColorProps }>) {
+  const t = useTranslations("studio.inspector");
+  // Emplacements stables : le sélecteur reste ouvert pendant qu'on change sa couleur.
+  const slots = useMemo(() => svgColors(el.svg).slice(0, 10).map((color, slot) => ({ color, slot })), [el.svg]);
+  if (!slots.length) return null;
+  return (
+    <Section title={t("graphicColors")}>
+      <div className="grid gap-2">
+        {slots.map(({ color, slot }) => (
+          <ColorPicker
+            key={slot}
+            value={color}
+            onChange={(next) => update((e) => (e.type === "svg" ? { ...e, svg: replaceColor(e.svg, svgColors(e.svg)[slot] ?? color, next) } : e), `svg-color-${slot}`)}
+            label={t("color")}
+            {...colorProps}
+          />
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function SvgSection({ el, update, colorProps }: Readonly<{ el: SvgElement; update: Updater; colorProps: ColorProps }>) {
   const t = useTranslations("studio.inspector");
   const { brand } = useStudioContext();
   const variants = Object.entries(brand?.logos ?? {}).filter(([, svg]) => Boolean(svg)) as [string, string][];
-  if (el.source !== "logo" || variants.length < 2) return null;
+  if (el.source !== "logo") return <GraphicColors el={el} update={update} colorProps={colorProps} />;
+  if (variants.length < 2) return null;
   return (
     <Section title={t("logoVariant")}>
       <div className="grid grid-cols-3 gap-1.5">

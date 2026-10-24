@@ -1,18 +1,22 @@
 "use client";
 
 import { memo, useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { NativeSelect } from "@/components/common/native-select";
+import { CELEBRATION_FONTS, CELEBRATION_TEMPLATES, occasionFor } from "@/lib/studio/celebrations";
+import { COUNTRIES, getCountry } from "@/lib/studio/countries";
 import { clonePage } from "@/lib/studio/doc";
 import { renderPage } from "@/lib/studio/render";
 import { TEMPLATE_CATEGORIES, TEMPLATES, suggestedTemplates, type TemplateCategory, type TemplateCopy } from "@/lib/studio/templates";
 import { ensureFonts } from "@/lib/studio/text";
 import type { DesignDoc, DesignPage } from "@/lib/studio/types";
+import { useSessionStore } from "@/stores/session";
 import { useStudio } from "@/stores/studio";
 import { cn } from "@/lib/utils";
 import { useStudioContext } from "../context";
 
-// Modèles à la marque, composés pour le format de la création.
+// Modèles à la marque, composés pour le format de la création ; modèles de fête pour le pays choisi.
 
 export const PageThumb = memo(function PageThumb({ doc, page, width }: { doc: Pick<DesignDoc, "width" | "height" | "print">; page: DesignPage; width: number }) {
   const svg = useMemo(() => renderPage({ version: 1, width: doc.width, height: doc.height, print: doc.print, pages: [page] }, 0, { outputWidth: width }), [doc.width, doc.height, doc.print, page, width]);
@@ -21,18 +25,27 @@ export const PageThumb = memo(function PageThumb({ doc, page, width }: { doc: Pi
 
 export function TemplatesPanel() {
   const t = useTranslations("studio.templates");
+  const locale = useLocale();
   const { brand } = useStudioContext();
+  const userCountry = useSessionStore((s) => s.user?.country);
   const width = useStudio((s) => s.doc?.width ?? 0);
   const height = useStudio((s) => s.doc?.height ?? 0);
   const print = useStudio((s) => s.doc?.print ?? null);
   const format = useStudio((s) => s.meta?.format ?? "");
   const [category, setCategory] = useState<TemplateCategory | "all">("all");
   const [ready, setReady] = useState(false);
+  const [country, setCountry] = useState(() => getCountry(userCountry).code);
+  const countries = useMemo(() => {
+    const names = new Intl.DisplayNames([locale], { type: "region" });
+    return COUNTRIES.map((c) => ({ code: c.code, name: names.of(c.code) ?? c.code })).sort((a, b) => a.name.localeCompare(b.name, locale));
+  }, [locale]);
 
   useEffect(() => {
     if (!brand) return;
     let alive = true;
-    ensureFonts([brand.heading, brand.body, { fontId: "playfair", fontWeight: 700 }]).then(() => alive && setReady(true));
+    const markReady = () => alive && setReady(true);
+    // Une police introuvable n'empêche pas d'afficher les modèles (police de secours).
+    ensureFonts([brand.heading, brand.body, { fontId: "playfair", fontWeight: 700 }, ...CELEBRATION_FONTS]).then(markReady, markReady);
     return () => {
       alive = false;
     };
@@ -42,14 +55,15 @@ export function TemplatesPanel() {
   const built = useMemo(() => {
     if (!brand || !ready || !width) return [];
     const suggested = suggestedTemplates(format);
-    const ordered = [...TEMPLATES].sort((a, b) => {
+    const occasion = occasionFor(country, locale);
+    const ordered = [...TEMPLATES, ...CELEBRATION_TEMPLATES].sort((a, b) => {
       const ia = suggested.indexOf(a.id);
       const ib = suggested.indexOf(b.id);
       return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
     });
-    return ordered.map((template) => ({ template, pages: template.build({ brand, width, height, print, copy }) }));
+    return ordered.map((template) => ({ template, pages: template.build({ brand, width, height, print, copy, locale, occasion }) }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, ready, width, height, print, format]);
+  }, [brand, ready, width, height, print, format, country, locale]);
 
   const apply = (pages: DesignPage[]) => {
     const state = useStudio.getState();
@@ -81,6 +95,18 @@ export function TemplatesPanel() {
           </button>
         ))}
       </div>
+      {category === "celebration" && (
+        <label className="grid gap-1 text-[11px] text-muted-foreground">
+          {t("country")}
+          <NativeSelect value={country} onChange={(e) => setCountry(e.target.value)} className="h-8 text-xs">
+            {countries.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </NativeSelect>
+        </label>
+      )}
       {!built.length && <div className="grid grid-cols-2 gap-2">{Array.from({ length: 6 }, (_, i) => <div key={i} className="aspect-square animate-pulse rounded-lg bg-muted" />)}</div>}
       <div className="grid grid-cols-2 gap-2">
         {visible.map(({ template, pages }) => (

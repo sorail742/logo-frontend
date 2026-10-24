@@ -6,14 +6,18 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { contrastRatio } from "@/lib/render/color";
 import { ICONS, type IconNode } from "@/lib/render/icons";
-import { createIcon, createShape, solid } from "@/lib/studio/doc";
+import { flagSvg, getCountry } from "@/lib/studio/countries";
+import { buildDecor, DECOR_IDS, type DecorId } from "@/lib/studio/decor";
+import { createIcon, createShape, createSvg, solid } from "@/lib/studio/doc";
 import { renderElement } from "@/lib/studio/render";
 import type { ShapeElement } from "@/lib/studio/types";
+import { useSessionStore } from "@/stores/session";
 import { useStudio } from "@/stores/studio";
 import { useStudioContext } from "../context";
 import { addCentered, centered, pageUnit, releaseFocus, useInkColors } from "../placement";
 
-// Formes, cadres photo et icônes (bibliothèque lucide complète, recherche en français et en anglais).
+// Formes, cadres photo, décors de fête et icônes (bibliothèque lucide complète, recherche en français
+// et en anglais).
 
 type ShapePreset = { id: string; shape: ShapeElement["shape"]; patch?: Partial<ShapeElement>; ratio?: number };
 
@@ -38,6 +42,11 @@ const FRAMES: ShapePreset[] = [
   { id: "frameRounded", shape: "rect", patch: { radius: 0.12 }, ratio: 0.8 },
   { id: "frameBlob", shape: "blob" },
 ];
+
+const TILE = "flex aspect-square items-center justify-center rounded-lg border bg-background transition hover:border-primary hover:bg-muted";
+
+/** Décors en bandeau (posés sur presque toute la largeur de la page). */
+const WIDE_DECORS = new Set<DecorId>(["confetti", "fireworks", "bunting", "mosque", "sparkles", "snowflakes", "flourish"]);
 
 /** Mots français courants → noms d'icônes lucide (anglais). */
 const FRENCH: Record<string, string> = {
@@ -163,9 +172,27 @@ function ShapePreview({ preset, color, frame }: { preset: ShapePreset; color: st
   return <span className="block" dangerouslySetInnerHTML={{ __html: svg }} />;
 }
 
+function addGraphic(svg: string, ratio: number, name: string, wide: boolean) {
+  const unit = pageUnit();
+  const side = unit * (wide ? 0.8 : 0.4);
+  const width = ratio >= 1 ? side : side * ratio;
+  addCentered([createSvg(svg, "graphic", { width, name, height: width / ratio, role: "decor" })]);
+}
+
 export function ElementsPanel() {
   const t = useTranslations("studio.elements");
   const { brand, icons } = useStudioContext();
+  const country = getCountry(useSessionStore((s) => s.user?.country));
+  const decors = useMemo(() => {
+    const palette = {
+      colors: [...new Set([brand?.colors.primary ?? "#2563eb", brand?.colors.secondary ?? "#ec4899", "#f59e0b", "#22c55e"].map((c) => c.toLowerCase()))],
+      gold: "#d4a017",
+      ink: brand?.colors.text ?? "#111827",
+    };
+    return DECOR_IDS.map((id) => ({ id, decor: buildDecor(id, palette) }));
+  }, [brand]);
+  const flag = useMemo(() => flagSvg(country.flag), [country]);
+  const flagLabel = t("decor.flag");
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(96);
   const { accent: color, background } = useInkColors(brand);
@@ -204,7 +231,7 @@ export function ElementsPanel() {
         <h3 className="text-xs font-semibold">{t("shapes")}</h3>
         <div className="grid grid-cols-4 gap-1.5">
           {SHAPES.map((preset) => (
-            <button key={preset.id} type="button" onClick={() => addCentered([shapeElement(preset, color)])} className="flex aspect-square items-center justify-center rounded-lg border bg-background transition hover:border-primary hover:bg-muted" title={t(`shape.${preset.id}`)} aria-label={t(`shape.${preset.id}`)}>
+            <button key={preset.id} type="button" onClick={() => addCentered([shapeElement(preset, color)])} className={TILE} title={t(`shape.${preset.id}`)} aria-label={t(`shape.${preset.id}`)}>
               <ShapePreview preset={preset} color={color} />
             </button>
           ))}
@@ -215,8 +242,34 @@ export function ElementsPanel() {
         <p className="text-[11px] leading-relaxed text-muted-foreground">{t("framesHelp")}</p>
         <div className="grid grid-cols-4 gap-1.5">
           {FRAMES.map((preset) => (
-            <button key={preset.id} type="button" onClick={() => addCentered([shapeElement(preset, frameColor, "photo")])} className="flex aspect-square items-center justify-center rounded-lg border bg-background transition hover:border-primary hover:bg-muted" title={t(`shape.${preset.id}`)} aria-label={t(`shape.${preset.id}`)}>
+            <button key={preset.id} type="button" onClick={() => addCentered([shapeElement(preset, frameColor, "photo")])} className={TILE} title={t(`shape.${preset.id}`)} aria-label={t(`shape.${preset.id}`)}>
               <ShapePreview preset={preset} color={frameColor} frame />
+            </button>
+          ))}
+        </div>
+      </section>
+      <section className="grid gap-2">
+        <h3 className="text-xs font-semibold">{t("celebrations")}</h3>
+        <div className="grid grid-cols-4 gap-1.5">
+          <button
+            type="button"
+            onClick={() => addGraphic(flag, 1.5, flagLabel, false)}
+            className={`${TILE} p-1.5`}
+            title={flagLabel}
+            aria-label={flagLabel}
+          >
+            <span className="block w-full [&>svg]:block [&>svg]:h-auto [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: flag }} />
+          </button>
+          {decors.map(({ id, decor }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => addGraphic(decor.svg, decor.width / decor.height, t(`decor.${id}`), WIDE_DECORS.has(id))}
+              className={`flex aspect-square items-center justify-center rounded-lg border p-1.5 transition hover:border-primary ${id === "snowflakes" || id === "lanterns" ? "bg-slate-800 hover:bg-slate-700" : "bg-background hover:bg-muted"}`}
+              title={t(`decor.${id}`)}
+              aria-label={t(`decor.${id}`)}
+            >
+              <span className="flex size-full items-center justify-center [&>svg]:h-auto [&>svg]:max-h-full [&>svg]:max-w-full" dangerouslySetInnerHTML={{ __html: decor.svg }} />
             </button>
           ))}
         </div>
