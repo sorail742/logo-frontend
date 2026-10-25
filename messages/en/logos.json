@@ -124,9 +124,16 @@
     "iconPack": "App icon pack",
     "iconPackBody": "favicon.ico (16/32/48), Apple 180 px, Android 192 and 512 px, iOS 1024 px",
     "social": "Social media formats",
-    "socialProfile": "Profile picture",
-    "socialFacebook": "Facebook cover",
-    "socialLinkedin": "LinkedIn banner",
+    "socialFormats": {
+      "profile": "Profile picture, light · {size}",
+      "profile-inverse": "Profile picture, brand colour · {size}",
+      "facebook": "Facebook cover · {size}",
+      "linkedin": "LinkedIn banner (profile) · {size}",
+      "linkedin-page": "LinkedIn banner (page) · {size}",
+      "x": "X (Twitter) banner · {size}",
+      "youtube": "YouTube banner · {size}",
+      "story": "Story and WhatsApp status · {size}"
+    },
     "watermark": "Free plan: watermarked 512 px PNG only.",
     "upgrade": "Upgrade to a paid plan",
     "done": "File downloaded",
@@ -136,5 +143,46 @@
     "zipAllButton": "Download the ZIP archive",
     "saveFirst": "Save the version first: the server export uses the last saved version.",
     "serverFailed": "The export failed, please try again."
+  },
+  "scenes": {
+    "title": "Mockups",
+    "body": "Your logo on a storefront, T-shirt, mugs, business cards, phone, vehicle, bags and stand. Download as high-definition JPG, included in the kit archive.",
+    "free": "Your logo in context. Downloads are included in paid plans.",
+    "download": "Download as JPG",
+    "done": "Image downloaded",
+    "items": {
+      "storefront": "Storefront",
+      "tshirt": "T-shirt",
+      "mugs": "Mugs",
+      "cards": "Business cards",
+      "phone": "Phone profile",
+      "van": "Delivery van",
+      "bags": "Bags",
+      "stand": "Stand and roll-up banner"
+    },
+    "showcase": "The brand in context: storefront, T-shirt, mugs, business cards, phone, vehicle, bags and stand."
+  },
+  "animation": {
+    "title": "Animated logo",
+    "body": "The symbol, the name and then the tagline appear in turn. Animated SVG for your website, 1080 px square video for WhatsApp statuses, Reels and TikTok.",
+    "free": "Preview of your animated logo. Downloads are included in paid plans.",
+    "alt": "Animated logo of {name}",
+    "replay": "Replay",
+    "style": "Animation",
+    "styles": {
+      "reveal": "Reveal",
+      "draw": "Draw",
+      "bounce": "Bounce"
+    },
+    "background": "Background",
+    "backgrounds": {
+      "light": "Light background",
+      "brand": "Brand colour"
+    },
+    "svg": "Animated SVG",
+    "video": "1080 px video",
+    "recording": "Recording…",
+    "videoNote": "The video is recorded in your browser (MP4, or WebM depending on the browser): keep the tab open for a few seconds.",
+    "done": "File downloaded"
   }
 }

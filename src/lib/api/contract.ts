@@ -7,6 +7,7 @@ import type {
   BrandKit,
   Brief,
   Comment,
+  CreditRequest,
   CommentAnchor,
   EntityType,
   GenerationJob,
@@ -40,11 +41,30 @@ import type {
   SloganKind,
   SloganTone,
   User,
+  Website,
+  WebsiteBrand,
+  WebsiteMedia,
+  WebsiteMessage,
   Workspace,
   WorkspaceRole,
 } from "@/lib/types";
 import type { ArtworkStyle } from "@/lib/render/artwork";
+import type { SiteContent } from "@/lib/render/site";
 import type { DesignDoc, StudioDesign, StudioDesignSummary } from "@/lib/studio/types";
+import type {
+  ApparelCheck,
+  ApparelDesign,
+  ApparelDesignInput,
+  ApparelDesignSummary,
+  ApparelElement,
+  ApparelRoster,
+  ApparelStatus,
+  ApparelTemplate,
+  ProductionExportInput,
+  PublicProof,
+  RosterSummary,
+  RulePreset,
+} from "@/lib/apparel/types";
 
 // Contrat du client API : une méthode par route REST (§13). Deux implémentations :
 // http.ts (API NestJS réelle) et mock/ (simulation locale).
@@ -68,7 +88,9 @@ export type ApiFeature =
   | "smsLogin"
   | "googleLogin"
   /** Exports du Studio produits par le serveur : PDF d'impression, SVG au texte vectorisé. */
-  | "studioExport";
+  | "studioExport"
+  /** Pack atelier du textile (planches de transfert, découpe, films) produit par le serveur. */
+  | "productionPack";
 
 export interface JobAccepted {
   jobId: string;
@@ -190,7 +212,9 @@ export interface ApiClient {
   workspaces: {
     list(): Promise<Workspace[]>;
     create(input: { name: string }): Promise<Workspace>;
-    update(wid: string, patch: { name: string }): Promise<Workspace>;
+    update(wid: string, patch: { name?: string; viewerDownloads?: boolean }): Promise<Workspace>;
+    /** Espace d'organisation : confirmé par son nom exact (propriétaire, ou admin). */
+    remove(wid: string, confirm: string): Promise<void>;
     members(wid: string): Promise<Member[]>;
     invitations(wid: string): Promise<Invitation[]>;
     invite(wid: string, input: { email?: string; role: WorkspaceRole; asLink?: boolean }): Promise<Invitation>;
@@ -280,6 +304,58 @@ export interface ApiClient {
     requestExport(sdid: string, input: StudioExportInput, idempotencyKey: string): Promise<JobAccepted>;
     /** Lot de 4 images (1 crédit), produit par le worker ; URL dans le résultat de la tâche. */
     generateImages(pid: string, input: StudioImagesInput, idempotencyKey: string): Promise<JobAccepted>;
+    /** Détourage par IA (1 crédit) : masque PNG en niveaux de gris, blanc = sujet conservé. */
+    cutout(pid: string, input: { image: string }, idempotencyKey: string): Promise<{ mask: string; costCredits: number }>;
+  };
+
+  /** Textile (Module 5) : t-shirts, polos, maillots ; BAT validé par le client sans compte. */
+  apparel: {
+    templates(): Promise<ApparelTemplate[]>;
+    rulePresets(): Promise<{ disclaimer: string; presets: RulePreset[] }>;
+    list(pid: string): Promise<ApparelDesignSummary[]>;
+    create(pid: string, input: ApparelDesignInput): Promise<ApparelDesign>;
+    get(did: string): Promise<ApparelDesign>;
+    /** Toute modification après l'envoi du BAT le révoque (nouvelle validation nécessaire). */
+    update(did: string, patch: Partial<Omit<ApparelDesignInput, "templateId">>): Promise<ApparelDesign>;
+    remove(did: string): Promise<void>;
+    /** Copie en brouillon (impressions et effectif) : variante, nouvelle saison, fête suivante. */
+    duplicate(did: string): Promise<ApparelDesign>;
+    /** Remplace tous les éléments (sauvegarde automatique de l'éditeur). */
+    saveElements(did: string, elements: ApparelElement[]): Promise<ApparelDesign>;
+    /** Contrôle complet : zones, technique, règlement sportif, effectif. */
+    check(did: string, input?: { printShopId?: string }): Promise<ApparelCheck>;
+    /** Effectif importé d'un CSV (nom, nom_imprime, numero, taille, poste, quantite). */
+    importRoster(did: string, csv: string, name?: string): Promise<{ roster: ApparelRoster; summary: RosterSummary }>;
+    /** Lien de BAT à envoyer au client (422 tant que des erreurs subsistent). */
+    proof(did: string): Promise<{ token: string; url: string }>;
+    revokeProof(did: string): Promise<{ revoked: true }>;
+    publicProof(token: string): Promise<PublicProof>;
+    approveProof(token: string, approverName: string): Promise<{ status: ApparelStatus; approvedAt: string | null }>;
+    /** Pack atelier : fichiers du support d'impression, un par joueur, fiche technique (tâche). */
+    productionExport(did: string, input: ProductionExportInput, idempotencyKey?: string): Promise<{ jobId: string; costCredits: number }>;
+  };
+
+  websites: {
+    /** Site du projet, ou null s'il n'a pas encore été créé. */
+    get(pid: string): Promise<Website | null>;
+    /** Site de départ tiré du projet (nom, brief, slogan, logo, signature e-mail). 400 NO_LOGO sans logo. */
+    create(pid: string): Promise<Website>;
+    /** Sauvegarde (automatique) : contenu, adresse publique, logo affiché. */
+    update(webid: string, patch: { content?: SiteContent; slug?: string; logoId?: string | null }): Promise<Website>;
+    /** Logo et symbole pour l'aperçu de l'éditeur. */
+    brand(webid: string): Promise<WebsiteBrand>;
+    /** Publication ou republication des modifications. */
+    publish(webid: string): Promise<Website>;
+    unpublish(webid: string): Promise<Website>;
+    remove(webid: string): Promise<void>;
+    addMedia(webid: string, input: { dataUrl: string; alt?: string }): Promise<Pick<WebsiteMedia, "id" | "url" | "alt">>;
+    /** Retire aussi l'image des sections qui l'utilisent. */
+    removeMedia(webid: string, mid: string): Promise<Website>;
+    messages(webid: string): Promise<WebsiteMessage[]>;
+    markMessage(webid: string, msgid: string, read: boolean): Promise<WebsiteMessage>;
+    removeMessage(webid: string, msgid: string): Promise<void>;
+    /** Archive autonome du site (offres payantes) : URL signée de téléchargement. */
+    exportZip(webid: string): Promise<{ url: string }>;
   };
 
   jobs: {
@@ -330,6 +406,10 @@ export interface ApiClient {
     users(q?: string): Promise<AdminUser[]>;
     updateUser(uid: string, patch: { suspended?: boolean; reset2fa?: boolean }): Promise<AdminUser>;
     adjustCredits(input: { workspaceId: string; delta: number; reason: string }): Promise<void>;
+    /** Support : propose un ajustement, appliqué après validation d'un admin. */
+    requestCredits(input: { workspaceId: string; delta: number; reason: string }): Promise<CreditRequest>;
+    creditRequests(status?: CreditRequest["status"]): Promise<CreditRequest[]>;
+    decideCreditRequest(id: string, approve: boolean, note?: string): Promise<CreditRequest>;
     payments(): Promise<Payment[]>;
     refund(paymentId: string): Promise<void>;
     moderation(): Promise<ModerationItem[]>;

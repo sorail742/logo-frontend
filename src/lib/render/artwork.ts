@@ -29,8 +29,9 @@ const n = (v: number) => Math.round(v * 10) / 10;
 /** Graine stable d'un texte (FNV-1a). */
 export function hashSeed(text: string) {
   let h = 0x811c9dc5;
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i);
+  // Par point de code : identique à l'ancien calcul pour tout caractère hors emoji.
+  for (const char of text) {
+    h ^= char.codePointAt(0) ?? 0;
     h = Math.imul(h, 0x01000193);
   }
   return h >>> 0;
@@ -148,7 +149,9 @@ function waves(input: ArtworkInput, rand: Rand) {
     const freq = between(rand, 1, 2.5);
     const phase = rand() * Math.PI * 2;
     let d = `M0 ${n(base)}`;
-    for (let x = 0; x <= w; x += w / 40) {
+    // Points répartis par indice : le dernier tombe exactement sur le bord droit.
+    for (let step = 0; step <= 40; step++) {
+      const x = (step / 40) * w;
       d += `L${n(x)} ${n(base + Math.sin((x / w) * Math.PI * 2 * freq + phase) * amp)}`;
     }
     d += `L${w} ${h}L0 ${h}Z`;

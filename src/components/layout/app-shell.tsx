@@ -58,13 +58,14 @@ function useOnline() {
   return online;
 }
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
   const t = useTranslations("app.nav");
   const pathname = usePathname();
   const user = useSessionStore((s) => s.user);
+  const { can } = useWorkspace();
   const links = [
     { href: "/app", label: t("projects"), icon: FolderKanban, match: (p: string) => p === "/app" || p.startsWith("/app/projets") },
-    { href: "/app/corbeille", label: t("trash"), icon: Trash2 },
+    ...(can("trash.view") ? [{ href: "/app/corbeille", label: t("trash"), icon: Trash2 }] : []),
     { href: "/app/espace", label: t("workspace"), icon: Users },
     { href: "/app/facturation", label: t("billing"), icon: CreditCard },
     { href: "/app/notifications", label: t("notifications"), icon: Bell },
@@ -156,7 +157,7 @@ function CreditsBadge() {
 }
 
 /** Solde de crédits en pied de barre latérale, avec accès à la recharge. */
-function SidebarCredits({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarCredits({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
   const t = useTranslations("app.shell");
   const { data } = useCredits();
   return (
@@ -232,7 +233,7 @@ function UserMenu() {
           <UserRound className="size-4" />
           {t("profile")}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={logout}>
+        <DropdownMenuItem onClick={() => void logout()}>
           <LogOut className="size-4" />
           {t("logout")}
         </DropdownMenuItem>
@@ -252,7 +253,7 @@ export function useRequireAuth() {
   return status;
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
   const t = useTranslations("app");
   const status = useRequireAuth();
   const online = useOnline();
@@ -261,9 +262,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   if (status !== "authenticated") {
     return (
-      <div className="flex flex-1 items-center justify-center p-10" role="status">
+      <output className="flex flex-1 items-center justify-center p-10">
         <Skeleton className="h-8 w-48" />
-      </div>
+      </output>
     );
   }
 
@@ -286,10 +287,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-svh flex-col">
       <MockBanner />
       {!online && (
-        <div className="flex items-center gap-2 bg-muted px-4 py-2 text-xs" role="status">
+        <output className="flex items-center gap-2 bg-muted px-4 py-2 text-xs">
           <WifiOff className="size-3.5" aria-hidden="true" />
           <OfflineNotice />
-        </div>
+        </output>
       )}
       <div className="flex flex-1">
         <aside className="no-print sticky top-0 hidden h-svh w-64 shrink-0 border-r bg-sidebar lg:block">{sidebar()}</aside>

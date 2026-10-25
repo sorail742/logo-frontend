@@ -88,6 +88,8 @@ export function NumberField({ label, value, onChange, min = -Infinity, max = Inf
   );
 }
 
+const toText = (value: number) => String(value);
+
 export function SliderField({
   label,
   value,
@@ -95,8 +97,11 @@ export function SliderField({
   min,
   max,
   step = 1,
-  format = (v) => String(v),
-}: {
+  format = toText,
+  onReset,
+  resetValue = 0,
+  resetLabel,
+}: Readonly<{
   label: ReactNode;
   value: number;
   onChange(value: number): void;
@@ -104,12 +109,23 @@ export function SliderField({
   max: number;
   step?: number;
   format?: (value: number) => string;
-}) {
+  /** Réinitialisation : la valeur affichée devient un bouton tant qu'elle diffère de `resetValue`. */
+  onReset?: () => void;
+  resetValue?: number;
+  resetLabel?: string;
+}>) {
+  const resettable = onReset && value !== resetValue;
   return (
     <div className="grid grid-cols-[5.5rem_1fr_2.75rem] items-center gap-2">
       <span className="truncate text-xs text-muted-foreground">{label}</span>
       <Slider value={[value]} min={min} max={max} step={step} onValueChange={(v) => onChange(Array.isArray(v) ? v[0]! : (v as number))} aria-label={typeof label === "string" ? label : undefined} />
-      <span className="text-right text-[11px] tabular-nums">{format(value)}</span>
+      {resettable ? (
+        <button type="button" onClick={onReset} className="rounded text-right text-[11px] tabular-nums underline decoration-dotted underline-offset-2 hover:text-primary" title={resetLabel} aria-label={resetLabel ? `${resetLabel} (${format(value)})` : undefined}>
+          {format(value)}
+        </button>
+      ) : (
+        <span className="text-right text-[11px] tabular-nums">{format(value)}</span>
+      )}
     </div>
   );
 }
@@ -119,14 +135,15 @@ export function ToggleButtons<T extends string>({
   options,
   onChange,
   label,
-}: {
+}: Readonly<{
   value: T | null;
   options: { value: T; label: string; icon: ReactNode }[];
   onChange(value: T): void;
   label: string;
-}) {
+}>) {
   return (
-    <div className="flex rounded-lg border border-input p-0.5" role="group" aria-label={label}>
+    <fieldset className="flex rounded-lg border border-input p-0.5">
+      <legend className="sr-only">{label}</legend>
       {options.map((option) => (
         <button
           key={option.value}
@@ -143,11 +160,11 @@ export function ToggleButtons<T extends string>({
           {option.icon}
         </button>
       ))}
-    </div>
+    </fieldset>
   );
 }
 
-export function Section({ title, children, action, defaultOpen = true }: { title: string; children: ReactNode; action?: ReactNode; defaultOpen?: boolean }) {
+export function Section({ title, children, action, defaultOpen = true }: Readonly<{ title: string; children: ReactNode; action?: ReactNode; defaultOpen?: boolean }>) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <section className="border-b px-4 py-3 last:border-b-0">

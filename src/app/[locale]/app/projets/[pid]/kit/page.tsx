@@ -16,6 +16,9 @@ import { Field } from "@/components/common/field";
 import { JobProgress } from "@/components/common/job-progress";
 import { PageHeader } from "@/components/common/page-header";
 import { KitView } from "@/components/kit/kit-view";
+import { BrandTextsCard } from "@/components/kit/brand-texts-card";
+import { SocialKitSection } from "@/components/kit/social-kit-section";
+import { MockupGallery } from "@/components/logos/mockup-gallery";
 import { CommentsPanel } from "@/components/projects/comments-panel";
 import { useApiErrorToast } from "@/hooks/use-api-error";
 import { useJob } from "@/hooks/use-job";
@@ -195,6 +198,9 @@ function KitContent() {
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="grid min-w-0 content-start gap-6">
           {kit && <KitView kit={kit} projectName={name} acronym={project?.chosenName?.acronym} meaning={project?.chosenName?.meaning} />}
+          {kit?.logoSpec && !kit.logoSvg && <MockupGallery spec={kit.logoSpec} canDownload={can("export.download")} isFree={isFree} />}
+          {kit?.logoSpec && !kit.logoSvg && <SocialKitSection spec={kit.logoSpec} name={kit.name ?? name} canDownload={can("export.download")} isFree={isFree} />}
+          {kit && <BrandTextsCard name={kit.name ?? name} slogan={kit.slogan} mission={kit.mission} devise={kit.devise} brief={project?.brief} />}
           {kit && <CommentsPanel pid={pid} targetType="KIT" targetId={kit.id} />}
         </div>
         <div className="grid content-start gap-6">
@@ -288,7 +294,7 @@ function KitContent() {
                       )}
                     </div>
                   ) : (
-                    <Button variant="outline" onClick={startZip} disabled={zip.running || !canEdit}>
+                    <Button variant="outline" onClick={startZip} disabled={zip.running || !can("export.download")}>
                       {t("generateZip")}
                     </Button>
                   )}

@@ -1,5 +1,7 @@
 import { cssFontFamily, getFont } from "@/lib/render/fonts";
+import { adjustFilter, effectsFilter, photoPlacement, vignetteGradient } from "@/lib/render/photo";
 import { escapeXml } from "@/lib/render/svg";
+import { hasEffects, letteringLayers } from "./lettering";
 import type {
   DesignDoc,
   DesignElement,
@@ -64,8 +66,8 @@ function shadowFilter(id: string, shadow: Shadow) {
 
 // ─── Formes ───
 
-/** Générateur pseudo-aléatoire déterministe (formes organiques). */
-function mulberry32(seed: number) {
+/** Générateur pseudo-aléatoire déterministe (formes organiques, décors). */
+export function mulberry32(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -187,7 +189,15 @@ function renderText(el: TextElement, pid: string, defs: string[]) {
   const fill = paintValue(el.fill, `${pid}-f`, defs);
   // Police par variable CSS (style) : résolue en nom réel et intégrée à l'export.
   const stroke = el.stroke && el.stroke.width > 0 ? `${strokeAttrs(el.stroke, 2)} paint-order="stroke"` : "";
-  const attrs = `style="font-family:${cssFontFamily(el.fontId)}" font-size="${n(size)}" font-weight="${el.fontWeight}"${spacing ? ` letter-spacing="${n(spacing)}"` : ""} fill="${fill}"${stroke} xml:space="preserve"`;
+  const effects = hasEffects(el.effects) ? el.effects : null;
+  const letterSpacing = spacing ? ` letter-spacing="${n(spacing)}"` : "";
+  const fontAttrs = `style="font-family:${cssFontFamily(el.fontId)}" font-size="${n(size)}" font-weight="${el.fontWeight}"${letterSpacing}`;
+  // Avec effets, les glyphes restent sans peinture : chaque calque les peint (lettering.ts).
+  const attrs = effects ? `${fontAttrs} xml:space="preserve"` : `${fontAttrs} fill="${fill}"${stroke} xml:space="preserve"`;
+  const paint = (glyphs: string) =>
+    effects
+      ? letteringLayers({ pid, glyphs, fill, effects, size, defs, stroke: el.stroke, box: { x: 0, y: 0, width: el.width, height: el.height } })
+      : glyphs;
   const { box, baseline } = lineMetrics(el);
   const parts: string[] = [];
 
@@ -202,7 +212,7 @@ function renderText(el: TextElement, pid: string, defs: string[]) {
     const y = bend > 0 ? baseline + sagitta : baseline;
     const sweep = bend > 0 ? 1 : 0;
     defs.push(`<path id="${pid}-arc" d="M0 ${n(y)}A${n(radius)} ${n(radius)} 0 0 ${sweep} ${n(el.width)} ${n(y)}"/>`);
-    parts.push(`<text ${attrs} text-anchor="middle"><textPath href="#${pid}-arc" startOffset="50%">${escapeXml(line)}</textPath></text>`);
+    parts.push(paint(`<text ${attrs} text-anchor="middle"><textPath href="#${pid}-arc" startOffset="50%">${escapeXml(line)}</textPath></text>`));
     return parts.join("");
   }
 
@@ -212,7 +222,7 @@ function renderText(el: TextElement, pid: string, defs: string[]) {
   const tspans = textLines(el)
     .map((line, i) => `<tspan x="${n(x)}" y="${n(i * box + baseline)}">${escapeXml(line) || " "}</tspan>`)
     .join("");
-  parts.push(`<text ${attrs} text-anchor="${anchor}">${tspans}</text>`);
+  parts.push(paint(`<text ${attrs} text-anchor="${anchor}">${tspans}</text>`));
   return parts.join("");
 }
 
@@ -236,15 +246,9 @@ export function imageMaskShape(el: ImageElement) {
   }
 }
 
-/** Position de l'image dans sa boîte (recouvrement cadré ou contenu centré). */
+/** Image entière dans le repère de l'élément (recadrage compris, avant redressement). */
 export function imagePlacement(el: ImageElement) {
-  const scale =
-    el.fit === "cover" ? Math.max(el.width / el.naturalWidth, el.height / el.naturalHeight) : Math.min(el.width / el.naturalWidth, el.height / el.naturalHeight);
-  const width = el.naturalWidth * scale;
-  const height = el.naturalHeight * scale;
-  const fx = el.fit === "cover" ? (el.focusX ?? 0.5) : 0.5;
-  const fy = el.fit === "cover" ? (el.focusY ?? 0.5) : 0.5;
-  return { x: (el.width - width) * fx, y: (el.height - height) * fy, width, height };
+  return photoPlacement(el).image;
 }
 
 function imageFilter(id: string, el: ImageElement) {
@@ -259,11 +263,34 @@ function imageFilter(id: string, el: ImageElement) {
 }
 
 function renderImage(el: ImageElement, pid: string, defs: string[]) {
-  const place = imagePlacement(el);
+  const place = photoPlacement(el);
+  const { image, region } = place;
   defs.push(`<clipPath id="${pid}-clip">${imageMaskShape(el)}</clipPath>`);
-  const filter = imageFilter(`${pid}-img`, el);
+  // Réglages de retouche ; à défaut, les anciens filtres simples (documents existants).
+  const filter = el.adjust ? adjustFilter(`${pid}-img`, el.adjust, Math.max(region.width, region.height)) : imageFilter(`${pid}-img`, el);
   if (filter) defs.push(filter);
-  return `<g clip-path="url(#${pid}-clip)"><image href="${escapeXml(el.src)}" x="${n(place.x)}" y="${n(place.y)}" width="${n(place.width)}" height="${n(place.height)}" preserveAspectRatio="none"${filter ? ` filter="url(#${pid}-img)"` : ""}/></g>`;
+  const box = `x="${n(image.x)}" y="${n(image.y)}" width="${n(image.width)}" height="${n(image.height)}"`;
+  const filterAttr = filter ? ` filter="url(#${pid}-img)"` : "";
+  let body = `<image href="${escapeXml(el.src)}" ${box} preserveAspectRatio="none"${filterAttr}/>`;
+  const vignette = el.adjust?.vignette ?? 0;
+  if (vignette) {
+    defs.push(vignetteGradient(`${pid}-vig`, vignette, region));
+    body += `<rect x="${n(region.x)}" y="${n(region.y)}" width="${n(region.width)}" height="${n(region.height)}" fill="url(#${pid}-vig)"/>`;
+  }
+  if (el.cutout) {
+    defs.push(`<mask id="${pid}-cut" maskUnits="userSpaceOnUse" ${box}><image href="${escapeXml(el.cutout)}" ${box} preserveAspectRatio="none"/></mask>`);
+    body = `<g mask="url(#${pid}-cut)">${body}</g>`;
+  }
+  if (el.crop) {
+    defs.push(`<clipPath id="${pid}-crop"><rect x="${n(region.x)}" y="${n(region.y)}" width="${n(region.width)}" height="${n(region.height)}"/></clipPath>`);
+    body = `<g clip-path="url(#${pid}-crop)">${body}</g>`;
+  }
+  if (place.transform) body = `<g transform="${place.transform}">${body}</g>`;
+  const framed = `<g clip-path="url(#${pid}-clip)">${body}</g>`;
+  const effects = effectsFilter(`${pid}-fx`, el.outline, el.glow, el);
+  if (!effects) return framed;
+  defs.push(effects);
+  return `<g filter="url(#${pid}-fx)">${framed}</g>`;
 }
 
 /** Dimensions et contenu d'un SVG (sans la racine ni le titre). */

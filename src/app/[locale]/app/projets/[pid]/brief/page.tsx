@@ -12,12 +12,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/common/field";
 import { NativeSelect } from "@/components/common/native-select";
 import { TagInput } from "@/components/common/tag-input";
-import { useApiErrorToast } from "@/hooks/use-api-error";
+import { useFormErrors } from "@/hooks/use-form-errors";
 import { useProject } from "@/hooks/use-project";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/query-keys";
 import { ENTITY_TYPES, NAME_STYLES, type Brief, type EntityType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+/** Champs dont l'API peut refuser la valeur, dans l'ordre du formulaire. */
+const BRIEF_FIELDS = ["entityType", "sector", "mission", "values", "audience", "tone", "maxLength", "mustInclude", "mustAvoid"] as const;
+/** Limites de l'API (BriefDto). */
+const TAG_LIMITS = { values: 10, mustInclude: 10, mustAvoid: 20 } as const;
 
 const EMPTY_BRIEF: Brief = {
   sector: "",
@@ -36,7 +41,7 @@ function BriefForm() {
   const t = useTranslations();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const onError = useApiErrorToast();
+  const { errors, onError, clear } = useFormErrors(BRIEF_FIELDS);
   const { project, pid, can } = useProject();
   // Monté par BriefPage une fois le projet chargé : les valeurs initiales viennent du projet.
   const [brief, setBrief] = useState<Brief>(project?.brief ?? EMPTY_BRIEF);
@@ -56,7 +61,11 @@ function BriefForm() {
     onError,
   });
 
-  const set = <K extends keyof Brief>(key: K, value: Brief[K]) => setBrief((current) => ({ ...current, [key]: value }));
+  const set = <K extends keyof Brief>(key: K, value: Brief[K]) => {
+    clear(key);
+    setBrief((current) => ({ ...current, [key]: value }));
+  };
+  const tagHint = (key: keyof typeof TAG_LIMITS) => t("app.brief.tagCount", { count: brief[key].length, max: TAG_LIMITS[key] });
   const toggle = <T extends string>(list: T[], value: T) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
   const readOnly = !can("content.edit");
 
@@ -75,8 +84,15 @@ function BriefForm() {
         </CardHeader>
         <CardContent>
           <fieldset disabled={readOnly} className="grid gap-5 sm:grid-cols-2">
-            <Field label={t("app.brief.entityType")} htmlFor="entityType">
-              <NativeSelect id="entityType" value={entityType} onChange={(e) => setEntityType(e.target.value as EntityType)}>
+            <Field label={t("app.brief.entityType")} htmlFor="entityType" error={errors.entityType}>
+              <NativeSelect
+                id="entityType"
+                value={entityType}
+                onChange={(e) => {
+                  clear("entityType");
+                  setEntityType(e.target.value as EntityType);
+                }}
+              >
                 {ENTITY_TYPES.map((type) => (
                   <option key={type} value={type}>
                     {t(`common.entityTypes.${type}`)}
@@ -84,27 +100,27 @@ function BriefForm() {
                 ))}
               </NativeSelect>
             </Field>
-            <Field label={t("app.brief.sector")} htmlFor="sector">
-              <Input id="sector" value={brief.sector} onChange={(e) => set("sector", e.target.value)} placeholder={t("app.brief.sectorPlaceholder")} required />
+            <Field label={t("app.brief.sector")} htmlFor="sector" error={errors.sector}>
+              <Input id="sector" value={brief.sector} maxLength={120} onChange={(e) => set("sector", e.target.value)} placeholder={t("app.brief.sectorPlaceholder")} required />
             </Field>
-            <Field label={t("app.brief.mission")} htmlFor="mission" hint={t("app.brief.missionCount", { count: brief.mission.length })} className="sm:col-span-2">
+            <Field label={t("app.brief.mission")} htmlFor="mission" hint={t("app.brief.missionCount", { count: brief.mission.length })} error={errors.mission} className="sm:col-span-2">
               <Textarea id="mission" value={brief.mission} maxLength={500} rows={3} onChange={(e) => set("mission", e.target.value)} placeholder={t("app.brief.missionPlaceholder")} />
             </Field>
-            <Field label={t("app.brief.values")} htmlFor="values">
-              <TagInput id="values" value={brief.values} onChange={(v) => set("values", v)} placeholder={t("app.brief.valuesPlaceholder")} />
+            <Field label={t("app.brief.values")} htmlFor="values" hint={tagHint("values")} error={errors.values}>
+              <TagInput id="values" value={brief.values} max={TAG_LIMITS.values} onChange={(v) => set("values", v)} placeholder={t("app.brief.valuesPlaceholder")} />
             </Field>
-            <Field label={t("app.brief.audience")} htmlFor="audience">
-              <Input id="audience" value={brief.audience} onChange={(e) => set("audience", e.target.value)} placeholder={t("app.brief.audiencePlaceholder")} />
+            <Field label={t("app.brief.audience")} htmlFor="audience" error={errors.audience}>
+              <Input id="audience" value={brief.audience} maxLength={300} onChange={(e) => set("audience", e.target.value)} placeholder={t("app.brief.audiencePlaceholder")} />
             </Field>
-            <Field label={t("app.brief.tone")} htmlFor="tone">
-              <Input id="tone" value={brief.tone} onChange={(e) => set("tone", e.target.value)} placeholder={t("app.brief.tonePlaceholder")} />
+            <Field label={t("app.brief.tone")} htmlFor="tone" error={errors.tone}>
+              <Input id="tone" value={brief.tone} maxLength={40} onChange={(e) => set("tone", e.target.value)} placeholder={t("app.brief.tonePlaceholder")} />
             </Field>
-            <Field label={t("app.brief.maxLength")} htmlFor="maxLength" hint={t("app.brief.maxLengthHint")}>
+            <Field label={t("app.brief.maxLength")} htmlFor="maxLength" hint={t("app.brief.maxLengthHint")} error={errors.maxLength}>
               <Input
                 id="maxLength"
                 type="number"
                 min={3}
-                max={40}
+                max={30}
                 inputMode="numeric"
                 value={brief.maxLength ?? ""}
                 onChange={(e) => set("maxLength", e.target.value ? Number(e.target.value) : null)}
@@ -146,11 +162,11 @@ function BriefForm() {
               </div>
             </fieldset>
             <div />
-            <Field label={t("app.brief.mustInclude")} htmlFor="mustInclude">
-              <TagInput id="mustInclude" value={brief.mustInclude} onChange={(v) => set("mustInclude", v)} />
+            <Field label={t("app.brief.mustInclude")} htmlFor="mustInclude" hint={tagHint("mustInclude")} error={errors.mustInclude}>
+              <TagInput id="mustInclude" value={brief.mustInclude} max={TAG_LIMITS.mustInclude} onChange={(v) => set("mustInclude", v)} />
             </Field>
-            <Field label={t("app.brief.mustAvoid")} htmlFor="mustAvoid">
-              <TagInput id="mustAvoid" value={brief.mustAvoid} onChange={(v) => set("mustAvoid", v)} />
+            <Field label={t("app.brief.mustAvoid")} htmlFor="mustAvoid" hint={tagHint("mustAvoid")} error={errors.mustAvoid}>
+              <TagInput id="mustAvoid" value={brief.mustAvoid} max={TAG_LIMITS.mustAvoid} onChange={(v) => set("mustAvoid", v)} />
             </Field>
           </fieldset>
         </CardContent>

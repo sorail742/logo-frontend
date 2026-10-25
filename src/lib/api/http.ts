@@ -2,7 +2,7 @@ import type { ApiClient, ApiFeature, Session } from "./contract";
 import { ApiError, problem, type ProblemDetails } from "./errors";
 import { tokenStore } from "./token";
 import { PLANS } from "@/lib/plans";
-import type { GenerationJob, JobEvent, JobStatus, Plan } from "@/lib/types";
+import type { GenerationJob, JobEvent, JobStatus, Plan, Website, WebsiteMessage } from "@/lib/types";
 
 // Client de l'API NestJS (/api/v1). Le jeton d'accès vit en mémoire ;
 // le jeton de rafraîchissement est un cookie httpOnly posé par l'API (§14.1).
@@ -22,6 +22,7 @@ const FEATURES: Record<ApiFeature, boolean> = {
   smsLogin: false,
   googleLogin: Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID),
   studioExport: true,
+  productionPack: true,
 };
 
 /** Action d'un module pas encore servi par l'API. */
@@ -237,6 +238,7 @@ export const httpClient: ApiClient = {
     list: () => get("/workspaces"),
     create: (input) => post("/workspaces", input),
     update: (wid, body) => patch(`/workspaces/${wid}`, body),
+    remove: (wid, confirm) => request<void>(`/workspaces/${wid}`, { method: "DELETE", body: { confirm } }),
     members: (wid) => get(`/workspaces/${wid}/members`),
     invitations: (wid) => get(`/workspaces/${wid}/invitations`),
     invite: (wid, input) => post(`/workspaces/${wid}/invitations`, input),
@@ -316,6 +318,46 @@ export const httpClient: ApiClient = {
     remove: (sdid) => del(`/studio-designs/${sdid}`),
     requestExport: (sdid, input, key) => post(`/studio-designs/${sdid}/export`, input, key),
     generateImages: (pid, input, key) => post(`/projects/${pid}/studio-images`, input, key),
+    cutout: (pid, input, key) => post(`/projects/${pid}/studio-cutout`, input, key),
+  },
+
+  apparel: {
+    templates: () => get("/apparel/templates"),
+    rulePresets: () => get("/apparel/rule-presets"),
+    list: (pid) => get(`/projects/${pid}/apparel-designs`),
+    create: (pid, input) => post(`/projects/${pid}/apparel-designs`, input),
+    get: (did) => get(`/apparel-designs/${did}`),
+    update: (did, input) => patch(`/apparel-designs/${did}`, input),
+    remove: (did) => del(`/apparel-designs/${did}`),
+    duplicate: (did) => post(`/apparel-designs/${did}/duplicate`, {}),
+    // Champs attendus seulement : les identifiants locaux de l'éditeur sont remplacés par l'API.
+    saveElements: (did, elements) =>
+      put(`/apparel-designs/${did}/elements`, {
+        elements: elements.map(({ zoneKey, kind, content, widthMm, heightMm, offsetXMm, offsetYMm, rotationDeg, zIndex }) => ({ zoneKey, kind, content, widthMm, heightMm, offsetXMm, offsetYMm, rotationDeg, zIndex })),
+      }),
+    check: (did, input) => post(`/apparel-designs/${did}/check`, input ?? {}),
+    importRoster: (did, csv, name) => post(`/apparel-designs/${did}/roster/import`, { csv, name }),
+    proof: (did) => post(`/apparel-designs/${did}/proof`, {}),
+    revokeProof: (did) => post(`/apparel-designs/${did}/proof`, { revoke: true }),
+    publicProof: (token) => request(`/public/proofs/${encodeURIComponent(token)}`, { auth: false }),
+    approveProof: (token, approverName) => request(`/public/proofs/${encodeURIComponent(token)}/approve`, { method: "POST", body: { approverName }, auth: false }),
+    productionExport: (did, input, key) => post(`/apparel-designs/${did}/production-export`, input, key),
+  },
+
+  websites: {
+    get: async (pid) => (await get<{ website: Website | null }>(`/projects/${pid}/website`)).website,
+    create: (pid) => post(`/projects/${pid}/website`),
+    update: (webid, input) => patch(`/websites/${webid}`, input),
+    brand: (webid) => get(`/websites/${webid}/brand`),
+    publish: (webid) => post(`/websites/${webid}/publish`),
+    unpublish: (webid) => post(`/websites/${webid}/unpublish`),
+    remove: (webid) => del(`/websites/${webid}`),
+    addMedia: (webid, input) => post(`/websites/${webid}/media`, input),
+    removeMedia: (webid, mid) => del(`/websites/${webid}/media/${mid}`),
+    messages: async (webid) => (await get<{ items: WebsiteMessage[] }>(`/websites/${webid}/messages`)).items,
+    markMessage: (webid, msgid, read) => patch(`/websites/${webid}/messages/${msgid}`, { read }),
+    removeMessage: (webid, msgid) => del(`/websites/${webid}/messages/${msgid}`),
+    exportZip: (webid) => post(`/websites/${webid}/export`),
   },
 
   jobs: {
@@ -363,6 +405,9 @@ export const httpClient: ApiClient = {
     users: (q) => items(`/admin/users${qs({ q })}`),
     updateUser: (uid, { suspended, reset2fa }) => patch(`/admin/users/${uid}`, { suspended, resetTwoFactor: reset2fa }),
     adjustCredits: (input) => post("/admin/credits/adjust", input),
+    requestCredits: (input) => post("/admin/credits/requests", input),
+    creditRequests: (status) => get(`/admin/credits/requests${qs({ status })}`),
+    decideCreditRequest: (id, approve, note) => patch(`/admin/credits/requests/${id}`, { approve, note }),
     payments: none,
     refund: unavailable,
     moderation: () => get("/admin/moderation"),

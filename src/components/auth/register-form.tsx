@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -9,7 +9,8 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/common/field";
-import { api, errorMessage } from "@/lib/api";
+import { PasswordInput, PasswordStrength } from "@/components/common/password-input";
+import { api, errorMessage, fieldErrors } from "@/lib/api";
 import { useSessionStore } from "@/stores/session";
 import { AuthCard } from "./auth-card";
 
@@ -19,9 +20,9 @@ export function RegisterForm() {
   const setUser = useSessionStore((s) => s.setUser);
 
   const schema = z.object({
-    fullName: z.string().trim().min(2, t("errors.required")),
+    fullName: z.string().trim().min(2, t("errors.required")).max(120),
     email: z.email(t("errors.email")),
-    password: z.string().min(8, t("errors.password")),
+    password: z.string().min(8, t("errors.password")).max(128),
     terms: z.literal(true, { error: t("errors.terms") }),
   });
   type Values = z.infer<typeof schema>;
@@ -37,11 +38,16 @@ export function RegisterForm() {
       toast.success(t("register.verifyNotice"));
       router.replace("/app/projets/nouveau");
     } catch (error) {
-      toast.error(errorMessage(error));
+      // Champs refusés par l'API : message sous le champ, focus sur le premier.
+      const fields = fieldErrors(error);
+      const refused = (["fullName", "email", "password"] as const).filter((key) => fields[key]);
+      refused.forEach((key, i) => form.setError(key, { message: fields[key] }, { shouldFocus: i === 0 }));
+      if (!refused.length) toast.error(errorMessage(error));
     }
   });
 
   const { errors } = form.formState;
+  const password = useWatch({ control: form.control, name: "password" });
   return (
     <AuthCard
       title={t("register.title")}
@@ -57,21 +63,28 @@ export function RegisterForm() {
     >
       <form onSubmit={onSubmit} className="grid gap-4" noValidate>
         <Field label={t("register.fullName")} htmlFor="fullName" error={errors.fullName?.message}>
-          <Input id="fullName" autoComplete="name" {...form.register("fullName")} />
+          <Input id="fullName" autoComplete="name" maxLength={120} {...form.register("fullName")} />
         </Field>
         <Field label={t("register.email")} htmlFor="email" error={errors.email?.message}>
-          <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
+          <Input id="email" type="email" autoComplete="email" maxLength={254} {...form.register("email")} />
         </Field>
         <Field label={t("register.password")} htmlFor="password" hint={t("register.passwordHint")} error={errors.password?.message}>
-          <Input id="password" type="password" autoComplete="new-password" {...form.register("password")} />
+          <PasswordInput id="password" autoComplete="new-password" maxLength={128} {...form.register("password")} />
         </Field>
+        <PasswordStrength password={password} />
         <div className="grid gap-1">
           <label className="flex items-start gap-2 text-sm">
-            <input type="checkbox" className="mt-0.5 size-4 accent-[var(--primary)]" {...form.register("terms")} />
+            <input
+              type="checkbox"
+              className="mt-0.5 size-4 accent-[var(--primary)]"
+              aria-invalid={errors.terms ? true : undefined}
+              aria-describedby={errors.terms ? "terms-error" : undefined}
+              {...form.register("terms")}
+            />
             <span>{t("register.terms")}</span>
           </label>
           {errors.terms && (
-            <p className="text-xs text-destructive" role="alert">
+            <p id="terms-error" className="text-xs text-destructive" role="alert">
               {errors.terms.message}
             </p>
           )}

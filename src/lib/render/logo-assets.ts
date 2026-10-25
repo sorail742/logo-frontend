@@ -1,41 +1,50 @@
 "use client";
 
 import type { LogoSpec } from "@/lib/types";
-import { readableOn } from "./color";
 import { APP_ICON_SIZES, buildIco, svgToPngBlob } from "./export";
 import { getFont } from "./fonts";
 import { getIcon } from "./icons";
 import { renderLogoSvg } from "./logo";
+import type { BrandAssets } from "./compose";
+import { mockupSvg, type MockupScene } from "./mockups";
+import { socialKitSvg, type SocialFormat } from "./social-kit";
 import type { ZipEntry } from "./zip";
 
-export const SOCIAL_FORMATS = [
-  { id: "profile", width: 400, height: 400 },
-  { id: "facebook", width: 820, height: 312 },
-  { id: "linkedin", width: 1584, height: 396 },
-] as const;
-
-export type SocialFormatId = (typeof SOCIAL_FORMATS)[number]["id"];
+export { MOCKUP_SCENES, MOCKUP_WIDTH, MOCKUP_HEIGHT, type MockupScene } from "./mockups";
+export { SOCIAL_KIT, type SocialFormat } from "./social-kit";
 
 function iconSpec(spec: LogoSpec): LogoSpec {
   return { ...spec, iconFrame: spec.iconFrame === "none" ? "circle" : spec.iconFrame };
 }
 
-/** Logo centré sur un fond aux couleurs de la marque (LOGO-23). */
-export function socialSvg(spec: LogoSpec, id: SocialFormatId) {
-  const format = SOCIAL_FORMATS.find((f) => f.id === id)!;
-  const isProfile = id === "profile";
-  const background = isProfile ? spec.colors.background : spec.colors.primary;
-  const variant = !isProfile && readableOn(background) === "#ffffff" ? "white" : "color";
-  const logo = isProfile
-    ? renderLogoSvg(iconSpec(spec), { layout: "icon" })
-    : renderLogoSvg(spec, { variant, withBackground: false, layout: spec.layout === "vertical" ? "horizontal" : undefined });
-  const maxW = format.width * (isProfile ? 0.86 : 0.6);
-  const maxH = format.height * (isProfile ? 0.86 : 0.6);
-  const scale = Math.min(maxW / logo.width, maxH / logo.height);
-  const w = logo.width * scale;
-  const h = logo.height * scale;
-  const inner = logo.svg.replace("<svg ", `<svg x="${(format.width - w) / 2}" y="${(format.height - h) / 2}" `).replace(/ width="[\d.]+" height="[\d.]+"/, ` width="${w}" height="${h}"`);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${format.width} ${format.height}" width="${format.width}" height="${format.height}"><rect width="100%" height="100%" fill="${background}"/>${inner}</svg>`;
+/** Logo et symbole dans toutes leurs couleurs, pour les visuels composés. */
+export function brandAssets(spec: LogoSpec): BrandAssets {
+  const layout = spec.layout === "vertical" ? "horizontal" : undefined;
+  const icon = iconSpec(spec);
+  return {
+    logo: {
+      color: renderLogoSvg(spec, { variant: "color", withBackground: false, layout }),
+      white: renderLogoSvg(spec, { variant: "white", withBackground: false, layout }),
+      black: renderLogoSvg(spec, { variant: "black", layout }),
+    },
+    mark: {
+      color: renderLogoSvg(icon, { layout: "icon" }),
+      white: renderLogoSvg(icon, { layout: "icon", variant: "white", withBackground: false }),
+      black: renderLogoSvg(icon, { layout: "icon", variant: "black" }),
+    },
+    colors: spec.colors,
+    name: spec.text,
+  };
+}
+
+/** Kit réseaux sociaux (LOGO-23) : profils et bannières aux couleurs de la marque, logo en zone sûre. */
+export function socialSvg(spec: LogoSpec, format: SocialFormat, assets = brandAssets(spec)) {
+  return socialKitSvg(assets, format);
+}
+
+/** Mise en situation du logo (devanture, t-shirt, mugs…), 1600 × 1200. */
+export function mockupSceneSvg(spec: LogoSpec, scene: MockupScene, assets = brandAssets(spec)) {
+  return mockupSvg(assets, scene);
 }
 
 /** Pack d'icônes d'application (LOGO-22). */

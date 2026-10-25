@@ -124,9 +124,16 @@
     "iconPack": "Pack icônes d'application",
     "iconPackBody": "favicon.ico (16/32/48), Apple 180 px, Android 192 et 512 px, iOS 1024 px",
     "social": "Formats réseaux sociaux",
-    "socialProfile": "Photo de profil",
-    "socialFacebook": "Bannière Facebook",
-    "socialLinkedin": "Bannière LinkedIn",
+    "socialFormats": {
+      "profile": "Photo de profil, fond clair · {size}",
+      "profile-inverse": "Photo de profil, fond couleur · {size}",
+      "facebook": "Couverture Facebook · {size}",
+      "linkedin": "Bannière LinkedIn (profil) · {size}",
+      "linkedin-page": "Bannière LinkedIn (page) · {size}",
+      "x": "Bannière X (Twitter) · {size}",
+      "youtube": "Bannière YouTube · {size}",
+      "story": "Story et statut WhatsApp · {size}"
+    },
     "watermark": "Offre gratuite : PNG 512 px avec filigrane uniquement.",
     "upgrade": "Passer à une offre payante",
     "done": "Fichier téléchargé",
@@ -136,5 +143,46 @@
     "zipAllButton": "Télécharger l'archive ZIP",
     "saveFirst": "Enregistrez d'abord la version : l'export serveur porte sur la dernière version enregistrée.",
     "serverFailed": "L'export n'a pas abouti, réessayez."
+  },
+  "scenes": {
+    "title": "Mises en situation",
+    "body": "Votre logo en devanture, sur t-shirt, mugs, cartes de visite, téléphone, véhicule, sacs et stand. Téléchargeables en JPG haute définition, inclus dans l'archive du kit.",
+    "free": "Votre logo en situation. Le téléchargement est inclus dans les offres payantes.",
+    "download": "Télécharger en JPG",
+    "done": "Image téléchargée",
+    "items": {
+      "storefront": "Devanture de boutique",
+      "tshirt": "T-shirt",
+      "mugs": "Mugs",
+      "cards": "Cartes de visite",
+      "phone": "Profil sur téléphone",
+      "van": "Véhicule de livraison",
+      "bags": "Sacs",
+      "stand": "Stand et kakemono"
+    },
+    "showcase": "La marque en situation : devanture, t-shirt, mugs, cartes de visite, téléphone, véhicule, sacs et stand."
+  },
+  "animation": {
+    "title": "Logo animé",
+    "body": "Le symbole, le nom puis la signature apparaissent tour à tour. SVG animé pour votre site, vidéo carrée 1080 px pour les statuts WhatsApp, Reels et TikTok.",
+    "free": "Aperçu de votre logo animé. Les téléchargements sont inclus dans les offres payantes.",
+    "alt": "Logo animé de {name}",
+    "replay": "Rejouer",
+    "style": "Animation",
+    "styles": {
+      "reveal": "Apparition",
+      "draw": "Tracé",
+      "bounce": "Rebond"
+    },
+    "background": "Fond",
+    "backgrounds": {
+      "light": "Fond clair",
+      "brand": "Couleur de la marque"
+    },
+    "svg": "SVG animé",
+    "video": "Vidéo 1080 px",
+    "recording": "Enregistrement…",
+    "videoNote": "La vidéo est enregistrée dans votre navigateur (MP4, ou WebM selon le navigateur) : gardez l'onglet ouvert quelques secondes.",
+    "done": "Fichier téléchargé"
   }
 }

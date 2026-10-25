@@ -5,14 +5,16 @@ import { useTranslations } from "next-intl";
 import { Check, ChevronDown, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cssFontFamily, FONTS, getFont, type FontCategory } from "@/lib/render/fonts";
+import { cssFontFamily, FONTS, getFont, PULAR_FONTS, type FontCategory } from "@/lib/render/fonts";
 import { cn } from "@/lib/utils";
 
 // Choix de la police avec aperçu dans chaque police, recherche et polices de la marque en tête.
 
-const CATEGORIES: FontCategory[] = ["sans", "serif", "display", "script"];
+const CATEGORIES: FontCategory[] = ["sport", "festive", "sans", "serif", "display", "script"];
 
-export function FontPicker({ value, onChange, brandFonts = [] }: { value: string; onChange(fontId: string): void; brandFonts?: string[] }) {
+const NO_FONTS: string[] = [];
+
+export function FontPicker({ value, onChange, brandFonts = NO_FONTS }: Readonly<{ value: string; onChange(fontId: string): void; brandFonts?: string[] }>) {
   const t = useTranslations("studio.text");
   const tc = useTranslations("common.fontCategories");
   const [open, setOpen] = useState(false);
@@ -45,7 +47,8 @@ export function FontPicker({ value, onChange, brandFonts = [] }: { value: string
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchFont")} className="h-8 pl-8 text-xs" aria-label={t("searchFont")} />
         </div>
-        <div className="max-h-80 overflow-y-auto pr-1" role="listbox" aria-label={t("font")}>
+        <fieldset className="max-h-80 overflow-y-auto pr-1">
+          <legend className="sr-only">{t("font")}</legend>
           {groups.map((group) => (
             <div key={group.id} className="mb-1.5">
               <p className="sticky top-0 bg-popover px-2 py-1 text-[11px] font-medium text-muted-foreground">{group.label}</p>
@@ -53,8 +56,7 @@ export function FontPicker({ value, onChange, brandFonts = [] }: { value: string
                 <button
                   key={`${group.id}-${f.id}`}
                   type="button"
-                  role="option"
-                  aria-selected={f.id === value}
+                  aria-pressed={f.id === value}
                   onClick={() => {
                     onChange(f.id);
                     setOpen(false);
@@ -63,12 +65,20 @@ export function FontPicker({ value, onChange, brandFonts = [] }: { value: string
                   style={{ fontFamily: cssFontFamily(f.id) }}
                 >
                   <span className="truncate">{f.name}</span>
-                  {f.id === value && <Check className="size-3.5 shrink-0" aria-hidden="true" />}
+                  <span className="ml-auto flex shrink-0 items-center gap-1.5 pl-2">
+                    {PULAR_FONTS.has(f.id) && (
+                      <span className="text-[11px] text-muted-foreground" style={{ fontFamily: cssFontFamily("montserrat") }} title={t("pular")}>
+                        <span aria-hidden="true">ɓɗƴ</span>
+                        <span className="sr-only">{t("pular")}</span>
+                      </span>
+                    )}
+                    {f.id === value && <Check className="size-3.5" aria-hidden="true" />}
+                  </span>
                 </button>
               ))}
             </div>
           ))}
-        </div>
+        </fieldset>
       </PopoverContent>
     </Popover>
   );

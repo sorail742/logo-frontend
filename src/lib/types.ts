@@ -1,6 +1,10 @@
 // Types côté front, alignés sur le schéma Prisma du cahier des charges (§12).
 // À terme, ils seront importés depuis packages/shared.
 
+import type { BrandAssets } from "@/lib/render/compose";
+import type { SiteContent } from "@/lib/render/site";
+import type { FontCategory } from "@/lib/render/fonts";
+
 export type PlatformRole = "USER" | "SUPPORT" | "ADMIN" | "SUPER_ADMIN";
 export type WorkspaceRole = "OWNER" | "EDITOR" | "VIEWER";
 export type WorkspaceKind = "PERSONAL" | "ORGANIZATION";
@@ -52,6 +56,23 @@ export interface Workspace {
   creditBalance: number;
   role: WorkspaceRole; // rôle de l'utilisateur courant dans l'espace
   planCode: PlanCode;
+  /** Les lecteurs peuvent télécharger fichiers et exports (réglage du propriétaire). */
+  viewerDownloads?: boolean;
+}
+
+/** Ajustement de crédits proposé par le support, validé ou refusé par un admin. */
+export interface CreditRequest {
+  id: string;
+  workspaceId: string;
+  workspaceName: string;
+  delta: number;
+  reason: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  requestedBy: string | null;
+  decidedBy: string | null;
+  decisionNote: string | null;
+  decidedAt: string | null;
+  createdAt: string;
 }
 
 export interface Member {
@@ -97,7 +118,7 @@ export interface Project {
   updatedAt: string;
   deletedAt: string | null;
   // Avancement du parcours (calculé par l'API)
-  progress: { brief: boolean; name: boolean; logo: boolean; signatures: boolean; kit: boolean };
+  progress: { brief: boolean; name: boolean; logo: boolean; signatures: boolean; kit: boolean; site?: boolean };
   previewSpec?: LogoSpec | null;
 }
 
@@ -295,6 +316,10 @@ export interface GenerationJob {
     provider?: string;
     /** Fournisseur de démonstration : visuels génératifs. */
     demo?: boolean;
+    /** Pack atelier : pièces, planches et points à vérifier. */
+    pieces?: number;
+    sheets?: number;
+    warnings?: string[];
   } | null;
   createdAt: string;
   finishedAt: string | null;
@@ -348,7 +373,7 @@ export interface Invoice {
 
 export interface AppNotification {
   id: string;
-  type: "INVITATION" | "COMMENT" | "EXPORT_READY" | "LOW_CREDITS" | "PAYMENT";
+  type: "INVITATION" | "COMMENT" | "EXPORT_READY" | "LOW_CREDITS" | "PAYMENT" | "SITE_MESSAGE";
   title: string;
   body: string;
   href: string | null;
@@ -456,12 +481,73 @@ export type PhotoOrientation = "landscape" | "portrait" | "square";
 export interface LibraryCapabilities {
   aiImages: { provider: string; demo: boolean };
   photos: boolean;
+  /** Détourage automatique par IA (fournisseur configuré sur l'API). */
+  cutout?: boolean;
 }
 
 export interface LibraryFont {
   id: string;
   name: string;
-  category: "sans" | "serif" | "display" | "script";
+  category: FontCategory;
+  /** Écritures entièrement couvertes (latin, pular, nko), d'après l'API. */
+  scripts?: string[];
   license: "OFL";
   isActive: boolean;
+}
+
+// ─── Site web de la marque ───
+
+/** Image téléversée pour le site (URL publique servie par l'API, data URL en simulation). */
+export interface WebsiteMedia {
+  id: string;
+  url: string;
+  alt: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export interface Website {
+  id: string;
+  projectId: string;
+  /** Adresse publique : /site/<slug>. */
+  slug: string;
+  /** Logo choisi ; null : le favori ou le plus récent du projet. */
+  logoId: string | null;
+  content: SiteContent;
+  published: boolean;
+  publishedAt: string | null;
+  /** Modifications enregistrées depuis la dernière publication. */
+  dirty: boolean;
+  views: number;
+  url: string;
+  /** Point d'envoi du formulaire de contact. */
+  formUrl: string;
+  /** Base des routes publiques (polices, images) ; vide en simulation. */
+  assetsUrl: string;
+  media: WebsiteMedia[];
+  unreadMessages: number;
+  /** Logo affiché ; null si le projet n'en a plus. */
+  displayedLogoId: string | null;
+  /** Offre gratuite : mention de la plateforme imposée, export réservé aux offres payantes. */
+  free: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WebsiteMessage {
+  id: string;
+  websiteId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  message: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
+/** Logo et symbole du site en toutes couleurs (texte vectorisé par l'API). */
+export interface WebsiteBrand {
+  name: string;
+  logoId: string;
+  assets: BrandAssets;
 }

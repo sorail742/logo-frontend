@@ -52,6 +52,8 @@
 }
 
 :root {
+  /* Polices de secours des logos (src/lib/render/fonts.ts) : latin étendu de Montserrat, N'Ko. */
+  --logo-font-fallbacks: var(--font-montserrat-ext), var(--font-nko);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

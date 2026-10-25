@@ -1,5 +1,6 @@
 import type { ApiClient, Session } from "../contract";
-import { problem } from "../errors";
+import { ApiError, problem } from "../errors";
+import { randomString } from "@/lib/random";
 import { tokenStore } from "../token";
 import {
   JOB_DURATIONS,
@@ -23,8 +24,20 @@ import { findOfficialTerms, renderStampSvg } from "@/lib/render/stamp";
 import { DEFAULT_SPEC, LOGO_VARIANTS, renderLogoSvg } from "@/lib/render/logo";
 import { hashSeed, renderArtwork, styleFromPrompt } from "@/lib/render/artwork";
 import type { StudioDesign } from "@/lib/studio/types";
+import { DEFAULT_TEMPLATES } from "@/lib/apparel/defaults";
+import { checkElements } from "@/lib/apparel/rules";
+import type { ApparelDesign, ApparelIssue, ApparelTemplate, RosterEntry, RulePreset } from "@/lib/apparel/types";
+import { slugify } from "@/lib/format";
+import { brandAssets } from "@/lib/render/logo-assets";
+import { resolveFontVars } from "@/lib/render/export";
+import { defaultSiteContent, siteMediaIds } from "@/lib/render/site";
+import { brandStyle, sectorIcons, socialsOf } from "@/lib/site-defaults";
 import type {
   BrandKit,
+  EmailSignatureData,
+  Website,
+  WebsiteMessage,
+  CreditRequest,
   JobEvent,
   JobKind,
   Logo,
@@ -32,12 +45,21 @@ import type {
   Project,
   PublicKit,
   StampData,
+  PlatformRole,
   User,
   Workspace,
   WorkspaceRole,
 } from "@/lib/types";
 
-const wait = (ms = 180) => new Promise((resolve) => setTimeout(resolve, ms));
+/** Base64 d'un texte UTF-8 (SVG avec accents) pour une data URL. */
+function base64Utf8(text: string) {
+  return btoa(Array.from(new TextEncoder().encode(text), (byte) => String.fromCodePoint(byte)).join(""));
+}
+
+const wait = (ms = 180) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
 const today = () => new Date().toISOString().slice(0, 10);
 
 function currentUser() {
@@ -60,11 +82,23 @@ function roleIn(workspaceId: string): WorkspaceRole | null {
 
 const RANK: Record<WorkspaceRole, number> = { VIEWER: 1, EDITOR: 2, OWNER: 3 };
 
-/** Équivalent du WorkspaceGuard côté API. */
+/** Équivalent du WorkspaceGuard côté API : un espace supprimé n'existe plus pour personne. */
 function requireRole(workspaceId: string, minimum: WorkspaceRole) {
+  const workspace = db().workspaces.find((w) => w.id === workspaceId);
+  if (!workspace || workspace.deletedAt) throw problem(404, "Espace introuvable", "NOT_FOUND");
   const role = roleIn(workspaceId);
-  if (!role || RANK[role] < RANK[minimum]) throw problem(403, "Action non autorisée pour votre rôle", "FORBIDDEN");
+  if (!role) throw problem(404, "Ressource introuvable", "NOT_FOUND");
+  if (RANK[role] < RANK[minimum]) throw problem(403, "Action non autorisée pour votre rôle", "FORBIDDEN");
   return role;
+}
+
+const PLATFORM_RANK: Record<PlatformRole, number> = { USER: 0, SUPPORT: 1, ADMIN: 2, SUPER_ADMIN: 3 };
+
+/** Équivalent du RolesGuard : rôle plateforme minimal. */
+function requirePlatform(minimum: PlatformRole) {
+  const user = currentUser();
+  if (PLATFORM_RANK[user.role] < PLATFORM_RANK[minimum]) throw problem(403, "Droits insuffisants", "FORBIDDEN");
+  return user;
 }
 
 function projectOr404(pid: string): DbProject {
@@ -109,6 +143,154 @@ function studioDesign(sdid: string) {
   return design;
 }
 
+const ROSTER_INVALID = "Fichier d’effectif invalide";
+const NAME_NOT_FOUND = "Nom introuvable";
+
+// Textile : tenues rangées à part (images intégrées), sous une clé dédiée du navigateur.
+const APPAREL_KEY = "identite:mock-apparel:v1";
+const RULES_DISCLAIMER = "Les préréglages reprennent les principales règles connues ; le règlement officiel de la compétition fait foi.";
+const MOCK_PRESETS: RulePreset[] = [
+  { id: "rp-football-men", code: "FOOTBALL_MEN", name: "Football hommes (FIFA, UEFA)" },
+  { id: "rp-football-women", code: "FOOTBALL_WOMEN", name: "Football femmes (FIFA, UEFA)" },
+  { id: "rp-fiba", code: "FIBA", name: "Basket (FIBA)" },
+  { id: "rp-free", code: "FREE", name: "Libre (t-shirt, loisir)" },
+];
+let apparelCache: ApparelDesign[] | null = null;
+
+function apparelDesigns(): ApparelDesign[] {
+  if (apparelCache) return apparelCache;
+  try {
+    apparelCache = JSON.parse(window.localStorage.getItem(APPAREL_KEY) ?? "[]") as ApparelDesign[];
+  } catch {
+    apparelCache = [];
+  }
+  return apparelCache;
+}
+
+function saveApparel(designs: ApparelDesign[]) {
+  try {
+    window.localStorage.setItem(APPAREL_KEY, JSON.stringify(designs));
+    apparelCache = designs;
+  } catch {
+    apparelCache = null;
+    throw problem(413, "Tenue trop lourde", "PAYLOAD_TOO_LARGE", "Le stockage du navigateur est plein : réduisez le nombre ou la taille des images.");
+  }
+}
+
+function apparelDesign(did: string) {
+  const design = apparelDesigns().find((d) => d.id === did);
+  if (!design) throw problem(404, "Tenue introuvable", "NOT_FOUND");
+  return design;
+}
+
+function apparelTemplate(tid: string): ApparelTemplate {
+  const template = DEFAULT_TEMPLATES.find((t) => t.id === tid);
+  if (!template) throw problem(400, "Support introuvable ou désactivé", "BAD_REQUEST");
+  return template;
+}
+
+/** Une tenue modifiée après l'envoi du BAT doit être revalidée. */
+function unlockApparel(design: ApparelDesign) {
+  if (design.status === "PROOF_SENT" || design.status === "APPROVED") Object.assign(design, { status: "DRAFT", approvedAt: null, proofToken: null });
+  design.updatedAt = now();
+}
+
+/** Contrôle de l'effectif : numéros en double, tailles absentes du support. */
+function rosterIssues(entries: RosterEntry[], sizes: string[]): ApparelIssue[] {
+  const issues: ApparelIssue[] = [];
+  const seen = new Set<string>();
+  for (const e of entries) {
+    if (e.number && seen.has(e.number)) issues.push({ code: "DUPLICATE_NUMBER", severity: "error", message: `Numéro ${e.number} attribué deux fois` });
+    if (e.number) seen.add(e.number);
+    if (!sizes.includes(e.size)) issues.push({ code: "UNKNOWN_SIZE", severity: "error", message: `Taille ${e.size} indisponible pour ${e.displayName}` });
+  }
+  return issues;
+}
+
+function apparelCheck(design: ApparelDesign) {
+  const template = apparelTemplate(design.templateId);
+  const issues = checkElements(template.zones, design.elements, design.technique, design.garmentColor);
+  if (design.roster) issues.push(...rosterIssues(design.roster.entries, template.sizes.map((s) => s.label)));
+  const errors = issues.filter((i) => i.severity === "error");
+  return { ok: errors.length === 0, errors, warnings: issues.filter((i) => i.severity === "warning"), disclaimer: design.rulePresetId ? RULES_DISCLAIMER : undefined, referenceSize: "M" };
+}
+
+/** CSV d'effectif (virgule ou point-virgule) : nom, nom_imprime, numero, taille, poste, quantite. */
+function parseRoster(csv: string): RosterEntry[] {
+  const lines = csv.split(/\r?\n/).filter((l) => l.trim());
+  const separator = (lines[0] ?? "").includes(";") ? ";" : ",";
+  const header = (lines[0] ?? "").split(separator).map((h) => h.trim().toLowerCase());
+  const missing = ["nom", "numero", "taille"].filter((c) => !header.includes(c));
+  if (!lines.length || missing.length) throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Colonnes manquantes : ${missing.join(", ") || "nom, numero, taille"}`);
+  return lines.slice(1).map((line, i) => {
+    const cells = line.split(separator).map((c) => c.trim());
+    const get = (key: string) => cells[header.indexOf(key)] ?? "";
+    const quantity = get("quantite") ? Number(get("quantite")) : 1;
+    if (!get("nom")) throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Ligne ${i + 2} : nom manquant`);
+    if (!Number.isInteger(quantity) || quantity < 1) throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Ligne ${i + 2} : quantité invalide`);
+    return { playerName: get("nom"), displayName: get("nom_imprime") || get("nom").toUpperCase(), number: get("numero") || null, size: get("taille").toUpperCase(), quantity, role: get("poste") || null };
+  });
+}
+
+// Sites web : rangés à part (images téléversées en data URL), sous une clé dédiée du navigateur.
+const SITES_KEY = "identite:mock-sites:v1";
+type MockSite = Omit<Website, "dirty" | "url" | "formUrl" | "assetsUrl" | "unreadMessages" | "displayedLogoId" | "free"> & {
+  messages: WebsiteMessage[];
+};
+let sitesCache: MockSite[] | null = null;
+
+function mockSites(): MockSite[] {
+  if (sitesCache) return sitesCache;
+  try {
+    sitesCache = JSON.parse(window.localStorage.getItem(SITES_KEY) ?? "[]") as MockSite[];
+  } catch {
+    sitesCache = [];
+  }
+  return sitesCache;
+}
+
+function saveMockSites(sites: MockSite[]) {
+  try {
+    window.localStorage.setItem(SITES_KEY, JSON.stringify(sites));
+    sitesCache = sites;
+  } catch {
+    sitesCache = null;
+    throw problem(413, "Site trop lourd", "PAYLOAD_TOO_LARGE", "Le stockage du navigateur est plein : retirez des images du site.");
+  }
+}
+
+function mockSite(webid: string) {
+  const site = mockSites().find((s) => s.id === webid);
+  if (!site) throw problem(404, "Site introuvable", "NOT_FOUND");
+  return site;
+}
+
+/** Logo du site : le choisi, sinon le favori ou le plus récent du projet. */
+function siteLogo(projectId: string, logoId: string | null) {
+  const logos = db().logos.filter((l) => l.projectId === projectId);
+  return (
+    logos.find((l) => l.id === logoId) ??
+    logos.find((l) => l.isFavorite) ??
+    [...logos].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+  );
+}
+
+function siteDto(site: MockSite): Website {
+  const project = projectOr404(site.projectId);
+  const workspace = db().workspaces.find((w) => w.id === project.workspaceId);
+  const { messages, ...rest } = site;
+  return structuredClone({
+    ...rest,
+    dirty: site.published && !!site.publishedAt && Date.parse(site.updatedAt) > Date.parse(site.publishedAt),
+    url: `${typeof window === "undefined" ? "" : window.location.origin}/site/${site.slug}`,
+    formUrl: "",
+    assetsUrl: "",
+    unreadMessages: messages.filter((m) => !m.readAt).length,
+    displayedLogoId: siteLogo(site.projectId, site.logoId)?.id ?? null,
+    free: workspace?.planCode === "FREE",
+  });
+}
+
 function toLogo(logo: ReturnType<typeof db>["logos"][number]): Logo {
   const { jobId: _jobId, ...rest } = logo;
   const current = latestVersion(logo.id);
@@ -139,14 +321,15 @@ function toProject(project: DbProject): Project {
       logo: logos.length > 0,
       signatures: data.signatures.some((s) => s.projectId === project.id) || data.slogans.some((s) => s.projectId === project.id && s.isChosen),
       kit: data.brandKits.some((k) => k.projectId === project.id),
+      site: typeof window !== "undefined" && mockSites().some((site) => site.projectId === project.id && site.published),
     },
     previewSpec: favorite ? latestVersion(favorite.id).spec : null,
   };
 }
 
 function toWorkspace(workspace: ReturnType<typeof db>["workspaces"][number], role: WorkspaceRole): Workspace {
-  const { renewsAt: _renewsAt, ...rest } = workspace;
-  return { ...rest, role };
+  const { renewsAt: _renewsAt, deletedAt: _deletedAt, ...rest } = workspace;
+  return { ...rest, viewerDownloads: Boolean(workspace.viewerDownloads), role };
 }
 
 function projectName(project: DbProject) {
@@ -186,7 +369,7 @@ function startJob(project: DbProject, kind: JobKind, cost: number, input: Record
     input: { ...input, idempotencyKey },
     durationMs: JOB_DURATIONS[kind],
     materialized: false,
-    willFail: String(input.feedback ?? "").includes("__echec__"),
+    willFail: typeof input.feedback === "string" && input.feedback.includes("__echec__"),
   };
   // Débit au lancement, dans la même transaction que la création de la tâche (§11.4)
   if (cost > 0) writeLedger(workspace.id, -cost, "GENERATION", `${kind} — ${projectName(project)}`, { jobId: job.id });
@@ -234,7 +417,7 @@ function materialize(job: DbJob) {
   if (job.kind === "LOGOS") {
     const chosen = data.names.find((n) => n.id === project.chosenNameId);
     const slogan = data.slogans.find((s) => s.projectId === project.id && s.isChosen)?.text;
-    const reference = job.input.referenceLogoId ? latestVersion(String(job.input.referenceLogoId))?.spec : undefined;
+    const reference = typeof job.input.referenceLogoId === "string" ? latestVersion(job.input.referenceLogoId)?.spec : undefined;
     const specs = generateLogoSpecs({
       text: chosen?.value ?? project.title,
       tagline: slogan ?? (chosen?.acronym && chosen.meaning.startsWith("Sigle") ? chosen.meaning.replace(/^Sigle de « (.*) »\.$/, "$1") : ""),
@@ -363,7 +546,7 @@ function kitToDto(kit: ReturnType<typeof db>["brandKits"][number]): BrandKit {
 
 export const mockClient: ApiClient = {
   mode: "mock",
-  isAvailable: (feature) => feature !== "googleLogin" && feature !== "studioExport",
+  isAvailable: (feature) => feature !== "googleLogin" && feature !== "studioExport" && feature !== "productionPack",
 
   auth: {
     async register({ fullName, email, password }) {
@@ -428,7 +611,7 @@ export const mockClient: ApiClient = {
       if (!/^\d{6}$/.test(code)) throw problem(400, "Code à 6 chiffres attendu", "INVALID_TOTP");
       currentUser().totpEnabled = true;
       save();
-      return { backupCodes: Array.from({ length: 8 }, () => Math.random().toString(36).slice(2, 10).toUpperCase()) };
+      return { backupCodes: Array.from({ length: 8 }, () => randomString(8)) };
     },
   },
 
@@ -465,7 +648,9 @@ export const mockClient: ApiClient = {
       const data = db();
       return data.memberships
         .filter((m) => m.userId === user.id)
-        .map((m) => toWorkspace(data.workspaces.find((w) => w.id === m.workspaceId)!, m.role));
+        .map((m) => ({ workspace: data.workspaces.find((w) => w.id === m.workspaceId), role: m.role }))
+        .filter(({ workspace }) => workspace && !workspace.deletedAt)
+        .map(({ workspace, role }) => toWorkspace(workspace!, role));
     },
     async create({ name }) {
       await wait();
@@ -477,12 +662,27 @@ export const mockClient: ApiClient = {
       save();
       return toWorkspace(workspace, "OWNER");
     },
-    async update(wid, { name }) {
+    async update(wid, { name, viewerDownloads }) {
       requireRole(wid, "OWNER");
       const workspace = db().workspaces.find((w) => w.id === wid)!;
-      workspace.name = name;
+      if (name !== undefined) workspace.name = name;
+      if (viewerDownloads !== undefined) workspace.viewerDownloads = viewerDownloads;
+      audit("workspace.update", "Workspace", wid);
       save();
       return toWorkspace(workspace, "OWNER");
+    },
+    async remove(wid, confirm) {
+      await wait();
+      requireRole(wid, "OWNER");
+      const data = db();
+      const workspace = data.workspaces.find((w) => w.id === wid)!;
+      if (workspace.kind === "PERSONAL") throw problem(400, "L’espace personnel disparaît avec le compte", "VALIDATION");
+      if (confirm.trim() !== workspace.name) throw problem(400, "Saisissez le nom exact de l’espace pour confirmer", "VALIDATION");
+      workspace.deletedAt = now();
+      for (const project of data.projects) if (project.workspaceId === wid && !project.deletedAt) project.deletedAt = now();
+      data.invitations = data.invitations.filter((i) => i.workspaceId !== wid);
+      audit("workspace.delete", "Workspace", wid);
+      save();
     },
     async members(wid) {
       requireRole(wid, "VIEWER");
@@ -514,9 +714,16 @@ export const mockClient: ApiClient = {
       save();
     },
     async removeMember(wid, uid) {
-      requireRole(wid, "OWNER");
+      // Retrait par un propriétaire, ou départ volontaire de n'importe quel membre.
+      const role = requireRole(wid, "VIEWER");
+      const user = currentUser();
+      if (uid !== user.id && role !== "OWNER") throw problem(403, "Seul un propriétaire peut retirer un autre membre", "FORBIDDEN");
       const data = db();
-      data.memberships = data.memberships.filter((m) => !(m.workspaceId === wid && m.userId === uid));
+      const member = data.memberships.find((m) => m.workspaceId === wid && m.userId === uid);
+      if (!member) throw problem(404, "Membre introuvable", "NOT_FOUND");
+      const owners = data.memberships.filter((m) => m.workspaceId === wid && m.role === "OWNER").length;
+      if (member.role === "OWNER" && owners <= 1) throw problem(409, "L’espace doit garder au moins un propriétaire", "CONFLICT");
+      data.memberships = data.memberships.filter((m) => m !== member);
       save();
     },
     async acceptInvitation(token) {
@@ -537,7 +744,8 @@ export const mockClient: ApiClient = {
   projects: {
     async list(wid, filters = {}) {
       await wait(120);
-      requireRole(wid, "VIEWER");
+      // La corbeille relève de qui peut supprimer et restaurer : le propriétaire.
+      requireRole(wid, filters.trash ? "OWNER" : "VIEWER");
       const q = filters.q?.toLowerCase().trim();
       return db()
         .projects.filter((p) => p.workspaceId === wid)
@@ -633,7 +841,7 @@ export const mockClient: ApiClient = {
     },
     async update(nid, patch) {
       const name = db().names.find((n) => n.id === nid);
-      if (!name) throw problem(404, "Nom introuvable");
+      if (!name) throw problem(404, NAME_NOT_FOUND);
       requireRole(projectOr404(name.projectId).workspaceId, "EDITOR");
       Object.assign(name, patch);
       if (patch.isRejected) name.isFavorite = false;
@@ -644,7 +852,7 @@ export const mockClient: ApiClient = {
       await wait(900);
       const data = db();
       const name = data.names.find((n) => n.id === nid);
-      if (!name) throw problem(404, "Nom introuvable");
+      if (!name) throw problem(404, NAME_NOT_FOUND);
       // Cache 24 h (NOM-25)
       const fresh = name.checks[0] && Date.now() - Date.parse(name.checks[0].checkedAt) < 864e5;
       if (!fresh) {
@@ -671,7 +879,7 @@ export const mockClient: ApiClient = {
       requireRole(project.workspaceId, "EDITOR");
       const data = db();
       const name = data.names.find((n) => n.id === nid);
-      if (!name) throw problem(404, "Nom introuvable");
+      if (!name) throw problem(404, NAME_NOT_FOUND);
       const hadName = Boolean(project.chosenNameId);
       project.chosenNameId = nid;
       project.updatedAt = now();
@@ -849,6 +1057,9 @@ export const mockClient: ApiClient = {
     async requestExport() {
       throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Le PDF d'impression est produit par le serveur de la plateforme.");
     },
+    async cutout() {
+      throw problem(501, "Détourage IA non activé", "NOT_AVAILABLE", "Le détourage par IA est fourni par le serveur de la plateforme : utilisez le fond uni, la baguette ou les pinceaux.");
+    },
     async generateImages(pid, input, key) {
       await wait();
       const project = projectOr404(pid);
@@ -865,7 +1076,7 @@ export const mockClient: ApiClient = {
         demo: true,
         provider: "mock",
         images: Array.from({ length: 4 }, (_, i) => ({
-          url: `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(renderArtwork({ style, palette, width, height, seed: seed + i * 7919 }))))}`,
+          url: `data:image/svg+xml;base64,${base64Utf8(renderArtwork({ style, palette, width, height, seed: seed + i * 7919 }))}`,
           width,
           height,
         })),
@@ -1042,6 +1253,354 @@ export const mockClient: ApiClient = {
     },
   },
 
+  apparel: {
+    async templates() {
+      return structuredClone(DEFAULT_TEMPLATES);
+    },
+    async rulePresets() {
+      return { disclaimer: RULES_DISCLAIMER, presets: structuredClone(MOCK_PRESETS) };
+    },
+    async list(pid) {
+      requireRole(projectOr404(pid).workspaceId, "VIEWER");
+      return apparelDesigns()
+        .filter((d) => d.projectId === pid)
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+        .map((d) => ({
+          id: d.id,
+          templateId: d.templateId,
+          name: d.name,
+          technique: d.technique,
+          garmentColor: d.garmentColor,
+          status: d.status,
+          updatedAt: d.updatedAt,
+          template: { name: d.template.name, category: d.template.category },
+          _count: { elements: d.elements.length },
+        }));
+    },
+    async create(pid, input) {
+      await wait();
+      requireRole(projectOr404(pid).workspaceId, "EDITOR");
+      const template = apparelTemplate(input.templateId);
+      const preset = input.rulePresetId ? MOCK_PRESETS.find((p) => p.id === input.rulePresetId) : null;
+      if (input.rulePresetId && !preset) throw problem(404, "Préréglage introuvable", "NOT_FOUND");
+      const design: ApparelDesign = {
+        id: id("ad"),
+        projectId: pid,
+        templateId: template.id,
+        rulePresetId: preset?.id ?? null,
+        name: input.name.trim(),
+        technique: input.technique,
+        garmentColor: input.garmentColor,
+        status: "DRAFT",
+        proofToken: null,
+        approvedAt: null,
+        createdAt: now(),
+        updatedAt: now(),
+        template: { id: template.id, name: template.name, category: template.category },
+        rulePreset: preset ?? null,
+        elements: [],
+        roster: null,
+      };
+      saveApparel([design, ...apparelDesigns()]);
+      logActivity(pid, `a créé la tenue « ${design.name} »`);
+      return structuredClone(design);
+    },
+    async get(did) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "VIEWER");
+      return structuredClone(design);
+    },
+    async duplicate(did) {
+      await wait();
+      const source = apparelDesign(did);
+      requireRole(projectOr404(source.projectId).workspaceId, "EDITOR");
+      const copy: ApparelDesign = {
+        ...structuredClone(source),
+        id: id("ad"),
+        name: `${source.name} (copie)`.slice(0, 120),
+        status: "DRAFT",
+        proofToken: null,
+        approvedAt: null,
+        createdAt: now(),
+        updatedAt: now(),
+      };
+      saveApparel([copy, ...apparelDesigns()]);
+      logActivity(source.projectId, `a dupliqué la tenue « ${source.name} »`);
+      return structuredClone(copy);
+    },
+    async update(did, patch) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      if (patch.rulePresetId !== undefined) {
+        const preset = patch.rulePresetId ? MOCK_PRESETS.find((p) => p.id === patch.rulePresetId) : null;
+        if (patch.rulePresetId && !preset) throw problem(404, "Préréglage introuvable", "NOT_FOUND");
+        Object.assign(design, { rulePresetId: preset?.id ?? null, rulePreset: preset ?? null });
+      }
+      if (patch.name) design.name = patch.name.trim();
+      if (patch.technique) design.technique = patch.technique;
+      if (patch.garmentColor) design.garmentColor = patch.garmentColor;
+      unlockApparel(design);
+      saveApparel(apparelDesigns());
+      return structuredClone(design);
+    },
+    async remove(did) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      saveApparel(apparelDesigns().filter((d) => d.id !== did));
+    },
+    async saveElements(did, elements) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      const keys = new Set(apparelTemplate(design.templateId).zones.map((z) => z.key));
+      const unknown = [...new Set(elements.filter((e) => !keys.has(e.zoneKey)).map((e) => e.zoneKey))];
+      if (unknown.length) throw problem(400, `Zones absentes de ce support : ${unknown.join(", ")}`, "BAD_REQUEST");
+      design.elements = elements.map((e, i) => ({ ...structuredClone(e), id: id("el"), rotationDeg: e.rotationDeg ?? 0, zIndex: e.zIndex ?? i }));
+      unlockApparel(design);
+      saveApparel(apparelDesigns());
+      return structuredClone(design);
+    },
+    async check(did) {
+      await wait();
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      return apparelCheck(design);
+    },
+    async importRoster(did, csv, name) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      const entries = parseRoster(csv);
+      const issues = rosterIssues(entries, apparelTemplate(design.templateId).sizes.map((s) => s.label));
+      if (issues.length) throw new ApiError({ status: 422, title: "Effectif non conforme", detail: issues[0]!.message, code: "UNPROCESSABLE", issues });
+      const rosterName = name?.trim() ?? "";
+      design.roster = { name: rosterName.length > 0 ? rosterName : "Effectif", entries };
+      unlockApparel(design);
+      saveApparel(apparelDesigns());
+      const bySize: Record<string, number> = {};
+      for (const e of entries) bySize[e.size] = (bySize[e.size] ?? 0) + e.quantity;
+      return { roster: structuredClone(design.roster), summary: { players: entries.length, garments: Object.values(bySize).reduce((a, b) => a + b, 0), bySize } };
+    },
+    async proof(did) {
+      await wait();
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      if (design.status === "APPROVED" || design.status === "IN_PRODUCTION") throw problem(409, "Cette tenue est déjà approuvée", "CONFLICT");
+      const report = apparelCheck(design);
+      if (!report.ok) throw new ApiError({ status: 422, title: "BAT refusé", detail: "Corrigez les erreurs avant d’envoyer le BAT", code: "UNPROCESSABLE", issues: report.errors });
+      design.proofToken ??= id().replace(/-/g, "").slice(0, 32);
+      design.status = "PROOF_SENT";
+      saveApparel(apparelDesigns());
+      return { token: design.proofToken, url: `${window.location.origin}/bat/${design.proofToken}` };
+    },
+    async revokeProof(did) {
+      const design = apparelDesign(did);
+      requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
+      design.proofToken = null;
+      if (design.status === "PROOF_SENT") design.status = "DRAFT";
+      saveApparel(apparelDesigns());
+      return { revoked: true as const };
+    },
+    async publicProof(token) {
+      await wait();
+      const design = apparelDesigns().find((d) => d.proofToken === token);
+      if (!design) throw problem(404, "BAT introuvable ou révoqué", "NOT_FOUND");
+      const template = apparelTemplate(design.templateId);
+      return structuredClone({
+        name: design.name,
+        technique: design.technique,
+        garmentColor: design.garmentColor,
+        status: design.status,
+        approvedAt: design.approvedAt,
+        template: { name: template.name, category: template.category, zones: template.zones },
+        elements: design.elements,
+        roster: design.roster ? { name: design.roster.name, entries: design.roster.entries.map(({ displayName, number, size, quantity }) => ({ displayName, number, size, quantity })) } : null,
+      });
+    },
+    async approveProof(token) {
+      await wait();
+      const design = apparelDesigns().find((d) => d.proofToken === token);
+      if (!design) throw problem(404, "BAT introuvable ou révoqué", "NOT_FOUND");
+      if (design.status === "APPROVED") return { status: design.status, approvedAt: design.approvedAt };
+      if (design.status !== "PROOF_SENT") throw problem(410, "Ce BAT n’est plus en attente d’approbation", "GONE");
+      Object.assign(design, { status: "APPROVED", approvedAt: now() });
+      saveApparel(apparelDesigns());
+      return { status: design.status, approvedAt: design.approvedAt };
+    },
+    async productionExport() {
+      throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Le pack atelier (planches de transfert, découpe, films) est produit par le serveur de la plateforme.");
+    },
+  },
+
+  websites: {
+    async get(pid) {
+      requireRole(projectOr404(pid).workspaceId, "VIEWER");
+      const site = mockSites().find((s) => s.projectId === pid);
+      return site ? siteDto(site) : null;
+    },
+    async create(pid) {
+      await wait();
+      const project = projectOr404(pid);
+      requireRole(project.workspaceId, "EDITOR");
+      if (mockSites().some((s) => s.projectId === pid)) throw problem(409, "Ce projet a déjà un site web", "SITE_EXISTS");
+      const logo = siteLogo(pid, null);
+      if (!logo) throw problem(400, "Créez d’abord un logo : le site reprend votre identité visuelle", "NO_LOGO");
+      const data = db();
+      const name = projectName(project);
+      const chosen = (kind: string) => data.slogans.find((s) => s.projectId === pid && s.isChosen && s.kind === kind)?.text ?? null;
+      const card = data.signatures.find((s) => s.projectId === pid && s.kind === "EMAIL")?.data as EmailSignatureData | undefined;
+      const brief = project.brief;
+      const content = defaultSiteContent({
+        name,
+        slogan: chosen("SLOGAN"),
+        mission: chosen("MISSION") ?? brief?.mission ?? null,
+        sector: brief?.sector ?? null,
+        values: brief?.values ?? [],
+        audience: brief?.audience ?? null,
+        language: brief?.languages?.[0] === "en" ? "en" : "fr",
+        ...brandStyle(latestVersion(logo.id).spec),
+        contact: { phone: card?.phones.find(Boolean) ?? "", email: card?.email ?? "", address: card?.address ?? "" },
+        social: card ? socialsOf(card.socials) : {},
+        icons: sectorIcons(brief?.sector ?? ""),
+      });
+      const stem = slugify(name).slice(0, 40);
+      const base = stem.length >= 3 ? stem : `${stem || "mon"}-site`;
+      const taken = new Set(mockSites().map((s) => s.slug));
+      const slug = taken.has(base) ? `${base}-${id().slice(0, 4)}` : base;
+      const site: MockSite = {
+        id: id("site"),
+        projectId: pid,
+        slug,
+        logoId: null,
+        content,
+        published: false,
+        publishedAt: null,
+        views: 0,
+        media: [],
+        messages: [],
+        createdAt: now(),
+        updatedAt: now(),
+      };
+      saveMockSites([...mockSites(), site]);
+      logActivity(pid, "a créé le site web");
+      save();
+      return siteDto(site);
+    },
+    async update(webid, input) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      if (input.content) {
+        const owned = new Set(site.media.map((m) => m.id));
+        if (siteMediaIds(input.content).some((mid) => !owned.has(mid))) throw problem(400, "Image inconnue dans le contenu du site", "BAD_REQUEST");
+        site.content = structuredClone(input.content);
+      }
+      if (input.slug !== undefined && input.slug !== site.slug) {
+        const slug = input.slug.trim().toLowerCase();
+        if (!/^[a-z0-9](?:[a-z0-9-]{1,46}[a-z0-9])$/.test(slug) || ["admin", "api", "app", "site", "sites", "www", "aide", "support"].includes(slug)) {
+          throw problem(400, "Adresse invalide : 3 à 48 lettres minuscules, chiffres ou tirets", "SLUG_INVALID");
+        }
+        if (mockSites().some((s) => s.slug === slug && s.id !== webid)) throw problem(409, "Cette adresse est déjà prise", "SLUG_TAKEN");
+        site.slug = slug;
+      }
+      if (input.logoId !== undefined) site.logoId = input.logoId;
+      site.updatedAt = now();
+      saveMockSites(mockSites());
+      return siteDto(site);
+    },
+    async brand(webid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "VIEWER");
+      const logo = siteLogo(site.projectId, site.logoId);
+      if (!logo) throw problem(400, "Le projet n’a plus de logo", "NO_LOGO");
+      // Rendu du navigateur : polices nommées (l'API vectorise le texte).
+      const assets = brandAssets(latestVersion(logo.id).spec);
+      for (const group of [assets.logo, assets.mark]) {
+        for (const asset of Object.values(group)) asset.svg = resolveFontVars(asset.svg);
+      }
+      return { name: projectName(projectOr404(site.projectId)), logoId: logo.id, assets };
+    },
+    async publish(webid) {
+      await wait(400);
+      const site = mockSite(webid);
+      const project = projectOr404(site.projectId);
+      requireRole(project.workspaceId, "EDITOR");
+      if (!siteLogo(site.projectId, site.logoId)) throw problem(400, "Le projet n’a plus de logo", "NO_LOGO");
+      const stamp = now();
+      Object.assign(site, { published: true, publishedAt: stamp, updatedAt: stamp });
+      saveMockSites(mockSites());
+      logActivity(site.projectId, `a publié le site web (/site/${site.slug})`);
+      save();
+      return siteDto(site);
+    },
+    async unpublish(webid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      site.published = false;
+      saveMockSites(mockSites());
+      logActivity(site.projectId, "a dépublié le site web");
+      save();
+      return siteDto(site);
+    },
+    async remove(webid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "OWNER");
+      saveMockSites(mockSites().filter((s) => s.id !== webid));
+      logActivity(site.projectId, "a supprimé le site web");
+      save();
+    },
+    async addMedia(webid, input) {
+      await wait();
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      if (site.media.length >= 24) throw problem(400, "24 images au plus par site", "BAD_REQUEST");
+      const match = /^data:(image\/(?:png|jpeg|webp));base64,/.exec(input.dataUrl);
+      if (!match) throw problem(400, "Image JPEG, PNG ou WebP attendue", "BAD_REQUEST");
+      const sizeBytes = Math.floor(((input.dataUrl.length - match[0].length) * 3) / 4);
+      if (sizeBytes > 4 * 1024 * 1024) throw problem(400, "Image de 4 Mo au plus", "BAD_REQUEST");
+      const media = { id: id("media"), url: input.dataUrl, alt: input.alt?.trim() ?? "", mimeType: match[1]!, sizeBytes };
+      site.media.push(media);
+      saveMockSites(mockSites());
+      return { id: media.id, url: media.url, alt: media.alt };
+    },
+    async removeMedia(webid, mid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      if (!site.media.some((m) => m.id === mid)) throw problem(404, "Image introuvable", "NOT_FOUND");
+      site.media = site.media.filter((m) => m.id !== mid);
+      if (siteMediaIds(site.content).includes(mid)) {
+        site.content.sections = site.content.sections.map((section) => {
+          if (section.type === "hero" && section.image?.kind === "media" && section.image.id === mid) return { ...section, image: null };
+          if (section.type === "gallery") return { ...section, images: section.images.filter((img) => img.kind !== "media" || img.id !== mid) };
+          return section;
+        });
+        site.updatedAt = now();
+      }
+      saveMockSites(mockSites());
+      return siteDto(site);
+    },
+    async messages(webid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      return structuredClone(site.messages);
+    },
+    async markMessage(webid, msgid, read) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      const message = site.messages.find((m) => m.id === msgid);
+      if (!message) throw problem(404, "Message introuvable", "NOT_FOUND");
+      message.readAt = read ? now() : null;
+      saveMockSites(mockSites());
+      return structuredClone(message);
+    },
+    async removeMessage(webid, msgid) {
+      const site = mockSite(webid);
+      requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
+      site.messages = site.messages.filter((m) => m.id !== msgid);
+      saveMockSites(mockSites());
+    },
+    async exportZip() {
+      throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "L’archive du site est produite par le serveur de la plateforme.");
+    },
+  },
+
   jobs: {
     async get(jid) {
       const job = db().jobs.find((j) => j.id === jid);
@@ -1169,7 +1728,7 @@ export const mockClient: ApiClient = {
         paymentId: key,
         status: "PENDING",
         instructions: input.provider === "CARD" ? undefined : "Validez le paiement sur votre téléphone en composant #144# puis votre code secret Orange Money.",
-        redirectUrl: input.provider === "CARD" ? undefined : undefined,
+        redirectUrl: undefined,
       };
     },
     async payment(paymentId) {
@@ -1228,7 +1787,7 @@ export const mockClient: ApiClient = {
     // Démonstration locale : visuels génératifs, pas de banque de photos (elle demande une clé côté serveur).
     async capabilities() {
       await wait(80);
-      return { aiImages: { provider: "demo", demo: true }, photos: false };
+      return { aiImages: { provider: "demo", demo: true }, photos: false, cutout: false };
     },
     async photos() {
       await wait(120);
@@ -1242,6 +1801,7 @@ export const mockClient: ApiClient = {
   admin: {
     async stats() {
       await wait();
+      requirePlatform("SUPPORT");
       const data = db();
       const days = Array.from({ length: 14 }, (_, i) => {
         const date = new Date(Date.now() - (13 - i) * 864e5).toISOString().slice(0, 10);
@@ -1260,6 +1820,7 @@ export const mockClient: ApiClient = {
       };
     },
     async users(q) {
+      requirePlatform("SUPPORT");
       const term = q?.toLowerCase() ?? "";
       const data = db();
       return data.users
@@ -1267,8 +1828,14 @@ export const mockClient: ApiClient = {
         .map((u) => ({ id: u.id, fullName: u.fullName, email: u.email, role: u.role, createdAt: u.createdAt, suspendedAt: u.suspendedAt, totpEnabled: u.totpEnabled, workspaces: data.memberships.filter((m) => m.userId === u.id).length }));
     },
     async updateUser(uid, patch) {
+      const actor = requirePlatform("ADMIN");
       const data = db();
       const user = data.users.find((u) => u.id === uid)!;
+      if (uid === actor.id && patch.suspended) throw problem(403, "Action impossible sur votre propre compte", "FORBIDDEN");
+      // Hiérarchie : on n'agit que sur un rang inférieur au sien (le super admin agit sur tous).
+      if (uid !== actor.id && actor.role !== "SUPER_ADMIN" && PLATFORM_RANK[user.role] >= PLATFORM_RANK[actor.role]) {
+        throw problem(403, "Action impossible sur un compte de rang égal ou supérieur", "FORBIDDEN");
+      }
       if (patch.suspended !== undefined) user.suspendedAt = patch.suspended ? now() : null;
       if (patch.reset2fa) user.totpEnabled = false;
       audit(patch.reset2fa ? "user.reset_2fa" : patch.suspended ? "user.suspend" : "user.reactivate", "User", uid);
@@ -1276,16 +1843,64 @@ export const mockClient: ApiClient = {
       return (await mockClient.admin.users()).find((u) => u.id === uid)!;
     },
     async adjustCredits({ workspaceId, delta, reason }) {
+      requirePlatform("ADMIN");
       if (!reason.trim()) throw problem(400, "Le motif est obligatoire", "VALIDATION");
       writeLedger(workspaceId, delta, "ADMIN_ADJUSTMENT", reason);
       audit("credits.adjust", "Workspace", workspaceId);
       save();
     },
+    async requestCredits({ workspaceId, delta, reason }) {
+      const actor = requirePlatform("SUPPORT");
+      const data = db();
+      const workspace = data.workspaces.find((w) => w.id === workspaceId);
+      if (!workspace) throw problem(404, "Espace introuvable", "NOT_FOUND");
+      if (reason.trim().length < 5) throw problem(400, "Le motif est obligatoire", "VALIDATION");
+      const request = {
+        id: id("cr"),
+        workspaceId,
+        workspaceName: workspace.name,
+        delta,
+        reason: reason.trim(),
+        status: "PENDING" as const,
+        requestedBy: actor.fullName,
+        requestedById: actor.id,
+        decidedBy: null,
+        decisionNote: null,
+        decidedAt: null,
+        createdAt: now(),
+      };
+      data.creditRequests ??= [];
+      data.creditRequests.unshift(request);
+      audit("credits.request", "Workspace", workspaceId);
+      save();
+      const { requestedById: _requester, ...dto } = request;
+      return dto;
+    },
+    async creditRequests(status) {
+      requirePlatform("SUPPORT");
+      return (db().creditRequests ?? []).filter((r) => !status || r.status === status).map(({ requestedById: _requester, ...dto }): CreditRequest => dto);
+    },
+    async decideCreditRequest(requestId, approve, note) {
+      const actor = requirePlatform("ADMIN");
+      const data = db();
+      const request = (data.creditRequests ?? []).find((r) => r.id === requestId);
+      if (!request) throw problem(404, "Demande introuvable", "NOT_FOUND");
+      if (request.status !== "PENDING") throw problem(409, "Cette demande a déjà été traitée", "CONFLICT");
+      if (request.requestedById === actor.id) throw problem(403, "Une demande est validée par un autre administrateur que son auteur", "FORBIDDEN");
+      if (approve) writeLedger(request.workspaceId, request.delta, "ADMIN_ADJUSTMENT", `Demande du support validée : ${request.reason}`);
+      Object.assign(request, { status: approve ? "APPROVED" : "REJECTED", decidedBy: actor.fullName, decisionNote: note ?? null, decidedAt: now() });
+      audit(approve ? "credits.request.approve" : "credits.request.reject", "Workspace", request.workspaceId);
+      save();
+      const { requestedById: _requester, ...dto } = request;
+      return dto;
+    },
     async payments() {
+      requirePlatform("SUPPORT");
       const data = db();
       return data.payments.map(({ workspaceId, creditsGranted: _c, resolveAt: _r, willFail: _f, ...rest }) => ({ ...rest, workspaceName: data.workspaces.find((w) => w.id === workspaceId)?.name }));
     },
     async refund(paymentId) {
+      requirePlatform("ADMIN");
       const data = db();
       const payment = data.payments.find((p) => p.id === paymentId);
       if (!payment || payment.status !== "SUCCEEDED") throw problem(400, "Seul un paiement réussi peut être remboursé");
@@ -1295,6 +1910,7 @@ export const mockClient: ApiClient = {
       save();
     },
     async moderation() {
+      requirePlatform("SUPPORT");
       const data = db();
       return data.signatures
         .filter((s) => s.status === "PENDING_REVIEW")
@@ -1313,12 +1929,14 @@ export const mockClient: ApiClient = {
         });
     },
     async review(sid, decision) {
+      requirePlatform("SUPPORT");
       const signature = db().signatures.find((s) => s.id === sid);
       if (signature) signature.status = decision === "APPROVE" ? "ACTIVE" : "REJECTED";
       audit(`moderation.${decision.toLowerCase()}`, "Signature", sid);
       save();
     },
     async auditLogs() {
+      requirePlatform("SUPER_ADMIN");
       return db().audit;
     },
   },

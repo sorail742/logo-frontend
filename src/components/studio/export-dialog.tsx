@@ -17,10 +17,10 @@ import { buildZip, type ZipEntry } from "@/lib/render/zip";
 import { documentFonts } from "@/lib/studio/doc";
 import { renderPage } from "@/lib/studio/render";
 import { ensureFonts } from "@/lib/studio/text";
-import type { DesignDoc } from "@/lib/studio/types";
 import { useStudio } from "@/stores/studio";
 import { cn } from "@/lib/utils";
 import { useStudioContext } from "./context";
+import { SendToTshirt, withoutBackground } from "./tshirt-button";
 
 // Export : PNG et JPG produits dans le navigateur (toutes résolutions), PDF d'impression
 // (taille réelle, fond perdu, traits de coupe) et SVG au texte vectorisé produits par le serveur.
@@ -41,11 +41,6 @@ function openDownload(url: string) {
   document.body.appendChild(link);
   link.click();
   link.remove();
-}
-
-/** Page sans son fond (PNG transparent). */
-function withoutBackground(doc: DesignDoc): DesignDoc {
-  return { ...doc, pages: doc.pages.map((p) => ({ ...p, background: { type: "none" } })) };
 }
 
 export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChange(open: boolean): void }) {
@@ -172,6 +167,7 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         )}
 
         <DialogFooter>
+          <SendToTshirt transparent={transparent} onDone={() => onOpenChange(false)} />
           <Button onClick={run} disabled={busy} size="lg">
             {busy ? <Loader2 className="animate-spin" /> : <Download />}
             {busy ? t("working") : t("download")}

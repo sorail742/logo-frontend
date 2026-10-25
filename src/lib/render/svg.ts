@@ -40,6 +40,12 @@ export function sanitizeSvg(source: string): string | null {
   return new XMLSerializer().serializeToString(root);
 }
 
+/** Nom accessible porté par le SVG lui-même (image), ou SVG masqué aux lecteurs d'écran. */
+export function labelSvg(svg: string, label?: string) {
+  const attrs = label ? `role="img" aria-label="${escapeXml(label)}"` : 'aria-hidden="true"';
+  return svg.replace("<svg ", `<svg ${attrs} `);
+}
+
 let counter = 0;
 export function uid(prefix = "id") {
   counter += 1;

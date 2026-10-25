@@ -70,28 +70,29 @@ export function StudioShowcase() {
   const copy = tc.raw("copy") as TemplateCopy;
   const sets = useMemo(() => {
     if (!ready) return null;
-    return brands.map((brand) =>
-      PIECES.map((piece) => {
+    return brands.map((brand) => ({
+      name: brand.name,
+      pages: PIECES.map((piece) => {
         const format = getFormat(piece.format)!;
         const template = TEMPLATES.find((tpl) => tpl.id === piece.template)!;
         const doc = { version: 1 as const, width: format.width, height: format.height, print: format.print ?? null, pages: template.build({ brand, width: format.width, height: format.height, print: format.print, copy }) };
         return renderPage(doc, piece.format === "business-card" ? 1 : 0, { outputWidth: 480 });
       }),
-    );
+    }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, brands]);
 
   return (
-    <div className="relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div className="relative" onPointerEnter={() => setPaused(true)} onPointerLeave={() => setPaused(false)}>
       <div className="relative aspect-[1.05] w-full" aria-hidden="true">
         {PIECES.map((piece, index) => (
           <div key={piece.format} className={cn("absolute overflow-hidden rounded-xl bg-white shadow-[0_20px_50px_-12px_rgba(15,23,42,0.35)] ring-1 ring-black/5 transition-transform duration-500 hover:z-40 hover:scale-[1.03]", piece.className)}>
             {sets ? (
               sets.map((set, brandIndex) => (
                 <div
-                  key={brandIndex}
+                  key={set.name}
                   className={cn("transition-opacity duration-700 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full", brandIndex === active ? "relative opacity-100" : "absolute inset-0 opacity-0")}
-                  dangerouslySetInnerHTML={{ __html: set[index]! }}
+                  dangerouslySetInnerHTML={{ __html: set.pages[index]! }}
                 />
               ))
             ) : (
@@ -112,7 +113,8 @@ export function StudioShowcase() {
           {t("chipPrint")}
         </span>
       </div>
-      <div className="mt-4 flex items-center justify-center gap-2" role="group" aria-label={t("brands")}>
+      <fieldset className="mt-4 flex items-center justify-center gap-2">
+        <legend className="sr-only">{t("brands")}</legend>
         {BRANDS.map((brand, index) => (
           <button
             key={brand.name}
@@ -129,7 +131,7 @@ export function StudioShowcase() {
             {brand.name}
           </button>
         ))}
-      </div>
+      </fieldset>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useApiErrorToast } from "@/hooks/use-api-error";
 import { api } from "@/lib/api";
 import { formatGnf } from "@/lib/format";
-import { canAccessAdmin } from "@/lib/permissions";
+import { canAdmin } from "@/lib/permissions";
 import { qk } from "@/lib/query-keys";
 import { downloadBlob } from "@/lib/render/export";
 import type { Payment } from "@/lib/types";
@@ -36,7 +36,7 @@ function AdminPaymentsContent() {
   const queryClient = useQueryClient();
   const onError = useApiErrorToast();
   const role = useSessionStore((s) => s.user?.role);
-  const canRefund = canAccessAdmin(role, "library");
+  const canRefund = canAdmin("payments.refund", role);
   const { data: payments = [] } = useQuery({ queryKey: qk.admin("payments"), queryFn: api.admin.payments });
   const refund = useMutation({
     mutationFn: api.admin.refund,

@@ -1,17 +1,18 @@
 "use client";
 
-import { FONTS } from "./fonts";
+import { FALLBACK_FONTS, FONTS, fontVars } from "./fonts";
 
 // Exports réalisés dans le navigateur pour l'aperçu et le mode simulé.
 // En production, les fichiers définitifs (texte en tracés, SVGO, PDF, ZIP) sont produits par les workers.
 
-/** Remplace les variables CSS de police par le nom réel de la police. */
+/** Lettres du latin étendu (pular…) et de l'écriture N'Ko : polices de secours à intégrer. */
+const EXTENDED = /[\u0100-\u02FF\u1E00-\u1EFF\uA720-\uA7FF]/u;
+const NKO = /[\u07C0-\u07FF]/u;
+
+/** Remplace les variables CSS de police par le nom réel des polices (police, puis secours). */
 export function resolveFontVars(svg: string) {
-  let out = svg;
-  for (const font of FONTS) {
-    out = out.replaceAll(`var(${font.cssVar}), `, "");
-  }
-  return out;
+  const fallbacks = FALLBACK_FONTS.map((f) => `'${f.name}'`).join(", ");
+  return svg.replaceAll("var(--logo-font-fallbacks)", fallbacks).replaceAll(/var\(--font-[\w-]+\),\s*/g, "");
 }
 
 async function blobToDataUrl(blob: Blob) {
@@ -23,45 +24,68 @@ async function blobToDataUrl(blob: Blob) {
   });
 }
 
-/** Cherche les @font-face chargées par next/font et les intègre au SVG (nécessaire pour le rendu PNG). */
-async function embedFonts(svg: string) {
-  const used = FONTS.filter((font) => svg.includes(font.cssVar) || svg.includes(`'${font.name}'`));
-  if (!used.length) return svg;
-  const root = getComputedStyle(document.documentElement);
-  const rules: string[] = [];
-
-  for (const font of used) {
-    const family = root.getPropertyValue(font.cssVar).split(",")[0]?.trim().replace(/['"]/g, "");
-    if (!family) continue;
-    for (const sheet of [...document.styleSheets]) {
-      let cssRules: CSSRuleList;
-      try {
-        cssRules = sheet.cssRules;
-      } catch {
-        continue;
-      }
-      for (const rule of [...cssRules]) {
-        if (!(rule instanceof CSSFontFaceRule)) continue;
-        const ruleFamily = rule.style.getPropertyValue("font-family").replace(/['"]/g, "").trim();
-        if (ruleFamily !== family) continue;
-        const src = rule.style.getPropertyValue("src");
-        const match = src.match(/url\(["']?([^"')]+)["']?\)/);
-        // Seul le sous-ensemble latin est intégré pour limiter le poids
-        const range = rule.style.getPropertyValue("unicode-range");
-        if (!match || (range && !range.includes("U+0000"))) continue;
-        try {
-          const response = await fetch(new URL(match[1]!, sheet.href ?? location.href));
-          const dataUrl = await blobToDataUrl(await response.blob());
-          rules.push(
-            `@font-face{font-family:'${font.name}';src:url(${dataUrl});font-weight:${rule.style.getPropertyValue("font-weight") || "400"};}`,
-          );
-        } catch {
-          // Police indisponible : le rendu utilisera la police de repli
-        }
-      }
+/** Règles @font-face d'une famille dans les feuilles de style de la page (même origine). */
+function fontFaces(family: string) {
+  const faces: { rule: CSSFontFaceRule; base: string }[] = [];
+  for (const sheet of [...document.styleSheets]) {
+    let cssRules: CSSRule[] = [];
+    try {
+      cssRules = [...sheet.cssRules];
+    } catch {
+      // Feuille d'une autre origine : illisible
+    }
+    for (const rule of cssRules) {
+      const ruleFamily = rule instanceof CSSFontFaceRule ? rule.style.getPropertyValue("font-family").replace(/['"]/g, "").trim() : null;
+      if (ruleFamily === family) faces.push({ rule: rule as CSSFontFaceRule, base: sheet.href ?? location.href });
     }
   }
+  return faces;
+}
+
+/** Règle @font-face autonome (fichier intégré en data URL) sous le nom `name`. */
+async function inlineFace({ rule, base }: { rule: CSSFontFaceRule; base: string }, name: string) {
+  const match = /url\(["']?([^"')]+)["']?\)/.exec(rule.style.getPropertyValue("src"));
+  if (!match) return null;
+  try {
+    const response = await fetch(new URL(match[1], base));
+    const dataUrl = await blobToDataUrl(await response.blob());
+    const weight = rule.style.getPropertyValue("font-weight") || "400";
+    // La plage de caractères est conservée : le latin étendu complète le latin de la même famille.
+    const range = rule.style.getPropertyValue("unicode-range");
+    const declarations = [`font-family:'${name}'`, `src:url(${dataUrl})`, `font-weight:${weight}`, ...(range ? [`unicode-range:${range}`] : [])];
+    return `@font-face{${declarations.join(";")}}`;
+  } catch {
+    return null; // Police indisponible : le rendu utilisera la police de repli
+  }
+}
+
+/** Règles @font-face chargées par next/font pour une variable CSS, intégrées sous le nom `name`. */
+async function faceRules(cssVar: string, name: string) {
+  const family = getComputedStyle(document.documentElement).getPropertyValue(cssVar).split(",")[0]?.trim().replace(/['"]/g, "");
+  if (!family) return [];
+  const rules = await Promise.all(fontFaces(family).map((face) => inlineFace(face, name)));
+  return rules.filter((rule): rule is string => rule !== null);
+}
+
+/**
+ * Cherche les @font-face chargées par next/font et les intègre au SVG (nécessaire pour le rendu
+ * PNG) : latin de chaque police utilisée, latin étendu et polices de secours seulement si le texte
+ * en a besoin.
+ */
+async function embedFonts(svg: string) {
+  const used = FONTS.filter((font) => svg.includes(`var(${font.cssVar})`) || svg.includes(`'${font.name}'`));
+  const extended = EXTENDED.test(svg);
+  const sources: { cssVar: string; name: string }[] = used.flatMap((font) =>
+    fontVars(font.id)
+      .slice(0, extended ? 2 : 1)
+      .map((cssVar) => ({ cssVar, name: font.name })),
+  );
+  const [extendedFallback, nkoFallback] = FALLBACK_FONTS;
+  if (extended && extendedFallback) sources.push(extendedFallback);
+  if (NKO.test(svg) && nkoFallback) sources.push(nkoFallback);
   const resolved = resolveFontVars(svg);
+  if (!sources.length) return resolved;
+  const rules = (await Promise.all(sources.map((source) => faceRules(source.cssVar, source.name)))).flat();
   if (!rules.length) return resolved;
   return resolved.replace(/(<svg[^>]*>)/, `$1<defs><style>${rules.join("")}</style></defs>`);
 }

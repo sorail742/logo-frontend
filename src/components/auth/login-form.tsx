@@ -12,6 +12,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/common/field";
+import { PasswordInput } from "@/components/common/password-input";
 import { api, ApiError, errorMessage, type Session } from "@/lib/api";
 import { useSessionStore } from "@/stores/session";
 import { AuthCard } from "./auth-card";
@@ -114,7 +115,7 @@ export function LoginForm() {
       )}
       <form onSubmit={onSubmit} className="grid gap-4" noValidate>
         <Field label={t("login.email")} htmlFor="email" error={form.formState.errors.email?.message}>
-          <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
+          <Input id="email" type="email" autoComplete="email" maxLength={254} {...form.register("email")} />
         </Field>
         <Field
           label={
@@ -128,7 +129,7 @@ export function LoginForm() {
           htmlFor="password"
           error={form.formState.errors.password?.message}
         >
-          <Input id="password" type="password" autoComplete="current-password" {...form.register("password")} />
+          <PasswordInput id="password" autoComplete="current-password" maxLength={128} {...form.register("password")} />
         </Field>
         <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
           {t("login.submit")}

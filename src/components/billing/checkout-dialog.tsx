@@ -17,7 +17,7 @@ import { ComingSoon } from "@/components/common/coming-soon";
 
 type Phase = "form" | "pending" | "succeeded" | "failed";
 
-export function CheckoutDialog({ plan, workspaceId, onClose }: { plan: Plan | null; workspaceId: string; onClose: () => void }) {
+export function CheckoutDialog({ plan, workspaceId, onClose }: Readonly<{ plan: Plan | null; workspaceId: string; onClose: () => void }>) {
   const t = useTranslations("billing.checkout");
   const locale = useLocale();
   const queryClient = useQueryClient();
@@ -33,7 +33,7 @@ export function CheckoutDialog({ plan, workspaceId, onClose }: { plan: Plan | nu
 
   useEffect(() => {
     if (phase !== "pending" || !paymentId) return;
-    const timer = window.setInterval(async () => {
+    const poll = async () => {
       try {
         const payment = await api.billing.payment(paymentId);
         if (payment.status === "SUCCEEDED" || payment.status === "FAILED") {
@@ -44,7 +44,8 @@ export function CheckoutDialog({ plan, workspaceId, onClose }: { plan: Plan | nu
       } catch {
         // Nouvelle tentative au prochain intervalle
       }
-    }, 1500);
+    };
+    const timer = window.setInterval(() => void poll(), 1500);
     return () => window.clearInterval(timer);
   }, [phase, paymentId, queryClient]);
 
@@ -120,20 +121,20 @@ export function CheckoutDialog({ plan, workspaceId, onClose }: { plan: Plan | nu
         )}
 
         {phase === "pending" && (
-          <div className="grid justify-items-center gap-3 py-6 text-center" role="status">
+          <output className="grid justify-items-center gap-3 py-6 text-center">
             <Smartphone className="size-10 text-[#ff7900]" aria-hidden="true" />
             <p className="flex items-center gap-2 font-medium">
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
               {t("pending")}
             </p>
             <p className="text-sm text-muted-foreground">{instructions ?? t("pendingBody")}</p>
-          </div>
+          </output>
         )}
         {phase === "succeeded" && (
-          <p className="flex items-center gap-2 py-6 font-medium text-emerald-700" role="status">
+          <output className="flex items-center gap-2 py-6 font-medium text-emerald-700">
             <CheckCircle2 className="size-5" aria-hidden="true" />
             {t("succeeded")}
-          </p>
+          </output>
         )}
         {phase === "failed" && (
           <p className="flex items-center gap-2 py-6 font-medium text-destructive" role="alert">
@@ -144,7 +145,7 @@ export function CheckoutDialog({ plan, workspaceId, onClose }: { plan: Plan | nu
 
         <DialogFooter>
           {phase === "form" ? (
-            <Button size="lg" onClick={pay} disabled={provider === "CARD"}>
+            <Button size="lg" onClick={() => void pay()} disabled={provider === "CARD"}>
               {t("pay", { amount: formatGnf(amount, locale) })}
             </Button>
           ) : (

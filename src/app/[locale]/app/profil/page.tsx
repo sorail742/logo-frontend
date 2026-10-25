@@ -14,7 +14,7 @@ import { Field } from "@/components/common/field";
 import { NativeSelect } from "@/components/common/native-select";
 import { PageHeader } from "@/components/common/page-header";
 import { useApiErrorToast } from "@/hooks/use-api-error";
-import { api } from "@/lib/api";
+import { api, fieldErrors } from "@/lib/api";
 import { useSessionStore } from "@/stores/session";
 
 function ProfileForm() {
@@ -27,6 +27,7 @@ function ProfileForm() {
   const setUser = useSessionStore((s) => s.setUser);
   // Monté par ProfilePage une fois l'utilisateur connu.
   const [fullName, setFullName] = useState(user?.fullName ?? "");
+  const [nameError, setNameError] = useState<string>();
   const [locale, setLocale] = useState(user?.locale ?? "fr");
   const [country, setCountry] = useState(user?.country ?? "GN");
   const [totp, setTotp] = useState<{ secret: string; otpauthUrl: string } | null>(null);
@@ -40,7 +41,11 @@ function ProfileForm() {
       toast.success(t("saved"));
       if (updated.locale !== user?.locale) router.replace(pathname, { locale: updated.locale as "fr" | "en" });
     },
-    onError,
+    onError: (error) => {
+      const fields = fieldErrors(error);
+      if (fields.fullName) setNameError(fields.fullName);
+      else onError(error);
+    },
   });
   const verify = useMutation({
     mutationFn: () => api.auth.verify2fa(code),
@@ -75,8 +80,17 @@ function ProfileForm() {
               save.mutate();
             }}
           >
-            <Field label={t("fullName")} htmlFor="profile-name">
-              <Input id="profile-name" value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
+            <Field label={t("fullName")} htmlFor="profile-name" error={nameError}>
+              <Input
+                id="profile-name"
+                value={fullName}
+                maxLength={120}
+                onChange={(e) => {
+                  setNameError(undefined);
+                  setFullName(e.target.value);
+                }}
+                autoComplete="name"
+              />
             </Field>
             <Field label={t("email")} htmlFor="profile-email">
               <Input id="profile-email" value={user.email ?? ""} disabled />
