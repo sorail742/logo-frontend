@@ -10,7 +10,7 @@ export function JobProgress({ event, running }: Readonly<{ event: JobEvent | nul
   if (!running) return null;
   const status = event?.status ?? "QUEUED";
   return (
-    <output className="grid gap-2 rounded-xl border bg-accent/40 p-4" aria-live="polite">
+    <output className="bg-accent/40 grid gap-2 rounded-xl border p-4" aria-live="polite">
       <p className="flex items-center gap-2 text-sm font-medium">
         <Loader2 className="size-4 animate-spin" aria-hidden="true" />
         {t(status)}

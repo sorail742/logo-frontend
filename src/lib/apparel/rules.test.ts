@@ -119,5 +119,59 @@ describe("Apparel Rules & Zone Resolution", () => {
       const subDark = issues.find((i) => i.code === "SUBLIMATION_DARK");
       expect(subDark).toBeUndefined();
     });
+
+    it("vérifie le dépassement de surface sponsor selon le règlement UEFA (max 200 cm²)", () => {
+      const element: ApparelElement = {
+        id: "el-sponsor-oversized",
+        kind: "SPONSOR",
+        zoneKey: "front_sponsor",
+        offsetXMm: 0,
+        offsetYMm: 0,
+        widthMm: 250,
+        heightMm: 100, // 250 * 100 = 25 000 mm² = 250 cm² > 200 cm²
+        content: { text: "BIG SPONSOR", colors: ["#ffffff"] },
+      };
+
+      const issues = checkElements(zones, [element], "DTF", "#000000", "UEFA");
+      const sponsorIssue = issues.find((i) => i.code === "SPONSOR_CHEST_EXCEEDED");
+      expect(sponsorIssue).toBeDefined();
+      expect(sponsorIssue?.severity).toBe("error");
+    });
+
+    it("valide la conformité d'un numéro dos selon UEFA (hauteur min 250 mm)", () => {
+      const smallNumber: ApparelElement = {
+        id: "el-num-small",
+        kind: "PLAYER_NUMBER",
+        zoneKey: "back_full",
+        offsetXMm: 10,
+        offsetYMm: 10,
+        widthMm: 120,
+        heightMm: 200, // < 250 mm
+        content: { text: "10", colors: ["#ffffff"] },
+      };
+
+      const issues = checkElements(zones, [smallNumber], "DTF", "#000000", "UEFA");
+      const numIssue = issues.find((i) => i.code === "NUMBER_BACK_TOO_SMALL");
+      expect(numIssue).toBeDefined();
+      expect(numIssue?.severity).toBe("error");
+    });
+
+    it("rejette un numéro non autorisé en FIBA (ex: 105)", () => {
+      const invalidNumber: ApparelElement = {
+        id: "el-num-fiba-invalid",
+        kind: "PLAYER_NUMBER",
+        zoneKey: "back_full",
+        offsetXMm: 10,
+        offsetYMm: 10,
+        widthMm: 120,
+        heightMm: 220,
+        content: { text: "105", colors: ["#ffffff"] },
+      };
+
+      const issues = checkElements(zones, [invalidNumber], "DTF", "#000000", "FIBA");
+      const invalidIssue = issues.find((i) => i.code === "INVALID_SPORT_NUMBER");
+      expect(invalidIssue).toBeDefined();
+      expect(invalidIssue?.severity).toBe("error");
+    });
   });
 });

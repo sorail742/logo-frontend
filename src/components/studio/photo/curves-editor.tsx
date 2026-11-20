@@ -26,10 +26,18 @@ function histogramPath(counts: Uint32Array, height: number) {
 }
 
 /** Histogramme du résultat : luminance et trois canaux. */
-export function HistogramView({ histogram, className }: Readonly<{ histogram: Histogram | null; className?: string }>) {
+export function HistogramView({
+  histogram,
+  className,
+}: Readonly<{ histogram: Histogram | null; className?: string }>) {
   const t = useTranslations("studio.photo");
   return (
-    <svg viewBox="0 0 256 80" preserveAspectRatio="none" className={cn("h-20 w-full rounded-md bg-muted/60", className)} aria-label={t("histogram")}>
+    <svg
+      viewBox="0 0 256 80"
+      preserveAspectRatio="none"
+      className={cn("bg-muted/60 h-20 w-full rounded-md", className)}
+      aria-label={t("histogram")}
+    >
       <title>{t("histogram")}</title>
       {histogram && (
         <>
@@ -47,7 +55,15 @@ export function HistogramView({ histogram, className }: Readonly<{ histogram: Hi
  * Courbes (comme Photoshop) : canal RVB et canaux rouge, vert, bleu. Clic pour ajouter un point,
  * glisser pour le déplacer, double-clic ou glisser hors du cadre pour le retirer.
  */
-export function CurvesEditor({ curves, onChange, histogram }: Readonly<{ curves: PhotoCurves | undefined; onChange: (curves: PhotoCurves | undefined) => void; histogram: Histogram | null }>) {
+export function CurvesEditor({
+  curves,
+  onChange,
+  histogram,
+}: Readonly<{
+  curves: PhotoCurves | undefined;
+  onChange: (curves: PhotoCurves | undefined) => void;
+  histogram: Histogram | null;
+}>) {
   const t = useTranslations("studio.photo");
   const [channel, setChannel] = useState<Channel>("rgb");
   const svg = useRef<SVGSVGElement>(null);
@@ -56,7 +72,11 @@ export function CurvesEditor({ curves, onChange, histogram }: Readonly<{ curves:
 
   const write = (next: CurvePoint[] | null) => {
     const all: PhotoCurves = { ...curves };
-    if (next && !(next.length === 2 && next[0]!.x === 0 && next[0]!.y === 0 && next[1]!.x === 1 && next[1]!.y === 1)) all[channel] = next;
+    if (
+      next &&
+      !(next.length === 2 && next[0]!.x === 0 && next[0]!.y === 0 && next[1]!.x === 1 && next[1]!.y === 1)
+    )
+      all[channel] = next;
     else delete all[channel];
     onChange(Object.keys(all).length ? all : undefined);
   };
@@ -66,7 +86,11 @@ export function CurvesEditor({ curves, onChange, histogram }: Readonly<{ curves:
     return {
       x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
       y: Math.min(1, Math.max(0, 1 - (event.clientY - rect.top) / rect.height)),
-      outside: event.clientX < rect.left - 24 || event.clientX > rect.right + 24 || event.clientY < rect.top - 24 || event.clientY > rect.bottom + 24,
+      outside:
+        event.clientX < rect.left - 24 ||
+        event.clientX > rect.right + 24 ||
+        event.clientY < rect.top - 24 ||
+        event.clientY > rect.bottom + 24,
     };
   };
 
@@ -119,7 +143,10 @@ export function CurvesEditor({ curves, onChange, histogram }: Readonly<{ curves:
               type="button"
               aria-pressed={channel === c}
               onClick={() => setChannel(c)}
-              className={cn("h-6 rounded-md px-2 text-xs font-medium", channel === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted")}
+              className={cn(
+                "h-6 rounded-md px-2 text-xs font-medium",
+                channel === c ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
+              )}
             >
               {t(`channels.${c}`)}
             </button>
@@ -132,32 +159,57 @@ export function CurvesEditor({ curves, onChange, histogram }: Readonly<{ curves:
       <svg
         ref={svg}
         viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="aspect-square w-full cursor-crosshair touch-none rounded-md border bg-muted/40 text-foreground"
+        className="bg-muted/40 text-foreground aspect-square w-full cursor-crosshair touch-none rounded-md border"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={() => (drag.current = null)}
         onDoubleClick={(event) => {
           const rect = svg.current!.getBoundingClientRect();
           const x = (event.clientX - rect.left) / rect.width;
-          const index = points.findIndex((q, i) => i > 0 && i < points.length - 1 && Math.abs(q.x - x) < 0.04);
+          const index = points.findIndex(
+            (q, i) => i > 0 && i < points.length - 1 && Math.abs(q.x - x) < 0.04,
+          );
           if (index > 0) write(points.filter((_, i) => i !== index));
         }}
         aria-label={t("curves")}
       >
-        {counts && <path d={histogramPath(counts, SIZE)} transform={`scale(${SIZE / 256} 1)`} fill={STROKES[channel]} opacity={0.18} />}
+        {counts && (
+          <path
+            d={histogramPath(counts, SIZE)}
+            transform={`scale(${SIZE / 256} 1)`}
+            fill={STROKES[channel]}
+            opacity={0.18}
+          />
+        )}
         {[0.25, 0.5, 0.75].map((g) => (
           <g key={g} stroke="currentColor" strokeOpacity={0.12}>
             <line x1={g * SIZE} x2={g * SIZE} y1={0} y2={SIZE} />
             <line y1={g * SIZE} y2={g * SIZE} x1={0} x2={SIZE} />
           </g>
         ))}
-        <line x1={0} y1={SIZE} x2={SIZE} y2={0} stroke="currentColor" strokeOpacity={0.2} strokeDasharray="4 4" />
+        <line
+          x1={0}
+          y1={SIZE}
+          x2={SIZE}
+          y2={0}
+          stroke="currentColor"
+          strokeOpacity={0.2}
+          strokeDasharray="4 4"
+        />
         <path d={d} fill="none" stroke={STROKES[channel]} strokeWidth={2} />
         {points.map((p) => (
-          <circle key={p.x.toFixed(4)} cx={p.x * SIZE} cy={(1 - p.y) * SIZE} r={5} fill="var(--background)" stroke={STROKES[channel]} strokeWidth={2} />
+          <circle
+            key={p.x.toFixed(4)}
+            cx={p.x * SIZE}
+            cy={(1 - p.y) * SIZE}
+            r={5}
+            fill="var(--background)"
+            stroke={STROKES[channel]}
+            strokeWidth={2}
+          />
         ))}
       </svg>
-      <p className="text-xs text-muted-foreground">{t("curvesHint")}</p>
+      <p className="text-muted-foreground text-xs">{t("curvesHint")}</p>
     </div>
   );
 }

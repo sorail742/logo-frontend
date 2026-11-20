@@ -52,7 +52,16 @@ export default function AdminLibraryPage() {
         <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
           {ICONS.map((icon) => (
             <div key={icon.id} className="flex items-center gap-2 rounded-lg border p-2 text-xs">
-              <svg viewBox="0 0 24 24" className="size-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                className="size-5 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 {icon.node.map(([tag, attrs], i) => {
                   const Tag = tag as "path";
                   return <Tag key={i} {...(attrs as Record<string, string>)} />;

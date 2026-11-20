@@ -88,7 +88,9 @@ export function AdjustPanel({
       {GROUPS.map((group) => (
         <section key={group.id} className="grid gap-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t(`groups.${group.id}`)}</h3>
+            <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              {t(`groups.${group.id}`)}
+            </h3>
             <div className="flex items-center gap-1">
               {group.id === "color" && (
                 <Button
@@ -103,7 +105,14 @@ export function AdjustPanel({
                   <Pipette />
                 </Button>
               )}
-              <Button type="button" size="icon-xs" variant="ghost" aria-label={t("resetGroup")} title={t("resetGroup")} onClick={() => reset(group.keys.map((k) => k.key))}>
+              <Button
+                type="button"
+                size="icon-xs"
+                variant="ghost"
+                aria-label={t("resetGroup")}
+                title={t("resetGroup")}
+                onClick={() => reset(group.keys.map((k) => k.key))}
+              >
                 <RotateCcw />
               </Button>
             </div>
@@ -126,8 +135,14 @@ export function AdjustPanel({
       ))}
 
       <section className="grid gap-2">
-        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("groups.tone")}</h3>
-        <NativeSelect value={adjust.tone ?? "color"} onChange={(e) => onChange({ ...adjust, tone: e.target.value as PhotoTone })} aria-label={t("groups.tone")}>
+        <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          {t("groups.tone")}
+        </h3>
+        <NativeSelect
+          value={adjust.tone ?? "color"}
+          onChange={(e) => onChange({ ...adjust, tone: e.target.value as PhotoTone })}
+          aria-label={t("groups.tone")}
+        >
           {TONES.map((tone) => (
             <option key={tone} value={tone}>
               {t(`tones.${tone}`)}
@@ -137,7 +152,7 @@ export function AdjustPanel({
         {adjust.tone === "duotone" && (
           <div className="grid grid-cols-2 gap-2">
             {([0, 1] as const).map((i) => (
-              <label key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+              <label key={i} className="text-muted-foreground flex items-center gap-2 text-xs">
                 <input
                   type="color"
                   value={(adjust.duotone ?? ["#1b1f3b", "#f6d365"])[i]}
@@ -155,7 +170,10 @@ export function AdjustPanel({
         )}
         <label className="flex items-center justify-between text-xs">
           {t("invert")}
-          <Switch checked={Boolean(adjust.invert)} onCheckedChange={(invert) => onChange({ ...adjust, invert })} />
+          <Switch
+            checked={Boolean(adjust.invert)}
+            onCheckedChange={(invert) => onChange({ ...adjust, invert })}
+          />
         </label>
       </section>
     </div>

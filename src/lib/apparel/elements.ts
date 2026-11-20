@@ -35,13 +35,18 @@ export function textWidthMm(content: ApparelContent, heightMm: number) {
     fontSize,
     letterSpacing: content.letterSpacing ?? 0,
   });
-  return Math.max(4, width + fontSize * 0.06 + (content.textOutline?.widthMm ?? 0) * 2 + effectsWidthMm(content.effects));
+  return Math.max(
+    4,
+    width + fontSize * 0.06 + (content.textOutline?.widthMm ?? 0) * 2 + effectsWidthMm(content.effects),
+  );
 }
 
 /** Largeur ajoutée par les effets : second contour des deux côtés, relief vers la droite ou la gauche. */
 function effectsWidthMm(effects: TextEffects | null | undefined) {
   if (!effects) return 0;
-  const extrude = effects.extrude ? Math.abs(Math.cos((effects.extrude.angle * Math.PI) / 180)) * effects.extrude.depth : 0;
+  const extrude = effects.extrude
+    ? Math.abs(Math.cos((effects.extrude.angle * Math.PI) / 180)) * effects.extrude.depth
+    : 0;
   return ((effects.outline2?.width ?? 0) + (effects.glow?.size ?? 0)) * 2 + extrude;
 }
 
@@ -72,7 +77,11 @@ export function textStrokeMm(content: ApparelContent, heightMm: number) {
   const ratio = stemRatio(content.fontWeight ?? 700) * (font.category === "script" ? 0.5 : 1);
   const stem = plainFontSize(content, heightMm) * ratio;
   // Traits imprimés les plus fins : fût, contours, liseré.
-  const lines = [content.textOutline?.widthMm, content.effects?.outline2?.width, content.effects?.inline?.width].filter((w): w is number => Boolean(w && w > 0));
+  const lines = [
+    content.textOutline?.widthMm,
+    content.effects?.outline2?.width,
+    content.effects?.inline?.width,
+  ].filter((w): w is number => Boolean(w && w > 0));
   return round(Math.min(stem, ...lines));
 }
 
@@ -92,7 +101,10 @@ export function textChecks(content: ApparelContent, heightMm: number, widthMm = 
   if (content.textOutline && content.textOutline.widthMm > 0) colors.push(content.textOutline.color);
   colors.push(...effectColors(content.effects));
   const outline = content.textOutline && content.textOutline.widthMm > 0 ? content.textOutline.color : null;
-  const edge = [content.effects?.outline2?.color ?? outline ?? content.fill ?? "#111111", content.effects?.extrude?.color].filter((c): c is string => Boolean(c));
+  const edge = [
+    content.effects?.outline2?.color ?? outline ?? content.fill ?? "#111111",
+    content.effects?.extrude?.color,
+  ].filter((c): c is string => Boolean(c));
   const glyphHeight = Math.max(1, heightMm - arcSagitta(widthMm, content.curve));
   return {
     colors: [...new Set(colors.map((c) => c.toLowerCase()))],

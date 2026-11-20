@@ -36,22 +36,70 @@ export interface StudioBrand {
 
 /** Associations de polices éprouvées : titre, texte courant. */
 export const FONT_PAIRINGS: [heading: FontChoice, body: FontChoice][] = [
-  [{ fontId: "anton", fontWeight: 400 }, { fontId: "inter", fontWeight: 400 }],
-  [{ fontId: "playfair", fontWeight: 700 }, { fontId: "dm-sans", fontWeight: 400 }],
-  [{ fontId: "montserrat", fontWeight: 800 }, { fontId: "merriweather", fontWeight: 400 }],
-  [{ fontId: "bebas-neue", fontWeight: 400 }, { fontId: "montserrat", fontWeight: 400 }],
-  [{ fontId: "dm-serif-display", fontWeight: 400 }, { fontId: "inter", fontWeight: 400 }],
-  [{ fontId: "fraunces", fontWeight: 700 }, { fontId: "work-sans", fontWeight: 400 }],
-  [{ fontId: "syne", fontWeight: 800 }, { fontId: "manrope", fontWeight: 400 }],
-  [{ fontId: "unbounded", fontWeight: 700 }, { fontId: "outfit", fontWeight: 400 }],
-  [{ fontId: "abril-fatface", fontWeight: 400 }, { fontId: "poppins", fontWeight: 400 }],
-  [{ fontId: "cormorant-garamond", fontWeight: 700 }, { fontId: "montserrat", fontWeight: 400 }],
-  [{ fontId: "archivo-black", fontWeight: 400 }, { fontId: "archivo", fontWeight: 400 }],
-  [{ fontId: "bricolage-grotesque", fontWeight: 800 }, { fontId: "dm-sans", fontWeight: 400 }],
-  [{ fontId: "oswald", fontWeight: 700 }, { fontId: "lora", fontWeight: 400 }],
-  [{ fontId: "righteous", fontWeight: 400 }, { fontId: "nunito", fontWeight: 400 }],
-  [{ fontId: "alfa-slab-one", fontWeight: 400 }, { fontId: "rubik", fontWeight: 400 }],
-  [{ fontId: "space-grotesk", fontWeight: 700 }, { fontId: "space-grotesk", fontWeight: 400 }],
+  [
+    { fontId: "anton", fontWeight: 400 },
+    { fontId: "inter", fontWeight: 400 },
+  ],
+  [
+    { fontId: "playfair", fontWeight: 700 },
+    { fontId: "dm-sans", fontWeight: 400 },
+  ],
+  [
+    { fontId: "montserrat", fontWeight: 800 },
+    { fontId: "merriweather", fontWeight: 400 },
+  ],
+  [
+    { fontId: "bebas-neue", fontWeight: 400 },
+    { fontId: "montserrat", fontWeight: 400 },
+  ],
+  [
+    { fontId: "dm-serif-display", fontWeight: 400 },
+    { fontId: "inter", fontWeight: 400 },
+  ],
+  [
+    { fontId: "fraunces", fontWeight: 700 },
+    { fontId: "work-sans", fontWeight: 400 },
+  ],
+  [
+    { fontId: "syne", fontWeight: 800 },
+    { fontId: "manrope", fontWeight: 400 },
+  ],
+  [
+    { fontId: "unbounded", fontWeight: 700 },
+    { fontId: "outfit", fontWeight: 400 },
+  ],
+  [
+    { fontId: "abril-fatface", fontWeight: 400 },
+    { fontId: "poppins", fontWeight: 400 },
+  ],
+  [
+    { fontId: "cormorant-garamond", fontWeight: 700 },
+    { fontId: "montserrat", fontWeight: 400 },
+  ],
+  [
+    { fontId: "archivo-black", fontWeight: 400 },
+    { fontId: "archivo", fontWeight: 400 },
+  ],
+  [
+    { fontId: "bricolage-grotesque", fontWeight: 800 },
+    { fontId: "dm-sans", fontWeight: 400 },
+  ],
+  [
+    { fontId: "oswald", fontWeight: 700 },
+    { fontId: "lora", fontWeight: 400 },
+  ],
+  [
+    { fontId: "righteous", fontWeight: 400 },
+    { fontId: "nunito", fontWeight: 400 },
+  ],
+  [
+    { fontId: "alfa-slab-one", fontWeight: 400 },
+    { fontId: "rubik", fontWeight: 400 },
+  ],
+  [
+    { fontId: "space-grotesk", fontWeight: 700 },
+    { fontId: "space-grotesk", fontWeight: 400 },
+  ],
 ];
 
 /** Police de texte courant assortie à une police de titre. */
@@ -78,7 +126,9 @@ export function buildBrand(source: BrandSource): StudioBrand {
   const font = getFont(spec?.fontId ?? DEFAULT_SPEC.fontId);
   // Une police manuscrite reste un accent : les titres prennent une police lisible.
   const heading: FontChoice =
-    font.category === "script" ? { fontId: "playfair", fontWeight: 700 } : { fontId: font.id, fontWeight: Math.max(spec?.fontWeight ?? 700, 600) };
+    font.category === "script"
+      ? { fontId: "playfair", fontWeight: 700 }
+      : { fontId: font.id, fontWeight: Math.max(spec?.fontWeight ?? 700, 600) };
   const iconId = spec?.iconId ?? null;
   const icon = iconId ? getIcon(iconId) : undefined;
   return {
@@ -86,7 +136,11 @@ export function buildBrand(source: BrandSource): StudioBrand {
     slogan: source.slogan || spec?.tagline || null,
     sector: source.sector ?? null,
     colors,
-    palette: [...new Set([colors.primary, colors.secondary, colors.text, colors.background].map((c) => c.toLowerCase()))],
+    palette: [
+      ...new Set(
+        [colors.primary, colors.secondary, colors.text, colors.background].map((c) => c.toLowerCase()),
+      ),
+    ],
     heading,
     body: pairedBody(heading),
     logos: source.logos ?? {},

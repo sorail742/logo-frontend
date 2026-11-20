@@ -54,7 +54,10 @@ export async function iconPackEntries(spec: LogoSpec, prefix = "icones-app/"): P
   for (const { id, size } of APP_ICON_SIZES) {
     // iOS refuse la transparence : fond plein pour l'icône 1024 px
     const background = id === "ios-1024" ? spec.colors.background : null;
-    entries.push({ path: `${prefix}${id}.png`, data: await svgToPngBlob(svg, { size, square: true, padding: 0.08, background }) });
+    entries.push({
+      path: `${prefix}${id}.png`,
+      data: await svgToPngBlob(svg, { size, square: true, padding: 0.08, background }),
+    });
   }
   return entries;
 }

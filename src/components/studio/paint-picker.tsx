@@ -15,7 +15,20 @@ import { cn } from "@/lib/utils";
 // Sélecteur de peinture : couleur unie (teinte, saturation, luminosité, pipette), dégradé
 // linéaire ou radial à plusieurs arrêts, nuanciers de la marque, du document et harmonies.
 
-const CLASSICS = ["#111827", "#ffffff", "#ef4444", "#f97316", "#f59e0b", "#84cc16", "#10b981", "#06b6d4", "#3b82f6", "#6366f1", "#a855f7", "#ec4899"];
+const CLASSICS = [
+  "#111827",
+  "#ffffff",
+  "#ef4444",
+  "#f97316",
+  "#f59e0b",
+  "#84cc16",
+  "#10b981",
+  "#06b6d4",
+  "#3b82f6",
+  "#6366f1",
+  "#a855f7",
+  "#ec4899",
+];
 const HARMONIES: HarmonyKind[] = ["complementary", "analogous", "triadic", "split", "tints", "shades"];
 
 /** CSS d'une peinture (aperçus). */
@@ -58,18 +71,26 @@ interface EyeDropperApi {
   open(): Promise<EyeDropperResult>;
 }
 
-function Swatches({ colors, onPick, label }: { colors: string[]; onPick(color: string): void; label: string }) {
+function Swatches({
+  colors,
+  onPick,
+  label,
+}: {
+  colors: string[];
+  onPick(color: string): void;
+  label: string;
+}) {
   if (!colors.length) return null;
   return (
     <div className="grid gap-1.5">
-      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="text-muted-foreground text-[11px] font-medium">{label}</p>
       <div className="flex flex-wrap gap-1.5">
         {colors.map((color) => (
           <button
             key={color}
             type="button"
             onClick={() => onPick(color)}
-            className="size-6 rounded-md border border-black/10 shadow-xs transition hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="focus-visible:ring-ring size-6 rounded-md border border-black/10 shadow-xs transition hover:scale-110 focus-visible:ring-2 focus-visible:outline-none"
             style={{ background: color }}
             title={color.toUpperCase()}
             aria-label={color.toUpperCase()}
@@ -81,7 +102,13 @@ function Swatches({ colors, onPick, label }: { colors: string[]; onPick(color: s
 }
 
 /** Couleur unie : carré saturation/luminosité, barre de teinte, saisie hexadécimale, pipette. */
-export function ColorField({ value, onChange }: { value: string; onChange(color: string, final: boolean): void }) {
+export function ColorField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange(color: string, final: boolean): void;
+}) {
   const t = useTranslations("studio.paint");
   const [hsv, setHsv] = useState(() => hexToHsv(value));
   const [lastValue, setLastValue] = useState(value);
@@ -117,7 +144,9 @@ export function ColorField({ value, onChange }: { value: string; onChange(color:
       <div
         ref={area}
         className="relative h-36 cursor-crosshair touch-none rounded-lg"
-        style={{ background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), hsl(${hsv[0]} 100% 50%)` }}
+        style={{
+          background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), hsl(${hsv[0]} 100% 50%)`,
+        }}
         onPointerDown={(event) => {
           event.currentTarget.setPointerCapture(event.pointerId);
           pick(event, false);
@@ -130,11 +159,19 @@ export function ColorField({ value, onChange }: { value: string; onChange(color:
         tabIndex={0}
         onKeyDown={(event) => {
           const step = event.shiftKey ? 0.1 : 0.02;
-          const moves: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] };
+          const moves: Record<string, [number, number]> = {
+            ArrowLeft: [-step, 0],
+            ArrowRight: [step, 0],
+            ArrowUp: [0, step],
+            ArrowDown: [0, -step],
+          };
           const move = moves[event.key];
           if (!move) return;
           event.preventDefault();
-          emit([hsv[0], Math.min(1, Math.max(0, hsv[1] + move[0])), Math.min(1, Math.max(0, hsv[2] + move[1]))], true);
+          emit(
+            [hsv[0], Math.min(1, Math.max(0, hsv[1] + move[0])), Math.min(1, Math.max(0, hsv[2] + move[1]))],
+            true,
+          );
         }}
       >
         <span
@@ -152,7 +189,11 @@ export function ColorField({ value, onChange }: { value: string; onChange(color:
         className="[&_[data-slot=slider-range]]:bg-transparent [&_[data-slot=slider-track]]:h-2.5 [&_[data-slot=slider-track]]:bg-[linear-gradient(to_right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)]"
       />
       <div className="flex items-center gap-2">
-        <span className="size-8 shrink-0 rounded-md border" style={{ background: value }} aria-hidden="true" />
+        <span
+          className="size-8 shrink-0 rounded-md border"
+          style={{ background: value }}
+          aria-hidden="true"
+        />
         <Input
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
@@ -172,7 +213,9 @@ export function ColorField({ value, onChange }: { value: string; onChange(color:
             size="icon"
             onClick={async () => {
               try {
-                const result = await new (window as unknown as { EyeDropper: new () => EyeDropperApi }).EyeDropper().open();
+                const result = await new (
+                  window as unknown as { EyeDropper: new () => EyeDropperApi }
+                ).EyeDropper().open();
                 onChange(normalizeHex(result.sRGBHex), true);
               } catch {
                 // Pipette annulée
@@ -207,11 +250,25 @@ function defaultStops(color: string): GradientStop[] {
   ];
 }
 
-export function PaintPicker({ value, onChange, label, gradients = true, allowNone = false, brandColors = [], documentColors = [], className }: PaintPickerProps) {
+export function PaintPicker({
+  value,
+  onChange,
+  label,
+  gradients = true,
+  allowNone = false,
+  brandColors = [],
+  documentColors = [],
+  className,
+}: PaintPickerProps) {
   const t = useTranslations("studio.paint");
   const [stopIndex, setStopIndex] = useState(0);
   const [harmonyKind, setHarmonyKind] = useState<HarmonyKind>("complementary");
-  const base = value.type === "solid" ? value.color : value.type === "none" ? "#111827" : (value.stops[0]?.color ?? "#111827");
+  const base =
+    value.type === "solid"
+      ? value.color
+      : value.type === "none"
+        ? "#111827"
+        : (value.stops[0]?.color ?? "#111827");
   const stops = value.type === "linear" || value.type === "radial" ? value.stops : null;
   const activeStop = stops ? Math.min(stopIndex, stops.length - 1) : 0;
   const current = stops ? stops[activeStop]!.color : base;
@@ -228,40 +285,75 @@ export function PaintPicker({ value, onChange, label, gradients = true, allowNon
     if (type === value.type) return;
     if (type === "none") onChange({ type: "none" }, true);
     else if (type === "solid") onChange({ type: "solid", color: base }, true);
-    else if (type === "linear") onChange({ type: "linear", angle: value.type === "linear" ? value.angle : 90, stops: stops ?? defaultStops(base) }, true);
+    else if (type === "linear")
+      onChange(
+        {
+          type: "linear",
+          angle: value.type === "linear" ? value.angle : 90,
+          stops: stops ?? defaultStops(base),
+        },
+        true,
+      );
     else onChange({ type: "radial", stops: stops ?? defaultStops(base) }, true);
     setStopIndex(0);
   };
 
-  const presets: GradientStop[][] = brandColors.length >= 2
-    ? [
-        [{ offset: 0, color: brandColors[0]! }, { offset: 1, color: brandColors[1]! }],
-        [{ offset: 0, color: brandColors[0]! }, { offset: 1, color: "#000000" }],
-        [{ offset: 0, color: brandColors[1]! }, { offset: 1, color: "#ffffff" }],
-      ]
-    : [];
+  const presets: GradientStop[][] =
+    brandColors.length >= 2
+      ? [
+          [
+            { offset: 0, color: brandColors[0]! },
+            { offset: 1, color: brandColors[1]! },
+          ],
+          [
+            { offset: 0, color: brandColors[0]! },
+            { offset: 1, color: "#000000" },
+          ],
+          [
+            { offset: 0, color: brandColors[1]! },
+            { offset: 1, color: "#ffffff" },
+          ],
+        ]
+      : [];
 
   return (
     <Popover>
       <PopoverTrigger
         className={cn(
-          "flex h-8 w-full items-center gap-2 rounded-lg border border-input px-1.5 text-left text-xs transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+          "border-input hover:bg-muted focus-visible:ring-ring/50 flex h-8 w-full items-center gap-2 rounded-lg border px-1.5 text-left text-xs transition-colors focus-visible:ring-3 focus-visible:outline-none",
           className,
         )}
         aria-label={label}
       >
-        <span className="size-5 shrink-0 rounded border border-black/10" style={{ background: paintCss(value) }} aria-hidden="true" />
-        <span className="truncate font-mono uppercase">{value.type === "solid" ? value.color : value.type === "none" ? t("none") : t(value.type)}</span>
+        <span
+          className="size-5 shrink-0 rounded border border-black/10"
+          style={{ background: paintCss(value) }}
+          aria-hidden="true"
+        />
+        <span className="truncate font-mono uppercase">
+          {value.type === "solid" ? value.color : value.type === "none" ? t("none") : t(value.type)}
+        </span>
       </PopoverTrigger>
       <PopoverContent className="grid w-72 gap-3" side="left" align="start">
         {(gradients || allowNone) && (
-          <div className="grid grid-flow-col gap-1 rounded-lg bg-muted p-0.5 text-xs">
-            {(["solid", ...(gradients ? (["linear", "radial"] as const) : []), ...(allowNone ? (["none"] as const) : [])] as Paint["type"][]).map((type) => (
+          <div className="bg-muted grid grid-flow-col gap-1 rounded-lg p-0.5 text-xs">
+            {(
+              [
+                "solid",
+                ...(gradients ? (["linear", "radial"] as const) : []),
+                ...(allowNone ? (["none"] as const) : []),
+              ] as Paint["type"][]
+            ).map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => setType(type)}
-                className={cn("rounded-md px-2 py-1 transition", value.type === type ? "bg-background font-medium shadow-sm" : "text-muted-foreground hover:text-foreground")}
+                className={cn(
+                  "rounded-md px-2 py-1 transition",
+                  value.type === type
+                    ? "bg-background font-medium shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
               >
                 {type === "none" ? <Ban className="mx-auto size-3.5" aria-label={t("none")} /> : t(type)}
               </button>
@@ -271,13 +363,21 @@ export function PaintPicker({ value, onChange, label, gradients = true, allowNon
 
         {stops && (value.type === "linear" || value.type === "radial") && (
           <div className="grid gap-2">
-            <div className="relative h-7 rounded-md border" style={{ background: `linear-gradient(90deg, ${stops.map((s) => `${s.color} ${s.offset * 100}%`).join(", ")})` }}>
+            <div
+              className="relative h-7 rounded-md border"
+              style={{
+                background: `linear-gradient(90deg, ${stops.map((s) => `${s.color} ${s.offset * 100}%`).join(", ")})`,
+              }}
+            >
               {stops.map((stop, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => setStopIndex(i)}
-                  className={cn("absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow", i === activeStop ? "border-primary ring-2 ring-primary/30" : "border-white")}
+                  className={cn(
+                    "absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow",
+                    i === activeStop ? "border-primary ring-primary/30 ring-2" : "border-white",
+                  )}
                   style={{ left: `${stop.offset * 100}%`, background: stop.color }}
                   aria-label={t("stop", { index: i + 1 })}
                   aria-pressed={i === activeStop}
@@ -285,14 +385,17 @@ export function PaintPicker({ value, onChange, label, gradients = true, allowNon
               ))}
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-14 text-[11px] text-muted-foreground">{t("position")}</span>
+              <span className="text-muted-foreground w-14 text-[11px]">{t("position")}</span>
               <Slider
                 value={[Math.round(stops[activeStop]!.offset * 100)]}
                 min={0}
                 max={100}
                 onValueChange={(v) => {
                   const offset = (Array.isArray(v) ? v[0]! : (v as number)) / 100;
-                  onChange({ ...value, stops: stops.map((s, i) => (i === activeStop ? { ...s, offset } : s)) }, false);
+                  onChange(
+                    { ...value, stops: stops.map((s, i) => (i === activeStop ? { ...s, offset } : s)) },
+                    false,
+                  );
                 }}
                 onValueCommitted={() => onChange(value, true)}
                 aria-label={t("position")}
@@ -330,12 +433,14 @@ export function PaintPicker({ value, onChange, label, gradients = true, allowNon
             </div>
             {value.type === "linear" && (
               <div className="flex items-center gap-2">
-                <span className="w-14 text-[11px] text-muted-foreground">{t("angle")}</span>
+                <span className="text-muted-foreground w-14 text-[11px]">{t("angle")}</span>
                 <Slider
                   value={[value.angle]}
                   min={0}
                   max={359}
-                  onValueChange={(v) => onChange({ ...value, angle: Array.isArray(v) ? v[0]! : (v as number) }, false)}
+                  onValueChange={(v) =>
+                    onChange({ ...value, angle: Array.isArray(v) ? v[0]! : (v as number) }, false)
+                  }
                   onValueCommitted={() => onChange(value, true)}
                   aria-label={t("angle")}
                 />
@@ -362,15 +467,19 @@ export function PaintPicker({ value, onChange, label, gradients = true, allowNon
         {value.type !== "none" && <ColorField value={current} onChange={setColor} />}
 
         <Swatches colors={brandColors} onPick={(c) => setColor(c, true)} label={t("brand")} />
-        <Swatches colors={documentColors.filter((c) => !brandColors.includes(c)).slice(0, 14)} onPick={(c) => setColor(c, true)} label={t("document")} />
+        <Swatches
+          colors={documentColors.filter((c) => !brandColors.includes(c)).slice(0, 14)}
+          onPick={(c) => setColor(c, true)}
+          label={t("document")}
+        />
         {value.type !== "none" && (
           <div className="grid gap-1.5">
             <div className="flex items-center justify-between">
-              <p className="text-[11px] font-medium text-muted-foreground">{t("harmonies")}</p>
+              <p className="text-muted-foreground text-[11px] font-medium">{t("harmonies")}</p>
               <select
                 value={harmonyKind}
                 onChange={(event) => setHarmonyKind(event.target.value as HarmonyKind)}
-                className="rounded-md border-0 bg-transparent text-[11px] text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className="text-muted-foreground focus-visible:ring-ring rounded-md border-0 bg-transparent text-[11px] focus-visible:ring-2 focus-visible:outline-none"
                 aria-label={t("harmonies")}
               >
                 {HARMONIES.map((kind) => (
@@ -390,7 +499,19 @@ export function PaintPicker({ value, onChange, label, gradients = true, allowNon
 }
 
 /** Couleur unie seule (contours, icônes, surlignage). */
-export function ColorPicker({ value, onChange, label, brandColors, documentColors }: { value: string; onChange(color: string, final: boolean): void; label: string; brandColors?: string[]; documentColors?: string[] }) {
+export function ColorPicker({
+  value,
+  onChange,
+  label,
+  brandColors,
+  documentColors,
+}: {
+  value: string;
+  onChange(color: string, final: boolean): void;
+  label: string;
+  brandColors?: string[];
+  documentColors?: string[];
+}) {
   return (
     <PaintPicker
       value={{ type: "solid", color: value }}

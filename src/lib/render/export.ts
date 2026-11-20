@@ -35,8 +35,12 @@ function fontFaces(family: string) {
       // Feuille d'une autre origine : illisible
     }
     for (const rule of cssRules) {
-      const ruleFamily = rule instanceof CSSFontFaceRule ? rule.style.getPropertyValue("font-family").replace(/['"]/g, "").trim() : null;
-      if (ruleFamily === family) faces.push({ rule: rule as CSSFontFaceRule, base: sheet.href ?? location.href });
+      const ruleFamily =
+        rule instanceof CSSFontFaceRule
+          ? rule.style.getPropertyValue("font-family").replace(/['"]/g, "").trim()
+          : null;
+      if (ruleFamily === family)
+        faces.push({ rule: rule as CSSFontFaceRule, base: sheet.href ?? location.href });
     }
   }
   return faces;
@@ -52,7 +56,12 @@ async function inlineFace({ rule, base }: { rule: CSSFontFaceRule; base: string 
     const weight = rule.style.getPropertyValue("font-weight") || "400";
     // La plage de caractères est conservée : le latin étendu complète le latin de la même famille.
     const range = rule.style.getPropertyValue("unicode-range");
-    const declarations = [`font-family:'${name}'`, `src:url(${dataUrl})`, `font-weight:${weight}`, ...(range ? [`unicode-range:${range}`] : [])];
+    const declarations = [
+      `font-family:'${name}'`,
+      `src:url(${dataUrl})`,
+      `font-weight:${weight}`,
+      ...(range ? [`unicode-range:${range}`] : []),
+    ];
     return `@font-face{${declarations.join(";")}}`;
   } catch {
     return null; // Police indisponible : le rendu utilisera la police de repli
@@ -61,7 +70,11 @@ async function inlineFace({ rule, base }: { rule: CSSFontFaceRule; base: string 
 
 /** Règles @font-face chargées par next/font pour une variable CSS, intégrées sous le nom `name`. */
 async function faceRules(cssVar: string, name: string) {
-  const family = getComputedStyle(document.documentElement).getPropertyValue(cssVar).split(",")[0]?.trim().replace(/['"]/g, "");
+  const family = getComputedStyle(document.documentElement)
+    .getPropertyValue(cssVar)
+    .split(",")[0]
+    ?.trim()
+    .replace(/['"]/g, "");
   if (!family) return [];
   const rules = await Promise.all(fontFaces(family).map((face) => inlineFace(face, name)));
   return rules.filter((rule): rule is string => rule !== null);
@@ -162,7 +175,11 @@ export async function svgToPngBlob(svg: string, options: PngOptions): Promise<Bl
     const dh = vh * scale;
     ctx.drawImage(img, (width - dw) / 2, (height - dh) / 2, dw, dh);
     return await new Promise<Blob>((resolve, reject) =>
-      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Export impossible"))), options.type ?? "image/png", options.quality ?? 0.92),
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Export impossible"))),
+        options.type ?? "image/png",
+        options.quality ?? 0.92,
+      ),
     );
   } finally {
     URL.revokeObjectURL(url);
@@ -176,7 +193,10 @@ export async function svgToPngDataUrl(svg: string, options: PngOptions) {
 /** favicon.ico multi-tailles (16/32/48) à partir d'images PNG (LOGO-22). */
 export async function buildIco(svg: string, sizes = [16, 32, 48]) {
   const pngs = await Promise.all(
-    sizes.map(async (size) => new Uint8Array(await (await svgToPngBlob(svg, { size, square: true, padding: 0.04 })).arrayBuffer())),
+    sizes.map(
+      async (size) =>
+        new Uint8Array(await (await svgToPngBlob(svg, { size, square: true, padding: 0.04 })).arrayBuffer()),
+    ),
   );
   const headerSize = 6 + 16 * pngs.length;
   const total = headerSize + pngs.reduce((sum, png) => sum + png.length, 0);

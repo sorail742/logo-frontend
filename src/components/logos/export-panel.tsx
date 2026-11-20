@@ -19,7 +19,17 @@ import type { LogoSpec } from "@/lib/types";
 
 export const FREE_WATERMARK = "Marka · version gratuite";
 
-function ExportItem({ id, label, onClick, busy }: { id: string; label: string; onClick: () => void; busy: string | null }) {
+function ExportItem({
+  id,
+  label,
+  onClick,
+  busy,
+}: {
+  id: string;
+  label: string;
+  onClick: () => void;
+  busy: string | null;
+}) {
   return (
     <Button variant="outline" className="justify-start" onClick={onClick} disabled={Boolean(busy)}>
       {busy === id ? <Loader2 className="animate-spin" /> : <Download />}
@@ -44,7 +54,17 @@ function openDownload(url: string) {
  * `saved` : la spec affichée est la dernière version enregistrée. L'export serveur porte sur
  * cette version ; une modification en cours doit d'abord être enregistrée.
  */
-export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: LogoSpec; logoId: string; isFree: boolean; saved?: boolean }) {
+export function ExportPanel({
+  spec,
+  logoId,
+  isFree,
+  saved = true,
+}: {
+  spec: LogoSpec;
+  logoId: string;
+  isFree: boolean;
+  saved?: boolean;
+}) {
   const t = useTranslations("logos.export");
   const tSocial = useTranslations("logos.export.socialFormats");
   const onError = useApiErrorToast();
@@ -66,13 +86,20 @@ export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: Logo
   const png = (size: number, type: "image/png" | "image/jpeg" = "image/png") =>
     run(`${type}-${size}`, async () => {
       const { svg } = renderLogoSvg(spec, { watermark: isFree ? FREE_WATERMARK : null });
-      const blob = await svgToPngBlob(svg, { size, padding: 0.06, type, background: type === "image/jpeg" ? spec.colors.background : null });
+      const blob = await svgToPngBlob(svg, {
+        size,
+        padding: 0.06,
+        type,
+        background: type === "image/jpeg" ? spec.colors.background : null,
+      });
       downloadBlob(blob, `${base}-${size}.${type === "image/jpeg" ? "jpg" : "png"}`);
     });
 
   const social = (format: SocialFormat) =>
     run(`social-${format.id}`, async () => {
-      const blob = await svgToPngBlob(socialSvg(spec, format), { size: Math.max(format.width, format.height) });
+      const blob = await svgToPngBlob(socialSvg(spec, format), {
+        size: Math.max(format.width, format.height),
+      });
       downloadBlob(blob, `${base}-${format.file}.png`);
     });
 
@@ -80,7 +107,8 @@ export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: Logo
     run(id, async () => {
       const { jobId } = await api.logos.requestExport(logoId, input);
       const job = await waitForJob(jobId);
-      if (job.status !== "SUCCEEDED" || !job.result?.downloadUrl) throw new Error(job.error ?? t("serverFailed"));
+      if (job.status !== "SUCCEEDED" || !job.result?.downloadUrl)
+        throw new Error(job.error ?? t("serverFailed"));
       openDownload(job.result.downloadUrl);
     });
 
@@ -99,8 +127,15 @@ export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: Logo
       <CardContent className="grid gap-4">
         {isFree ? (
           <>
-            <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100">{t("watermark")}</p>
-            <ExportItem busy={busy} id="image/png-512" label={t("png", { size: 512 })} onClick={() => png(512)} />
+            <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+              {t("watermark")}
+            </p>
+            <ExportItem
+              busy={busy}
+              id="image/png-512"
+              label={t("png", { size: 512 })}
+              onClick={() => png(512)}
+            />
             <ButtonLink href="/app/facturation" size="lg">
               {t("upgrade")}
             </ButtonLink>
@@ -108,11 +143,27 @@ export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: Logo
         ) : (
           <>
             <div className="grid gap-2">
-              <ExportItem busy={busy} id="svg" label={t("svg")} onClick={() => run("svg", () => downloadSvg(renderLogoSvg(spec).svg, `${base}.svg`))} />
+              <ExportItem
+                busy={busy}
+                id="svg"
+                label={t("svg")}
+                onClick={() => run("svg", () => downloadSvg(renderLogoSvg(spec).svg, `${base}.svg`))}
+              />
               {[512, 1024, 2048].map((size) => (
-                <ExportItem busy={busy} key={size} id={`image/png-${size}`} label={t("png", { size })} onClick={() => png(size)} />
+                <ExportItem
+                  busy={busy}
+                  key={size}
+                  id={`image/png-${size}`}
+                  label={t("png", { size })}
+                  onClick={() => png(size)}
+                />
               ))}
-              <ExportItem busy={busy} id="image/jpeg-1024" label={t("jpg")} onClick={() => png(1024, "image/jpeg")} />
+              <ExportItem
+                busy={busy}
+                id="image/jpeg-1024"
+                label={t("jpg")}
+                onClick={() => png(1024, "image/jpeg")}
+              />
               <ExportItem busy={busy} id="pdf" label={t("pdf")} onClick={pdf} />
             </div>
             {api.mode === "http" && (
@@ -121,9 +172,16 @@ export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: Logo
                   <Package className="size-4" aria-hidden="true" />
                   {t("zipAll")}
                 </p>
-                <p className="text-xs text-muted-foreground">{saved ? t("zipAllBody") : t("saveFirst")}</p>
+                <p className="text-muted-foreground text-xs">{saved ? t("zipAllBody") : t("saveFirst")}</p>
                 <Button
-                  onClick={() => server("zip", { formats: ["svg", "pdf", "png", "jpg"], sizes: [512, 1024, 2048], iconPack: true, social: true })}
+                  onClick={() =>
+                    server("zip", {
+                      formats: ["svg", "pdf", "png", "jpg"],
+                      sizes: [512, 1024, 2048],
+                      iconPack: true,
+                      social: true,
+                    })
+                  }
                   disabled={Boolean(busy) || !saved}
                 >
                   {busy === "zip" ? <Loader2 className="animate-spin" /> : <Download />}
@@ -136,12 +194,16 @@ export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: Logo
                 <Package className="size-4" aria-hidden="true" />
                 {t("iconPack")}
               </p>
-              <p className="text-xs text-muted-foreground">{t("iconPackBody")}</p>
+              <p className="text-muted-foreground text-xs">{t("iconPackBody")}</p>
               <ExportItem
                 busy={busy}
                 id="icons"
                 label={t("iconPack")}
-                onClick={() => run("icons", async () => downloadBlob(await buildZip(await iconPackEntries(spec, "")), `${base}-icones-app.zip`))}
+                onClick={() =>
+                  run("icons", async () =>
+                    downloadBlob(await buildZip(await iconPackEntries(spec, "")), `${base}-icones-app.zip`),
+                  )
+                }
               />
             </div>
             <div className="grid gap-2 border-t pt-4">
@@ -150,7 +212,13 @@ export function ExportPanel({ spec, logoId, isFree, saved = true }: { spec: Logo
                 {t("social")}
               </p>
               {SOCIAL_KIT.map((format) => (
-                <ExportItem key={format.id} busy={busy} id={`social-${format.id}`} label={tSocial(format.id, { size: `${format.width} × ${format.height}` })} onClick={() => social(format)} />
+                <ExportItem
+                  key={format.id}
+                  busy={busy}
+                  id={`social-${format.id}`}
+                  label={tSocial(format.id, { size: `${format.width} × ${format.height}` })}
+                  onClick={() => social(format)}
+                />
               ))}
             </div>
           </>
@@ -184,10 +252,14 @@ export function VariantsGrid({ spec }: { spec: LogoSpec }) {
           return (
             <figure key={variant.id} className="grid gap-1">
               <div
-                className={variant.dark ? "svg-fit flex aspect-[3/2] items-center rounded-lg bg-neutral-900 p-3" : "svg-fit bg-checker flex aspect-[3/2] items-center rounded-lg p-3"}
+                className={
+                  variant.dark
+                    ? "svg-fit flex aspect-[3/2] items-center rounded-lg bg-neutral-900 p-3"
+                    : "svg-fit bg-checker flex aspect-[3/2] items-center rounded-lg p-3"
+                }
                 dangerouslySetInnerHTML={{ __html: svg }}
               />
-              <figcaption className="text-center text-xs text-muted-foreground">{t(variant.id)}</figcaption>
+              <figcaption className="text-muted-foreground text-center text-xs">{t(variant.id)}</figcaption>
             </figure>
           );
         })}

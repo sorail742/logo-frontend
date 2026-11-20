@@ -27,7 +27,8 @@ export function centered<T extends DesignElement>(el: T, at?: { x: number; y: nu
 
 /** Après un ajout depuis un panneau, le clavier revient à la création (Entrée, Suppr, flèches). */
 export function releaseFocus() {
-  if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement)
+    document.activeElement.blur();
 }
 
 export function addCentered(elements: DesignElement[], at?: { x: number; y: number }) {
@@ -61,7 +62,12 @@ export function placeImages(images: PreparedImage[], at?: { x: number; y: number
   let rest = images;
   if (target && (isFrame(target) || target.type === "image")) {
     const filled = fillFrame(target, images[0]!);
-    state.change((d) => mapPage(d, state.pageIndex, (p) => ({ ...p, elements: p.elements.map((el) => (el.id === target.id ? filled : el)) })));
+    state.change((d) =>
+      mapPage(d, state.pageIndex, (p) => ({
+        ...p,
+        elements: p.elements.map((el) => (el.id === target.id ? filled : el)),
+      })),
+    );
     state.select([filled.id]);
     rest = images.slice(1);
   }
@@ -69,9 +75,15 @@ export function placeImages(images: PreparedImage[], at?: { x: number; y: number
   const max = Math.min(doc.width, doc.height) * 0.6;
   const added = rest.map((img, i) => {
     const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
-    const el = createImage(img.src, img.naturalWidth, img.naturalHeight, { width: img.naturalWidth * scale, height: img.naturalHeight * scale });
+    const el = createImage(img.src, img.naturalWidth, img.naturalHeight, {
+      width: img.naturalWidth * scale,
+      height: img.naturalHeight * scale,
+    });
     const offset = i * Math.min(doc.width, doc.height) * 0.04;
-    return centered(el, at ? { x: at.x + offset, y: at.y + offset } : { x: doc.width / 2 + offset, y: doc.height / 2 + offset });
+    return centered(
+      el,
+      at ? { x: at.x + offset, y: at.y + offset } : { x: doc.width / 2 + offset, y: doc.height / 2 + offset },
+    );
   });
   state.add(added);
 }
@@ -83,11 +95,17 @@ export function placeImages(images: PreparedImage[], at?: { x: number; y: number
 export function useInkColors(brand: StudioBrand | null) {
   const background = useStudio((s) => s.doc?.pages[s.pageIndex]?.background);
   const bg = (background && paintColor(background)) ?? "#ffffff";
-  const palette = brand ? [brand.colors.primary, brand.colors.secondary, brand.colors.text] : ["#0f766e", "#f59e0b", "#111827"];
+  const palette = brand
+    ? [brand.colors.primary, brand.colors.secondary, brand.colors.text]
+    : ["#0f766e", "#f59e0b", "#111827"];
   const accents = palette.filter((c) => contrastRatio(c, bg) >= 2.2);
   const accent = accents[0] ?? readableFrom(palette, bg, 3);
   const secondary = accents.find((c) => c !== accent) ?? accent;
-  const ink = readableFrom(brand ? [brand.colors.text, brand.colors.primary, brand.colors.background] : ["#111827"], bg, 4.5);
+  const ink = readableFrom(
+    brand ? [brand.colors.text, brand.colors.primary, brand.colors.background] : ["#111827"],
+    bg,
+    4.5,
+  );
   return { accent, secondary, ink, background: bg };
 }
 
@@ -97,7 +115,14 @@ export function placeAsBackground(image: PreparedImage) {
   const state = useStudio.getState();
   const doc = state.doc;
   if (!doc) return;
-  const el = createImage(image.src, image.naturalWidth, image.naturalHeight, { x: 0, y: 0, width: doc.width, height: doc.height, fit: "cover", role: "background" });
+  const el = createImage(image.src, image.naturalWidth, image.naturalHeight, {
+    x: 0,
+    y: 0,
+    width: doc.width,
+    height: doc.height,
+    fit: "cover",
+    role: "background",
+  });
   state.change((d) => mapPage(d, state.pageIndex, (p) => ({ ...p, elements: [el, ...p.elements] })));
   state.select([el.id]);
 }

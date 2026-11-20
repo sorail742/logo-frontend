@@ -39,7 +39,7 @@ function SharePage({ color }: { color: string }) {
       <SvgView svg={svg} label={t("qr")} className="size-28 shrink-0 rounded-lg bg-white" />
       <div className="grid min-w-0 flex-1 gap-2">
         <p className="text-sm font-medium">{t("share")}</p>
-        <p className="text-xs text-muted-foreground">{t("shareBody")}</p>
+        <p className="text-muted-foreground text-xs">{t("shareBody")}</p>
         <Button variant="outline" size="sm" className="w-fit" onClick={copy}>
           {copied ? <Check /> : <Copy />}
           {t("copyLink")}
@@ -67,7 +67,10 @@ function PublicKitContent() {
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;
 
-  if (error instanceof ApiError && (error.code === "PASSWORD_REQUIRED" || error.code === "PASSWORD_INVALID")) {
+  if (
+    error instanceof ApiError &&
+    (error.code === "PASSWORD_REQUIRED" || error.code === "PASSWORD_INVALID")
+  ) {
     return (
       <form
         className="mx-auto grid max-w-sm gap-3 rounded-xl border p-6"
@@ -76,7 +79,7 @@ function PublicKitContent() {
           setPassword(draft);
         }}
       >
-        <Lock className="size-6 text-muted-foreground" aria-hidden="true" />
+        <Lock className="text-muted-foreground size-6" aria-hidden="true" />
         <p className="text-sm">{t("password")}</p>
         <Input
           type="password"
@@ -88,7 +91,7 @@ function PublicKitContent() {
           autoFocus
         />
         {error.code === "PASSWORD_INVALID" && (
-          <p id="kit-password-error" role="alert" className="text-sm text-destructive">
+          <p id="kit-password-error" role="alert" className="text-destructive text-sm">
             {t("passwordInvalid")}
           </p>
         )}
@@ -101,13 +104,20 @@ function PublicKitContent() {
 
   return (
     <div className="grid gap-6">
-      <h1 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">{t("title")}</h1>
+      <h1 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">{t("title")}</h1>
       <KitView kit={data} projectName={data.projectName} acronym={data.acronym} meaning={data.meaning} />
-      {data.logoSpec && !data.logoSvg && <MockupGallery spec={data.logoSpec} canDownload={false} isFree={false} showcase />}
+      {data.logoSpec && !data.logoSvg && (
+        <MockupGallery spec={data.logoSpec} canDownload={false} isFree={false} showcase />
+      )}
       {(data.guidePdfUrl || data.zipUrl) && (
         <section className="flex flex-wrap items-center gap-2" aria-label={t("downloads")}>
           {data.guidePdfUrl && /^https?:\/\//.test(data.guidePdfUrl) && (
-            <a href={data.guidePdfUrl} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "outline" })}>
+            <a
+              href={data.guidePdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: "outline" })}
+            >
               <FileText />
               {tk("openGuide")}
             </a>
@@ -121,7 +131,7 @@ function PublicKitContent() {
         </section>
       )}
       <SharePage color={data.logoSpec?.colors.text ?? "#111111"} />
-      <p className="text-center text-xs text-muted-foreground">{t("madeWith")}</p>
+      <p className="text-muted-foreground text-center text-xs">{t("madeWith")}</p>
     </div>
   );
 }

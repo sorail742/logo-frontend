@@ -11,7 +11,5 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/inscript
 export default async function Page({ params }: PageProps<"/[locale]/inscription">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return (
-    <RegisterForm />
-  );
+  return <RegisterForm />;
 }

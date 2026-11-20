@@ -46,7 +46,14 @@ const TRACKS: Record<LogoAnimation, Track[]> = {
   ],
   draw: [
     { selector: ".lm-frame", keyframes: "lm-fade", duration: 0.5, delay: 0 },
-    { selector: ".lm-glyph [pathLength]", keyframes: "lm-draw", duration: 1.3, delay: 0.2, easing: "ease-in-out", extra: "stroke-dasharray:1;" },
+    {
+      selector: ".lm-glyph [pathLength]",
+      keyframes: "lm-draw",
+      duration: 1.3,
+      delay: 0.2,
+      easing: "ease-in-out",
+      extra: "stroke-dasharray:1;",
+    },
     { selector: ".lm-glyph text", keyframes: "lm-fade", duration: 0.8, delay: 0.3 },
     { selector: ".lm-text", keyframes: "lm-rise", duration: 0.7, delay: 1.0 },
     { selector: ".lm-tag", keyframes: "lm-fade", duration: 0.6, delay: 1.4 },
@@ -88,7 +95,11 @@ export function backgroundColor(spec: LogoSpec, background: AnimationBackground)
 
 /** SVG animé autonome (polices intégrées), prêt pour un site ou une présentation. */
 export async function animatedLogoSvg(spec: LogoSpec, style: LogoAnimation, background: AnimationBackground) {
-  const { svg, width, height } = renderLogoSvg(spec, { animate: true, variant: variantFor(spec, background), withBackground: false });
+  const { svg, width, height } = renderLogoSvg(spec, {
+    animate: true,
+    variant: variantFor(spec, background),
+    withBackground: false,
+  });
   const fill = backgroundColor(spec, background);
   const framed = svg.replace(/(<svg[^>]*>)/, `$1<rect width="${width}" height="${height}" fill="${fill}"/>`);
   return withStyle(await svgToStandalone(framed), animationCss(style));
@@ -107,7 +118,9 @@ function loadImage(svg: string) {
 const VIDEO_TYPES = ["video/mp4;codecs=avc1.42E01E", "video/mp4", "video/webm;codecs=vp9", "video/webm"];
 
 export function videoSupported() {
-  return typeof MediaRecorder !== "undefined" && VIDEO_TYPES.some((type) => MediaRecorder.isTypeSupported(type));
+  return (
+    typeof MediaRecorder !== "undefined" && VIDEO_TYPES.some((type) => MediaRecorder.isTypeSupported(type))
+  );
 }
 
 /**
@@ -127,7 +140,11 @@ export async function recordLogoVideo(
 
   const length = animationLength(style) + hold;
   const count = Math.round(length * fps);
-  const { svg, width, height } = renderLogoSvg(spec, { animate: true, variant: variantFor(spec, background), withBackground: false });
+  const { svg, width, height } = renderLogoSvg(spec, {
+    animate: true,
+    variant: variantFor(spec, background),
+    withBackground: false,
+  });
   const base = await svgToStandalone(svg);
   const canvas = document.createElement("canvas");
   canvas.width = size;
@@ -148,7 +165,10 @@ export async function recordLogoVideo(
       onProgress?.((i + 1) / count / 2);
     }
 
-    const recorder = new MediaRecorder(canvas.captureStream(fps), { mimeType, videoBitsPerSecond: 6_000_000 });
+    const recorder = new MediaRecorder(canvas.captureStream(fps), {
+      mimeType,
+      videoBitsPerSecond: 6_000_000,
+    });
     const chunks: Blob[] = [];
     recorder.ondataavailable = (event) => {
       if (event.data.size) chunks.push(event.data);
@@ -171,14 +191,26 @@ export async function recordLogoVideo(
     });
     recorder.stop();
     await stopped;
-    return { blob: new Blob(chunks, { type: mimeType.split(";")[0] }), extension: mimeType.startsWith("video/mp4") ? "mp4" : "webm" };
+    return {
+      blob: new Blob(chunks, { type: mimeType.split(";")[0] }),
+      extension: mimeType.startsWith("video/mp4") ? "mp4" : "webm",
+    };
   } finally {
     frames.forEach((frame) => frame.close());
   }
 }
 
 /** Image figée de l'animation (aperçu, tests). */
-export async function animationFrame(spec: LogoSpec, style: LogoAnimation, background: AnimationBackground, at: number) {
-  const { svg } = renderLogoSvg(spec, { animate: true, variant: variantFor(spec, background), withBackground: false });
+export async function animationFrame(
+  spec: LogoSpec,
+  style: LogoAnimation,
+  background: AnimationBackground,
+  at: number,
+) {
+  const { svg } = renderLogoSvg(spec, {
+    animate: true,
+    variant: variantFor(spec, background),
+    withBackground: false,
+  });
   return withStyle(await svgToStandalone(svg), animationCss(style, at));
 }

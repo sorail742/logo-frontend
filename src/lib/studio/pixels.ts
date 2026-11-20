@@ -257,19 +257,35 @@ function neighbours(i: number, width: number, height: number) {
 }
 
 /** Pixel gagné : proche du fond, ou proche de son voisin gagné dans un dégradé doux. */
-function accepts(data: Uint8ClampedArray, from: number, to: number, ref: [number, number, number], limit: number) {
+function accepts(
+  data: Uint8ClampedArray,
+  from: number,
+  to: number,
+  ref: [number, number, number],
+  limit: number,
+) {
   const color = colorAt(data, to);
   const d = distance(...color, ...ref);
   return d < limit || (distance(...color, ...colorAt(data, from)) < limit * 0.25 && d < limit * 2.2);
 }
 
 /** Bords adoucis : les pixels voisins de la zone retirée prennent une opacité selon leur écart au fond. */
-function softenEdges(px: Pixels, mask: Uint8ClampedArray, won: Uint8Array, ref: [number, number, number], limit: number) {
+function softenEdges(
+  px: Pixels,
+  mask: Uint8ClampedArray,
+  won: Uint8Array,
+  ref: [number, number, number],
+  limit: number,
+) {
   const { data, width, height } = px;
   for (let i = 0; i < won.length; i++) {
     if (won[i]) continue;
     const x = i % width;
-    const edge = (x > 0 && won[i - 1]) || (x < width - 1 && won[i + 1]) || (i >= width && won[i - width]) || (i + width < width * height && won[i + width]);
+    const edge =
+      (x > 0 && won[i - 1]) ||
+      (x < width - 1 && won[i + 1]) ||
+      (i >= width && won[i - width]) ||
+      (i + width < width * height && won[i + width]);
     if (!edge) continue;
     const d = distance(data[i * 4]!, data[i * 4 + 1]!, data[i * 4 + 2]!, ...ref);
     const alpha = clamp((d - limit * 0.5) / limit, 0, 1);
@@ -278,7 +294,11 @@ function softenEdges(px: Pixels, mask: Uint8ClampedArray, won: Uint8Array, ref: 
 }
 
 /** Suppression d'un fond uni (logo scanné, produit sur fond blanc) depuis le pourtour de l'image. */
-export function removeBackground(px: Pixels, tolerance: number, options: { holes?: boolean } = {}): Uint8ClampedArray {
+export function removeBackground(
+  px: Pixels,
+  tolerance: number,
+  options: { holes?: boolean } = {},
+): Uint8ClampedArray {
   const { data, width, height } = px;
   const ref = backgroundColor(px);
   const limit = threshold(tolerance);
@@ -289,7 +309,8 @@ export function removeBackground(px: Pixels, tolerance: number, options: { holes
   if (options.holes) {
     // Zones intérieures (creux d'un « O ») de la couleur du fond, même sans lien avec le bord.
     for (let i = 0; i < won.length; i++) {
-      if (!won[i] && distance(data[i * 4]!, data[i * 4 + 1]!, data[i * 4 + 2]!, ...ref) < limit * 0.8) won[i] = 1;
+      if (!won[i] && distance(data[i * 4]!, data[i * 4 + 1]!, data[i * 4 + 2]!, ...ref) < limit * 0.8)
+        won[i] = 1;
     }
   }
   const mask = fullMask(px);
@@ -353,7 +374,14 @@ export function paintMask(
   const box = { x0: width, y0: height, x1: 0, y1: 0 };
   const brush = { radius, inner: radius * clamp(hardness, 0, 1), value };
   for (let s = 0; s <= steps; s++) {
-    const dab = paintDab(mask, width, height, from.x + ((to.x - from.x) * s) / steps, from.y + ((to.y - from.y) * s) / steps, brush);
+    const dab = paintDab(
+      mask,
+      width,
+      height,
+      from.x + ((to.x - from.x) * s) / steps,
+      from.y + ((to.y - from.y) * s) / steps,
+      brush,
+    );
     box.x0 = Math.min(box.x0, dab.x0);
     box.y0 = Math.min(box.y0, dab.y0);
     box.x1 = Math.max(box.x1, dab.x1);
@@ -363,7 +391,14 @@ export function paintMask(
 }
 
 /** Une touche de pinceau centrée en (cx, cy) ; renvoie la zone touchée. */
-function paintDab(mask: Uint8ClampedArray, width: number, height: number, cx: number, cy: number, brush: { radius: number; inner: number; value: 0 | 255 }): Box {
+function paintDab(
+  mask: Uint8ClampedArray,
+  width: number,
+  height: number,
+  cx: number,
+  cy: number,
+  brush: { radius: number; inner: number; value: 0 | 255 },
+): Box {
   const { radius, inner, value } = brush;
   const x0 = Math.max(0, Math.floor(cx - radius));
   const x1 = Math.min(width - 1, Math.ceil(cx + radius));
@@ -375,7 +410,8 @@ function paintDab(mask: Uint8ClampedArray, width: number, height: number, cx: nu
       if (d > radius) continue;
       const a = d <= inner ? 1 : 1 - (d - inner) / Math.max(1e-6, radius - inner);
       const i = y * width + x;
-      mask[i] = value === 0 ? Math.min(mask[i]!, Math.round(255 * (1 - a))) : Math.max(mask[i]!, Math.round(255 * a));
+      mask[i] =
+        value === 0 ? Math.min(mask[i]!, Math.round(255 * (1 - a))) : Math.max(mask[i]!, Math.round(255 * a));
     }
   }
   return { x0, y0, x1, y1 };
@@ -395,7 +431,14 @@ function boxBlur(mask: Uint8ClampedArray, width: number, height: number, radius:
 }
 
 /** Moyenne glissante de rayon r le long de `count` lignes de `length` valeurs (bords prolongés). */
-function slidingMean(src: Uint8ClampedArray, count: number, length: number, lineStep: number, step: number, r: number) {
+function slidingMean(
+  src: Uint8ClampedArray,
+  count: number,
+  length: number,
+  lineStep: number,
+  step: number,
+  r: number,
+) {
   const out = new Uint8ClampedArray(src.length);
   for (let line = 0; line < count; line++) {
     const base = line * lineStep;
@@ -411,7 +454,12 @@ function slidingMean(src: Uint8ClampedArray, count: number, length: number, line
 }
 
 /** Bord du masque : rétréci (contraction > 0, en px) puis adouci (lissage, en px). */
-export function refineMask(mask: Uint8ClampedArray, width: number, height: number, options: { feather: number; contract: number }) {
+export function refineMask(
+  mask: Uint8ClampedArray,
+  width: number,
+  height: number,
+  options: { feather: number; contract: number },
+) {
   let out = mask;
   if (options.contract > 0) {
     // Contraction : flou de la largeur voulue puis seuil relevé ; le bord recule sans escaliers.
@@ -442,7 +490,11 @@ export function maskToDataUrl(mask: Uint8ClampedArray, width: number, height: nu
 }
 
 /** Masque enregistré (PNG), relu à la taille de l'image. */
-export async function maskFromDataUrl(src: string, width: number, height: number): Promise<Uint8ClampedArray> {
+export async function maskFromDataUrl(
+  src: string,
+  width: number,
+  height: number,
+): Promise<Uint8ClampedArray> {
   const px = await loadPixels(src);
   if (px.width === width && px.height === height) {
     const mask = new Uint8ClampedArray(width * height);

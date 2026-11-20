@@ -39,18 +39,21 @@ export function Field({
 }>) {
   const messageId = htmlFor && (error || hint) ? `${htmlFor}-message` : undefined;
   const invalid = Boolean(error);
-  const control = useMemo(() => (htmlFor ? { id: htmlFor, describedBy: messageId, invalid } : null), [htmlFor, messageId, invalid]);
+  const control = useMemo(
+    () => (htmlFor ? { id: htmlFor, describedBy: messageId, invalid } : null),
+    [htmlFor, messageId, invalid],
+  );
   return (
     <div className={cn("grid gap-1.5", className)}>
       <Label htmlFor={htmlFor}>{label}</Label>
       <FieldContext value={control}>{children}</FieldContext>
       {error ? (
-        <p id={messageId} className="text-xs text-destructive" role="alert">
+        <p id={messageId} className="text-destructive text-xs" role="alert">
           {error}
         </p>
       ) : (
         hint && (
-          <p id={messageId} className="text-xs text-muted-foreground">
+          <p id={messageId} className="text-muted-foreground text-xs">
             {hint}
           </p>
         )

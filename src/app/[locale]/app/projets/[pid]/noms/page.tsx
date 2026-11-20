@@ -53,7 +53,9 @@ export default function NamesPage() {
   });
 
   const patchCache = (updated: NameSuggestion) =>
-    queryClient.setQueryData<NameSuggestion[]>(qk.names(pid), (list) => list?.map((n) => (n.id === updated.id ? updated : n)));
+    queryClient.setQueryData<NameSuggestion[]>(qk.names(pid), (list) =>
+      list?.map((n) => (n.id === updated.id ? updated : n)),
+    );
 
   const generate = useMutation({
     mutationFn: (input: NameGenerationInput) => api.names.generate(pid, input, newIdempotencyKey()),
@@ -61,11 +63,16 @@ export default function NamesPage() {
     onError,
   });
   const update = useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: { isFavorite?: boolean; isRejected?: boolean } }) => api.names.update(id, patch),
+    mutationFn: ({ id, patch }: { id: string; patch: { isFavorite?: boolean; isRejected?: boolean } }) =>
+      api.names.update(id, patch),
     onSuccess: patchCache,
     onError,
   });
-  const vote = useMutation({ mutationFn: ({ id, value }: { id: string; value: -1 | 1 }) => api.names.vote(id, value), onSuccess: patchCache, onError });
+  const vote = useMutation({
+    mutationFn: ({ id, value }: { id: string; value: -1 | 1 }) => api.names.vote(id, value),
+    onSuccess: patchCache,
+    onError,
+  });
   const choose = useMutation({
     mutationFn: (name: NameSuggestion) => api.names.choose(pid, name.id),
     onSuccess: (updated, name) => {
@@ -80,7 +87,9 @@ export default function NamesPage() {
     setChecking((s) => new Set(s).add(name.id));
     try {
       const checks = await api.names.check(name.id);
-      queryClient.setQueryData<NameSuggestion[]>(qk.names(pid), (list) => list?.map((n) => (n.id === name.id ? { ...n, checks } : n)));
+      queryClient.setQueryData<NameSuggestion[]>(qk.names(pid), (list) =>
+        list?.map((n) => (n.id === name.id ? { ...n, checks } : n)),
+      );
       queryClient.invalidateQueries({ queryKey: qk.names(pid) });
     } catch (error) {
       onError(error);
@@ -94,8 +103,13 @@ export default function NamesPage() {
   };
 
   const launch = (extra: Partial<NameGenerationInput> = {}) => {
-    const text = [...chips.map((c) => CHIP_FEEDBACK[c as keyof typeof CHIP_FEEDBACK]), feedback.trim()].filter(Boolean).join(", ");
-    generate.mutate({ feedback: [text, extra.feedback].filter(Boolean).join(", ") || undefined, referenceNameId: extra.referenceNameId });
+    const text = [...chips.map((c) => CHIP_FEEDBACK[c as keyof typeof CHIP_FEEDBACK]), feedback.trim()]
+      .filter(Boolean)
+      .join(", ");
+    generate.mutate({
+      feedback: [text, extra.feedback].filter(Boolean).join(", ") || undefined,
+      referenceNameId: extra.referenceNameId,
+    });
   };
 
   const toggleCompare = (id: string) =>
@@ -110,7 +124,12 @@ export default function NamesPage() {
 
   const favorites = names.filter((n) => n.isFavorite && !n.isRejected);
   const rejected = names.filter((n) => n.isRejected);
-  const visible = filter === "favorites" ? favorites : filter === "rejected" ? rejected : names.filter((n) => !n.isRejected);
+  const visible =
+    filter === "favorites"
+      ? favorites
+      : filter === "rejected"
+        ? rejected
+        : names.filter((n) => !n.isRejected);
   const busy = generate.isPending || job.running;
   const canEdit = can("generation.run");
 
@@ -139,7 +158,7 @@ export default function NamesPage() {
       )}
 
       {canEdit && (
-        <div className="mb-6 grid gap-3 rounded-xl border bg-card p-4">
+        <div className="border-border/80 bg-card mb-6 space-y-4 rounded-2xl border p-5 shadow-xs">
           <p className="text-sm font-medium">{t("feedback")}</p>
           <div className="flex flex-wrap gap-2">
             {CHIPS.map((chip) => {
@@ -149,8 +168,13 @@ export default function NamesPage() {
                   key={chip}
                   type="button"
                   aria-pressed={selected}
-                  onClick={() => setChips((list) => (selected ? list.filter((c) => c !== chip) : [...list, chip]))}
-                  className={cn("rounded-full border px-3 py-1 text-sm", selected ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted")}
+                  onClick={() =>
+                    setChips((list) => (selected ? list.filter((c) => c !== chip) : [...list, chip]))
+                  }
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-sm",
+                    selected ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted",
+                  )}
                 >
                   {t(`chips.${chip}`)}
                 </button>
@@ -158,10 +182,21 @@ export default function NamesPage() {
             })}
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Input value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder={t("feedbackPlaceholder")} aria-label={t("feedback")} className="flex-1" />
+            <Input
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              placeholder={t("feedbackPlaceholder")}
+              aria-label={t("feedback")}
+              className="bg-background h-11 flex-1 rounded-xl text-sm"
+            />
             <div className="flex items-center gap-3">
               <CreditCost cost={CREDIT_COSTS.NAMES_BATCH} />
-              <Button size="lg" onClick={() => launch()} disabled={busy}>
+              <Button
+                size="lg"
+                onClick={() => launch()}
+                disabled={busy}
+                className="h-11 rounded-xl px-6 font-semibold shadow-xs transition-all hover:shadow-md"
+              >
                 <Sparkles />
                 {names.length ? tc("actions.regenerate") : t("generate")}
               </Button>
@@ -180,9 +215,19 @@ export default function NamesPage() {
               role="tab"
               aria-selected={filter === key}
               onClick={() => setFilter(key)}
-              className={cn("rounded-lg px-3 py-1.5 text-sm", filter === key ? "bg-secondary font-medium" : "text-muted-foreground hover:bg-muted")}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-sm",
+                filter === key ? "bg-secondary font-medium" : "text-muted-foreground hover:bg-muted",
+              )}
             >
-              {t(`filters.${key}`, { count: key === "favorites" ? favorites.length : key === "rejected" ? rejected.length : names.length - rejected.length })}
+              {t(`filters.${key}`, {
+                count:
+                  key === "favorites"
+                    ? favorites.length
+                    : key === "rejected"
+                      ? rejected.length
+                      : names.length - rejected.length,
+              })}
             </button>
           ))}
         </div>
@@ -230,9 +275,11 @@ export default function NamesPage() {
               .map((name) => (
                 <div key={name.id} className="grid content-start gap-2 rounded-lg border p-3">
                   <p className="text-lg font-semibold">{name.value}</p>
-                  <p className="text-xs text-muted-foreground">{t(`styles.${name.style}`)}</p>
+                  <p className="text-muted-foreground text-xs">{t(`styles.${name.style}`)}</p>
                   <p className="text-sm">{name.meaning}</p>
-                  {name.score != null && <p className="text-sm font-medium">{t("score", { score: name.score })}</p>}
+                  {name.score != null && (
+                    <p className="text-sm font-medium">{t("score", { score: name.score })}</p>
+                  )}
                   <p className="text-xs">{t("votes", { count: name.votes })}</p>
                   <AvailabilityResults checks={name.checks} />
                 </div>

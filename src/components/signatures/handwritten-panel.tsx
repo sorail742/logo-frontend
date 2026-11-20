@@ -18,7 +18,10 @@ import type { HandwrittenData, InkColor } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Attestation } from "./attestation";
 
-export function InkPicker({ value, onChange }: Readonly<{ value: InkColor; onChange: (ink: InkColor) => void }>) {
+export function InkPicker({
+  value,
+  onChange,
+}: Readonly<{ value: InkColor; onChange: (ink: InkColor) => void }>) {
   const t = useTranslations("signatures.inks");
   return (
     <fieldset className="flex gap-2">
@@ -29,9 +32,16 @@ export function InkPicker({ value, onChange }: Readonly<{ value: InkColor; onCha
           type="button"
           aria-pressed={value === ink}
           onClick={() => onChange(ink)}
-          className={cn("flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs", value === ink && "border-primary ring-2 ring-primary/30")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs",
+            value === ink && "border-primary ring-primary/30 ring-2",
+          )}
         >
-          <span className="size-3.5 rounded-full" style={{ background: INK_COLORS[ink] }} aria-hidden="true" />
+          <span
+            className="size-3.5 rounded-full"
+            style={{ background: INK_COLORS[ink] }}
+            aria-hidden="true"
+          />
           {t(ink)}
         </button>
       ))}
@@ -62,12 +72,16 @@ export function HandwrittenPanel({
   const surface = useRef<SVGSVGElement>(null);
 
   const path = useMemo(() => strokes.map(smoothStroke).join(" "), [strokes]);
-  const data: HandwrittenData = mode === "draw" ? { text, fontId, ink, strokes: path } : { text, fontId, ink };
+  const data: HandwrittenData =
+    mode === "draw" ? { text, fontId, ink, strokes: path } : { text, fontId, ink };
   const svg = renderHandwrittenSvg(data);
 
   const point = (event: PointerEvent<SVGSVGElement>) => {
     const rect = surface.current!.getBoundingClientRect();
-    return { x: ((event.clientX - rect.left) / rect.width) * 600, y: ((event.clientY - rect.top) / rect.height) * 240 };
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * 600,
+      y: ((event.clientY - rect.top) / rect.height) * 240,
+    };
   };
 
   const save = async () => {
@@ -90,7 +104,10 @@ export function HandwrittenPanel({
                 role="tab"
                 aria-selected={mode === value}
                 onClick={() => setMode(value)}
-                className={cn("rounded-lg px-3 py-1.5 text-sm", mode === value ? "bg-secondary font-medium" : "text-muted-foreground hover:bg-muted")}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-sm",
+                  mode === value ? "bg-secondary font-medium" : "text-muted-foreground hover:bg-muted",
+                )}
               >
                 {t(`handwritten.modes.${value}`)}
               </button>
@@ -108,17 +125,23 @@ export function HandwrittenPanel({
                     type="button"
                     aria-pressed={fontId === font.id}
                     onClick={() => setFontId(font.id)}
-                    className={cn("rounded-lg border p-1", fontId === font.id ? "border-primary ring-2 ring-primary/30" : "hover:bg-muted")}
+                    className={cn(
+                      "rounded-lg border p-1",
+                      fontId === font.id ? "border-primary ring-primary/30 ring-2" : "hover:bg-muted",
+                    )}
                     title={font.name}
                   >
-                    <SvgView svg={renderHandwrittenSvg({ text: text || "Paraphe", fontId: font.id, ink })} className="h-16" />
+                    <SvgView
+                      svg={renderHandwrittenSvg({ text: text || "Paraphe", fontId: font.id, ink })}
+                      className="h-16"
+                    />
                   </button>
                 ))}
               </div>
             </>
           ) : (
             <div className="grid gap-2">
-              <p className="text-xs text-muted-foreground">{t("handwritten.drawHint")}</p>
+              <p className="text-muted-foreground text-xs">{t("handwritten.drawHint")}</p>
               <svg
                 ref={surface}
                 viewBox="0 0 600 240"
@@ -136,9 +159,21 @@ export function HandwrittenPanel({
                 onPointerUp={() => (drawing.current = false)}
                 aria-label={t("handwritten.drawHint")}
               >
-                <path d={path} fill="none" stroke={INK_COLORS[ink]} strokeWidth={3.2} strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d={path}
+                  fill="none"
+                  stroke={INK_COLORS[ink]}
+                  strokeWidth={3.2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
-              <Button variant="outline" size="sm" className="justify-self-start" onClick={() => setStrokes([])}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="justify-self-start"
+                onClick={() => setStrokes([])}
+              >
                 <Eraser />
                 {t("handwritten.clear")}
               </Button>
@@ -159,14 +194,21 @@ export function HandwrittenPanel({
               {t("handwritten.save")}
             </Button>
             <CreditCost cost={CREDIT_COSTS.HANDWRITTEN_OR_STAMP} />
-            <Button variant="outline" disabled={!savedOnce} onClick={() => void downloadSvg(svg, "paraphe.svg")} title={savedOnce ? undefined : t("export.requiresSave")}>
+            <Button
+              variant="outline"
+              disabled={!savedOnce}
+              onClick={() => void downloadSvg(svg, "paraphe.svg")}
+              title={savedOnce ? undefined : t("export.requiresSave")}
+            >
               <Download />
               {t("export.svg")}
             </Button>
             <Button
               variant="outline"
               disabled={!savedOnce}
-              onClick={() => void svgToPngBlob(svg, { size: 2400 }).then((blob) => downloadBlob(blob, "paraphe.png"))}
+              onClick={() =>
+                void svgToPngBlob(svg, { size: 2400 }).then((blob) => downloadBlob(blob, "paraphe.png"))
+              }
               title={savedOnce ? undefined : t("export.requiresSave")}
             >
               <Download />

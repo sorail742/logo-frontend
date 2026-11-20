@@ -66,7 +66,8 @@ export function renderStampSvg(data: StampData, options: StampRenderOptions) {
     }
     const text = data.centerText || "";
     const lines = text.split(/\n/).slice(0, 3);
-    const fontSize = data.centerMode === "acronym" ? Math.min(54, (size * 1.4) / Math.max(text.length, 2)) : 18;
+    const fontSize =
+      data.centerMode === "acronym" ? Math.min(54, (size * 1.4) / Math.max(text.length, 2)) : 18;
     return lines
       .map(
         (line, i) =>
@@ -78,11 +79,19 @@ export function renderStampSvg(data: StampData, options: StampRenderOptions) {
   if (data.shape === "rectangle") {
     width = 420;
     height = 220;
-    body.push(`<rect x="8" y="8" width="${width - 16}" height="${height - 16}" rx="10" fill="none" stroke="${ink}" stroke-width="6"/>`);
-    body.push(`<rect x="22" y="22" width="${width - 44}" height="${height - 44}" rx="4" fill="none" stroke="${ink}" stroke-width="2"/>`);
-    body.push(`<text x="${width / 2}" y="58" text-anchor="middle" font-size="22" font-weight="800" letter-spacing="2" fill="${ink}" style="${font}">${escapeXml(data.ringText.toUpperCase())}</text>`);
+    body.push(
+      `<rect x="8" y="8" width="${width - 16}" height="${height - 16}" rx="10" fill="none" stroke="${ink}" stroke-width="6"/>`,
+    );
+    body.push(
+      `<rect x="22" y="22" width="${width - 44}" height="${height - 44}" rx="4" fill="none" stroke="${ink}" stroke-width="2"/>`,
+    );
+    body.push(
+      `<text x="${width / 2}" y="58" text-anchor="middle" font-size="22" font-weight="800" letter-spacing="2" fill="${ink}" style="${font}">${escapeXml(data.ringText.toUpperCase())}</text>`,
+    );
     body.push(center(width / 2, height / 2 + 6, 80));
-    body.push(`<text x="${width / 2}" y="${height - 40}" text-anchor="middle" font-size="16" font-weight="700" letter-spacing="2" fill="${ink}" style="${font}">${escapeXml(data.bottomText.toUpperCase())}</text>`);
+    body.push(
+      `<text x="${width / 2}" y="${height - 40}" text-anchor="middle" font-size="16" font-weight="700" letter-spacing="2" fill="${ink}" style="${font}">${escapeXml(data.bottomText.toUpperCase())}</text>`,
+    );
   } else {
     const isOval = data.shape === "oval";
     width = isOval ? 400 : 320;
@@ -95,24 +104,37 @@ export function renderStampSvg(data: StampData, options: StampRenderOptions) {
     const try_ = ry - 34;
     // Arc supérieur (gauche → droite) et arc inférieur (gauche → droite, lu à l'endroit)
     defs.push(`<path id="${p}-top" d="M ${cx - trx} ${cy} A ${trx} ${try_} 0 0 1 ${cx + trx} ${cy}"/>`);
-    defs.push(`<path id="${p}-bottom" d="M ${cx - trx - 14} ${cy} A ${trx + 14} ${try_ + 14} 0 0 0 ${cx + trx + 14} ${cy}"/>`);
-    body.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="${ink}" stroke-width="6"/>`);
-    body.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx - 62}" ry="${ry - 62}" fill="none" stroke="${ink}" stroke-width="2.5"/>`);
+    defs.push(
+      `<path id="${p}-bottom" d="M ${cx - trx - 14} ${cy} A ${trx + 14} ${try_ + 14} 0 0 0 ${cx + trx + 14} ${cy}"/>`,
+    );
+    body.push(
+      `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="${ink}" stroke-width="6"/>`,
+    );
+    body.push(
+      `<ellipse cx="${cx}" cy="${cy}" rx="${rx - 62}" ry="${ry - 62}" fill="none" stroke="${ink}" stroke-width="2.5"/>`,
+    );
     body.push(
       `<text font-size="22" font-weight="800" letter-spacing="3" fill="${ink}" style="${font}"><textPath href="#${p}-top" startOffset="50%" text-anchor="middle">${escapeXml(data.ringText.toUpperCase())}</textPath></text>`,
     );
     body.push(
       `<text font-size="18" font-weight="700" letter-spacing="3" fill="${ink}" style="${font}"><textPath href="#${p}-bottom" startOffset="50%" text-anchor="middle">${escapeXml(data.bottomText.toUpperCase())}</textPath></text>`,
     );
-    body.push(`<text x="${cx - rx + 22}" y="${cy + 6}" font-size="16" fill="${ink}" text-anchor="middle">★</text>`);
-    body.push(`<text x="${cx + rx - 22}" y="${cy + 6}" font-size="16" fill="${ink}" text-anchor="middle">★</text>`);
+    body.push(
+      `<text x="${cx - rx + 22}" y="${cy + 6}" font-size="16" fill="${ink}" text-anchor="middle">★</text>`,
+    );
+    body.push(
+      `<text x="${cx + rx - 22}" y="${cy + 6}" font-size="16" fill="${ink}" text-anchor="middle">★</text>`,
+    );
     body.push(center(cx, cy, Math.min(rx, ry) - 80));
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${escapeXml(data.ringText)}"><defs>${defs.join("")}</defs><g${filter} opacity="0.92">${body.join("")}</g></svg>`;
 }
 
-export function renderHandwrittenSvg(data: HandwrittenData, fontFamily: (id: string) => string = cssFontFamily) {
+export function renderHandwrittenSvg(
+  data: HandwrittenData,
+  fontFamily: (id: string) => string = cssFontFamily,
+) {
   const ink = INK_COLORS[data.ink];
   if (data.strokes) {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240" role="img" aria-label="Paraphe"><path d="${escapeXml(data.strokes)}" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;

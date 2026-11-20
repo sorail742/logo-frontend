@@ -17,7 +17,13 @@ import { PageThumb } from "./panels/templates-panel";
 // Variations de la page courante, à la marque : palettes, mode sombre, harmonies, polices,
 // miroir. Chaque variation remplace la page ou s'ajoute à la suite.
 
-export function VariationsDialog({ open, onOpenChange }: { open: boolean; onOpenChange(open: boolean): void }) {
+export function VariationsDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange(open: boolean): void;
+}) {
   const t = useTranslations("studio.variations");
   const { brand } = useStudioContext();
   const doc = useStudio((s) => s.doc);
@@ -31,14 +37,20 @@ export function VariationsDialog({ open, onOpenChange }: { open: boolean; onOpen
   }, [open]);
 
   const page = doc?.pages[pageIndex];
-  const list = useMemo(() => (open && ready && doc && page && brand ? variations(page, doc, brand) : []), [open, ready, page, brand]); // eslint-disable-line react-hooks/exhaustive-deps
+  const list = useMemo(
+    () => (open && ready && doc && page && brand ? variations(page, doc, brand) : []),
+    [open, ready, page, brand],
+  ); // eslint-disable-line react-hooks/exhaustive-deps
   if (!doc || !page) return null;
 
   const applyVariation = (index: number, mode: "replace" | "add") => {
     const state = useStudio.getState();
     const next = clonePage(list[index]!.page);
     if (mode === "replace") {
-      state.change((d) => ({ ...d, pages: d.pages.map((p, i) => (i === pageIndex ? { ...next, id: p.id } : p)) }));
+      state.change((d) => ({
+        ...d,
+        pages: d.pages.map((p, i) => (i === pageIndex ? { ...next, id: p.id } : p)),
+      }));
       state.select([]);
     } else {
       state.addPage(next);
@@ -52,13 +64,17 @@ export function VariationsDialog({ open, onOpenChange }: { open: boolean; onOpen
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="size-4 text-primary" aria-hidden="true" />
+            <Sparkles className="text-primary size-4" aria-hidden="true" />
             {t("title")}
           </DialogTitle>
           <DialogDescription>{brand ? t("description") : t("noBrand")}</DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {!list.length && brand && Array.from({ length: 8 }, (_, i) => <div key={i} className="aspect-square animate-pulse rounded-lg bg-muted" />)}
+          {!list.length &&
+            brand &&
+            Array.from({ length: 8 }, (_, i) => (
+              <div key={i} className="bg-muted aspect-square animate-pulse rounded-lg" />
+            ))}
           {list.map((variation, index) => (
             <figure key={variation.id} className="group grid gap-1.5">
               <div className="relative overflow-hidden rounded-lg border bg-white shadow-xs">
@@ -74,7 +90,9 @@ export function VariationsDialog({ open, onOpenChange }: { open: boolean; onOpen
                   </Button>
                 </div>
               </div>
-              <figcaption className="text-[11px] text-muted-foreground">{t(`kinds.${variation.kind}`)}</figcaption>
+              <figcaption className="text-muted-foreground text-[11px]">
+                {t(`kinds.${variation.kind}`)}
+              </figcaption>
             </figure>
           ))}
         </div>

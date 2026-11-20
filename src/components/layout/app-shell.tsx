@@ -64,7 +64,12 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
   const user = useSessionStore((s) => s.user);
   const { can } = useWorkspace();
   const links = [
-    { href: "/app", label: t("projects"), icon: FolderKanban, match: (p: string) => p === "/app" || p.startsWith("/app/projets") },
+    {
+      href: "/app",
+      label: t("projects"),
+      icon: FolderKanban,
+      match: (p: string) => p === "/app" || p.startsWith("/app/projets"),
+    },
     ...(can("trash.view") ? [{ href: "/app/corbeille", label: t("trash"), icon: Trash2 }] : []),
     { href: "/app/espace", label: t("workspace"), icon: Users },
     { href: "/app/facturation", label: t("billing"), icon: CreditCard },
@@ -82,8 +87,10 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
-              active ? "bg-background font-medium text-foreground shadow-xs ring-1 ring-border" : "text-muted-foreground hover:bg-background/70 hover:text-foreground",
+              "flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200",
+              active
+                ? "bg-primary/[0.08] text-primary ring-primary/10 font-semibold ring-1"
+                : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
             )}
           >
             <Icon className={cn("size-4", active && "text-primary")} aria-hidden="true" />
@@ -92,7 +99,11 @@ function NavLinks({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
         );
       })}
       {isInternalRole(user?.role) && (
-        <Link href="/admin" onClick={onNavigate} className="mt-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+        <Link
+          href="/admin"
+          onClick={onNavigate}
+          className="text-muted-foreground hover:bg-muted hover:text-foreground mt-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm"
+        >
           <ShieldCheck className="size-4" aria-hidden="true" />
           {t("admin")}
         </Link>
@@ -114,16 +125,16 @@ function WorkspaceSwitcher() {
         render={
           <button
             type="button"
-            className="flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm hover:bg-muted"
+            className="hover:bg-muted flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm"
           />
         }
       >
-        <Building2 className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <Building2 className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium">{workspace.name}</span>
-          <span className="block text-xs text-muted-foreground">{tc(workspace.role)}</span>
+          <span className="text-muted-foreground block text-xs">{tc(workspace.role)}</span>
         </span>
-        <ChevronsUpDown className="size-4 text-muted-foreground" aria-hidden="true" />
+        <ChevronsUpDown className="text-muted-foreground size-4" aria-hidden="true" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64">
         <DropdownMenuGroup>
@@ -149,8 +160,12 @@ function CreditsBadge() {
   const t = useTranslations("app.shell");
   const { data } = useCredits();
   return (
-    <Link href="/app/facturation" className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted" title={t("buyCredits")}>
-      <Coins className="size-4 text-brand-accent" aria-hidden="true" />
+    <Link
+      href="/app/facturation"
+      className="hover:bg-muted inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm"
+      title={t("buyCredits")}
+    >
+      <Coins className="text-brand-accent size-4" aria-hidden="true" />
       {data ? t("credits", { count: data.balance }) : "…"}
     </Link>
   );
@@ -161,13 +176,17 @@ function SidebarCredits({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
   const t = useTranslations("app.shell");
   const { data } = useCredits();
   return (
-    <div className="mt-auto rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-amber-400/10 p-4 ring-1 ring-primary/10">
-      <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        <Coins className="size-3.5 text-brand-accent" aria-hidden="true" />
+    <div className="surface-elevated mt-auto mb-4 rounded-2xl p-4">
+      <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+        <Coins className="text-brand-accent size-3.5" aria-hidden="true" />
         {t("creditsCard")}
       </p>
       <p className="mt-1 text-2xl font-semibold tabular-nums">{data ? data.balance : "…"}</p>
-      <Link href="/app/facturation" onClick={onNavigate} className="mt-2 inline-flex text-xs font-medium text-primary hover:underline">
+      <Link
+        href="/app/facturation"
+        onClick={onNavigate}
+        className="text-primary mt-2 inline-flex text-xs font-medium hover:underline"
+      >
         {t("topUp")} →
       </Link>
     </div>
@@ -176,13 +195,21 @@ function SidebarCredits({ onNavigate }: Readonly<{ onNavigate?: () => void }>) {
 
 function NotificationsBell() {
   const t = useTranslations("app.nav");
-  const { data } = useQuery({ queryKey: qk.notifications, queryFn: api.notifications.list, refetchInterval: 60_000 });
+  const { data } = useQuery({
+    queryKey: qk.notifications,
+    queryFn: api.notifications.list,
+    refetchInterval: 60_000,
+  });
   const unread = data?.filter((n) => !n.readAt).length ?? 0;
   return (
-    <Link href="/app/notifications" className="relative rounded-lg p-2 hover:bg-muted" aria-label={`${t("notifications")} (${unread})`}>
+    <Link
+      href="/app/notifications"
+      className="hover:bg-muted relative rounded-lg p-2"
+      aria-label={`${t("notifications")} (${unread})`}
+    >
       <Bell className="size-5" aria-hidden="true" />
       {unread > 0 && (
-        <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-white">
+        <span className="bg-destructive absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold text-white">
           {unread > 9 ? "9+" : unread}
         </span>
       )}
@@ -214,7 +241,7 @@ function UserMenu() {
         render={
           <button
             type="button"
-            className="flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+            className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full text-sm font-semibold"
             aria-label={user?.fullName ?? t("profile")}
           />
         }
@@ -225,7 +252,7 @@ function UserMenu() {
         <DropdownMenuGroup>
           <DropdownMenuLabel>
             <span className="block truncate">{user?.fullName}</span>
-            <span className="block truncate text-xs font-normal text-muted-foreground">{user?.email}</span>
+            <span className="text-muted-foreground block truncate text-xs font-normal">{user?.email}</span>
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -274,7 +301,11 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
         <PlatformLogo />
       </Link>
       <WorkspaceSwitcher />
-      <Button render={<Link href="/app/projets/nouveau" onClick={onNavigate} />} nativeButton={false} size="lg">
+      <Button
+        render={<Link href="/app/projets/nouveau" onClick={onNavigate} />}
+        nativeButton={false}
+        size="lg"
+      >
         <Plus />
         {t("nav.newProject")}
       </Button>
@@ -287,16 +318,24 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
     <div className="flex min-h-svh flex-col">
       <MockBanner />
       {!online && (
-        <output className="flex items-center gap-2 bg-muted px-4 py-2 text-xs">
+        <output className="bg-muted flex items-center gap-2 px-4 py-2 text-xs">
           <WifiOff className="size-3.5" aria-hidden="true" />
           <OfflineNotice />
         </output>
       )}
       <div className="flex flex-1">
-        <aside className="no-print sticky top-0 hidden h-svh w-64 shrink-0 border-r bg-sidebar lg:block">{sidebar()}</aside>
+        <aside className="no-print border-border/70 bg-sidebar/95 sticky top-0 hidden h-svh w-64 shrink-0 border-r lg:block">
+          {sidebar()}
+        </aside>
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="no-print sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/90 px-4 backdrop-blur">
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMenuOpen(true)} aria-label="Menu">
+          <header className="no-print border-border/70 bg-background/90 sticky top-0 z-30 flex h-16 items-center gap-2 border-b px-4 backdrop-blur-xl sm:px-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Menu"
+            >
               <Menu />
             </Button>
             <div className="ml-auto flex items-center gap-1.5">
@@ -307,7 +346,9 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
             </div>
           </header>
           {workspace?.role === "VIEWER" && (
-            <p className="border-b bg-amber-50 px-4 py-2 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100">{t("shell.readOnly")}</p>
+            <p className="border-b bg-amber-50 px-4 py-2 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+              {t("shell.readOnly")}
+            </p>
           )}
           <main id="contenu" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
             {children}

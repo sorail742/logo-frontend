@@ -51,6 +51,10 @@
       "signature": {
         "title": "Email signature",
         "body": "Free, works with Gmail and Outlook"
+      },
+      "textile": {
+        "title": "Textile Studio",
+        "body": "Jerseys, tees, DTF & heat transfer"
       }
     },
     "openStudio": "Open the Studio",

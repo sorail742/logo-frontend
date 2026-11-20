@@ -39,18 +39,29 @@ function WorkspaceContent() {
   const isOwner = can("members.manage");
   const isOrganization = workspace?.kind === "ORGANIZATION";
 
-  const { data: members = [] } = useQuery({ queryKey: qk.members(wid), queryFn: () => api.workspaces.members(wid), enabled: Boolean(workspace) });
-  const { data: invitations = [] } = useQuery({ queryKey: qk.invitations(wid), queryFn: () => api.workspaces.invitations(wid), enabled: Boolean(workspace) && isOwner });
+  const { data: members = [] } = useQuery({
+    queryKey: qk.members(wid),
+    queryFn: () => api.workspaces.members(wid),
+    enabled: Boolean(workspace),
+  });
+  const { data: invitations = [] } = useQuery({
+    queryKey: qk.invitations(wid),
+    queryFn: () => api.workspaces.invitations(wid),
+    enabled: Boolean(workspace) && isOwner,
+  });
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: qk.members(wid) });
     queryClient.invalidateQueries({ queryKey: qk.invitations(wid) });
   };
 
   const invite = useMutation({
-    mutationFn: (asLink: boolean) => api.workspaces.invite(wid, { email: asLink ? undefined : email, role, asLink }),
+    mutationFn: (asLink: boolean) =>
+      api.workspaces.invite(wid, { email: asLink ? undefined : email, role, asLink }),
     onSuccess: async (invitation, asLink) => {
       if (asLink && invitation.link) {
-        await navigator.clipboard.writeText(`${window.location.origin}${invitation.link}`).catch(() => undefined);
+        await navigator.clipboard
+          .writeText(`${window.location.origin}${invitation.link}`)
+          .catch(() => undefined);
         toast.success(t("linkCreated"));
       } else {
         toast.success(t("invited"));
@@ -61,7 +72,8 @@ function WorkspaceContent() {
     onError,
   });
   const changeRole = useMutation({
-    mutationFn: ({ uid, role }: { uid: string; role: WorkspaceRole }) => api.workspaces.updateMember(wid, uid, role),
+    mutationFn: ({ uid, role }: { uid: string; role: WorkspaceRole }) =>
+      api.workspaces.updateMember(wid, uid, role),
     onSuccess: () => {
       toast.success(t("roleUpdated"));
       refresh();
@@ -79,7 +91,9 @@ function WorkspaceContent() {
   // Réglages du propriétaire, départ volontaire et suppression (§3).
   const afterLeaving = () => {
     queryClient.invalidateQueries({ queryKey: qk.workspaces });
-    const personal = queryClient.getQueryData<{ id: string; kind: string }[]>(qk.workspaces)?.find((w) => w.kind === "PERSONAL");
+    const personal = queryClient
+      .getQueryData<{ id: string; kind: string }[]>(qk.workspaces)
+      ?.find((w) => w.kind === "PERSONAL");
     if (personal) setWorkspace(personal.id);
   };
   const settings = useMutation({
@@ -129,7 +143,7 @@ function WorkspaceContent() {
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="grid content-start gap-6">
-          <Card>
+          <Card className="glow-card border-border/80 bg-card shadow-xs">
             <CardHeader>
               <CardTitle className="text-sm">{t("members")}</CardTitle>
               {!isOwner && <CardDescription>{t("ownerOnly")}</CardDescription>}
@@ -138,20 +152,26 @@ function WorkspaceContent() {
               <ul className="divide-y">
                 {members.map((member) => (
                   <li key={member.userId} className="flex flex-wrap items-center gap-3 py-3">
-                    <div className="flex size-9 items-center justify-center rounded-full bg-secondary text-sm font-medium">{member.fullName.slice(0, 1)}</div>
+                    <div className="bg-secondary flex size-9 items-center justify-center rounded-full text-sm font-medium">
+                      {member.fullName.slice(0, 1)}
+                    </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         {member.fullName}
-                        {member.userId === user?.id && <span className="text-muted-foreground"> ({t("you")})</span>}
+                        {member.userId === user?.id && (
+                          <span className="text-muted-foreground"> ({t("you")})</span>
+                        )}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                      <p className="text-muted-foreground truncate text-xs">{member.email}</p>
                     </div>
                     {isOwner && member.userId !== user?.id ? (
                       <>
                         <NativeSelect
                           className="w-36"
                           value={member.role}
-                          onChange={(e) => changeRole.mutate({ uid: member.userId, role: e.target.value as WorkspaceRole })}
+                          onChange={(e) =>
+                            changeRole.mutate({ uid: member.userId, role: e.target.value as WorkspaceRole })
+                          }
                           aria-label={t("inviteRole")}
                         >
                           {(["OWNER", "EDITOR", "VIEWER"] as const).map((r) => (
@@ -160,7 +180,12 @@ function WorkspaceContent() {
                             </option>
                           ))}
                         </NativeSelect>
-                        <Button variant="ghost" size="icon" onClick={() => remove.mutate(member.userId)} aria-label={t("remove")}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => remove.mutate(member.userId)}
+                          aria-label={t("remove")}
+                        >
                           <UserMinus />
                         </Button>
                       </>
@@ -173,7 +198,7 @@ function WorkspaceContent() {
             </CardContent>
           </Card>
           {isOwner && invitations.length > 0 && (
-            <Card>
+            <Card className="glow-card border-border/80 bg-card shadow-xs">
               <CardHeader>
                 <CardTitle className="text-sm">{t("pending")}</CardTitle>
               </CardHeader>
@@ -182,8 +207,11 @@ function WorkspaceContent() {
                   {invitations.map((invitation) => (
                     <li key={invitation.id} className="flex items-center justify-between gap-2">
                       <span className="truncate">{invitation.email || t("linkInvitation")}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {tr(invitation.role)} · {t("expires", { date: format.dateTime(new Date(invitation.expiresAt), { dateStyle: "medium" }) })}
+                      <span className="text-muted-foreground text-xs">
+                        {tr(invitation.role)} ·{" "}
+                        {t("expires", {
+                          date: format.dateTime(new Date(invitation.expiresAt), { dateStyle: "medium" }),
+                        })}
                       </span>
                     </li>
                   ))}
@@ -195,21 +223,33 @@ function WorkspaceContent() {
 
         <div className="grid content-start gap-6">
           {isOwner && (
-            <Card>
+            <Card className="glow-card border-border/80 bg-card shadow-xs">
               <CardHeader>
                 <CardTitle className="text-sm">{t("invite")}</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-3">
                 <Field label={t("inviteEmail")} htmlFor="invite-email">
-                  <Input id="invite-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </Field>
                 <Field label={t("inviteRole")} htmlFor="invite-role">
-                  <NativeSelect id="invite-role" value={role} onChange={(e) => setRole(e.target.value as WorkspaceRole)}>
+                  <NativeSelect
+                    id="invite-role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value as WorkspaceRole)}
+                  >
                     <option value="EDITOR">{tr("EDITOR")}</option>
                     <option value="VIEWER">{tr("VIEWER")}</option>
                   </NativeSelect>
                 </Field>
-                <Button onClick={() => invite.mutate(false)} disabled={!/^\S+@\S+\.\S+$/.test(email) || invite.isPending}>
+                <Button
+                  onClick={() => invite.mutate(false)}
+                  disabled={!/^\S+@\S+\.\S+$/.test(email) || invite.isPending}
+                >
                   <Mail />
                   {t("inviteByEmail")}
                 </Button>
@@ -221,7 +261,7 @@ function WorkspaceContent() {
             </Card>
           )}
           {isOwner && (
-            <Card>
+            <Card className="glow-card border-border/80 bg-card shadow-xs">
               <CardHeader>
                 <CardTitle className="text-sm">{t("settings")}</CardTitle>
               </CardHeader>
@@ -229,14 +269,18 @@ function WorkspaceContent() {
                 <label className="flex items-start justify-between gap-3 text-sm">
                   <span>
                     <span className="font-medium">{t("viewerDownloads")}</span>
-                    <span className="block text-xs text-muted-foreground">{t("viewerDownloadsBody")}</span>
+                    <span className="text-muted-foreground block text-xs">{t("viewerDownloadsBody")}</span>
                   </span>
-                  <Switch checked={Boolean(workspace?.viewerDownloads)} onCheckedChange={(checked) => settings.mutate(checked)} disabled={settings.isPending} />
+                  <Switch
+                    checked={Boolean(workspace?.viewerDownloads)}
+                    onCheckedChange={(checked) => settings.mutate(checked)}
+                    disabled={settings.isPending}
+                  />
                 </label>
               </CardContent>
             </Card>
           )}
-          <Card className={searchParams.get("nouveau") ? "ring-2 ring-primary" : undefined}>
+          <Card className={searchParams.get("nouveau") ? "ring-primary ring-2" : undefined}>
             <CardHeader>
               <CardTitle className="text-sm">{t("createTitle")}</CardTitle>
               <CardDescription className="text-xs">{t("createBody")}</CardDescription>
@@ -249,21 +293,35 @@ function WorkspaceContent() {
                   if (newName.trim().length >= 2) create.mutate();
                 }}
               >
-                <Input value={newName} onChange={(e) => setNewName(e.target.value)} aria-label={t("name")} placeholder={t("name")} autoFocus={Boolean(searchParams.get("nouveau"))} />
-                <Button type="submit" variant="outline" disabled={newName.trim().length < 2 || create.isPending}>
+                <Input
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  aria-label={t("name")}
+                  placeholder={t("name")}
+                  autoFocus={Boolean(searchParams.get("nouveau"))}
+                />
+                <Button
+                  type="submit"
+                  variant="outline"
+                  disabled={newName.trim().length < 2 || create.isPending}
+                >
                   {t("create")}
                 </Button>
               </form>
             </CardContent>
           </Card>
           {isOrganization && (!isOwner || !soleOwner) && (
-            <Card>
+            <Card className="glow-card border-border/80 bg-card shadow-xs">
               <CardHeader>
                 <CardTitle className="text-sm">{t("leaveTitle")}</CardTitle>
                 <CardDescription className="text-xs">{t("leaveBody")}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" onClick={() => window.confirm(t("leaveConfirm")) && leave.mutate()} disabled={leave.isPending}>
+                <Button
+                  variant="outline"
+                  onClick={() => window.confirm(t("leaveConfirm")) && leave.mutate()}
+                  disabled={leave.isPending}
+                >
                   <DoorOpen />
                   {t("leave")}
                 </Button>
@@ -273,7 +331,7 @@ function WorkspaceContent() {
           {isOrganization && can("workspace.delete") && (
             <Card className="border-destructive/40">
               <CardHeader>
-                <CardTitle className="text-sm text-destructive">{t("deleteTitle")}</CardTitle>
+                <CardTitle className="text-destructive text-sm">{t("deleteTitle")}</CardTitle>
                 <CardDescription className="text-xs">{t("deleteBody")}</CardDescription>
               </CardHeader>
               <CardContent>
@@ -285,9 +343,18 @@ function WorkspaceContent() {
                   }}
                 >
                   <Field label={t("deleteConfirm", { name: workspace?.name ?? "" })} htmlFor="delete-confirm">
-                    <Input id="delete-confirm" value={confirmName} onChange={(e) => setConfirmName(e.target.value)} autoComplete="off" />
+                    <Input
+                      id="delete-confirm"
+                      value={confirmName}
+                      onChange={(e) => setConfirmName(e.target.value)}
+                      autoComplete="off"
+                    />
                   </Field>
-                  <Button type="submit" variant="destructive" disabled={confirmName.trim() !== workspace?.name || destroy.isPending}>
+                  <Button
+                    type="submit"
+                    variant="destructive"
+                    disabled={confirmName.trim() !== workspace?.name || destroy.isPending}
+                  >
                     <Trash2 />
                     {t("delete")}
                   </Button>

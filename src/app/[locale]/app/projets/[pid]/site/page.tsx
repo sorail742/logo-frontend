@@ -1,7 +1,5 @@
-"use client";
-
-import { SitePage } from "@/components/site/site-page";
+import { notFound } from "next/navigation";
 
 export default function ProjectSitePage() {
-  return <SitePage />;
+  notFound();
 }

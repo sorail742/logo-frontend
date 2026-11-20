@@ -72,7 +72,11 @@ function along(handle: Handle, start: string, end: string) {
  * Zone aux proportions imposées (`r` : largeur sur hauteur en proportions de l'image) : la hauteur
  * suit la largeur (poignées latérales et d'angle) ou l'inverse, sans sortir de l'image.
  */
-function constrain(box: { x: number; y: number; right: number; bottom: number }, handle: Handle, r: number): PhotoCrop {
+function constrain(
+  box: { x: number; y: number; right: number; bottom: number },
+  handle: Handle,
+  r: number,
+): PhotoCrop {
   let { x, y } = box;
   const byWidth = handle !== "n" && handle !== "s";
   let width = byWidth ? box.right - x : (box.bottom - y) * r;
@@ -90,7 +94,17 @@ function constrain(box: { x: number; y: number; right: number; bottom: number },
 }
 
 /** Vue de recadrage : photo entière, zone conservée, poignées et grille des tiers. */
-export function CropView({ el, crop, ratio, onChange }: Readonly<{ el: ImageElement; crop: PhotoCrop; ratio: number | null; onChange: (crop: PhotoCrop) => void }>) {
+export function CropView({
+  el,
+  crop,
+  ratio,
+  onChange,
+}: Readonly<{
+  el: ImageElement;
+  crop: PhotoCrop;
+  ratio: number | null;
+  onChange: (crop: PhotoCrop) => void;
+}>) {
   const svg = useRef<SVGSVGElement>(null);
   const drag = useRef<{ handle: Handle; start: { x: number; y: number }; crop: PhotoCrop } | null>(null);
   const nw = el.naturalWidth;
@@ -121,7 +135,11 @@ export function CropView({ el, crop, ratio, onChange }: Readonly<{ el: ImageElem
     const dy = p.y - d.start.y;
     const c = d.crop;
     if (d.handle === "move") {
-      onChange({ ...c, x: Math.min(1 - c.width, Math.max(0, c.x + dx)), y: Math.min(1 - c.height, Math.max(0, c.y + dy)) });
+      onChange({
+        ...c,
+        x: Math.min(1 - c.width, Math.max(0, c.x + dx)),
+        y: Math.min(1 - c.height, Math.max(0, c.y + dy)),
+      });
       return;
     }
     let { x, y } = c;
@@ -131,11 +149,17 @@ export function CropView({ el, crop, ratio, onChange }: Readonly<{ el: ImageElem
     if (d.handle.includes("e")) right = Math.max(x + MIN, Math.min(1, right + dx));
     if (d.handle.includes("n")) y = Math.min(bottom - MIN, Math.max(0, c.y + dy));
     if (d.handle.includes("s")) bottom = Math.max(y + MIN, Math.min(1, bottom + dy));
-    onChange(ratio ? constrain({ x, y, right, bottom }, d.handle, ratio * (nh / nw)) : { x, y, width: right - x, height: bottom - y });
+    onChange(
+      ratio
+        ? constrain({ x, y, right, bottom }, d.handle, ratio * (nh / nw))
+        : { x, y, width: right - x, height: bottom - y },
+    );
   };
 
-
-  const handlePos = (h: Handle) => ({ cx: px.x + px.w * along(h, "w", "e"), cy: px.y + px.h * along(h, "n", "s") });
+  const handlePos = (h: Handle) => ({
+    cx: px.x + px.w * along(h, "w", "e"),
+    cy: px.y + px.h * along(h, "n", "s"),
+  });
   const angle = el.straighten ?? 0;
   const center = `${px.x + px.w / 2} ${px.y + px.h / 2}`;
 
@@ -151,10 +175,30 @@ export function CropView({ el, crop, ratio, onChange }: Readonly<{ el: ImageElem
       <g transform={angle ? `rotate(${angle} ${center})` : undefined}>
         <image href={el.src} width={nw} height={nh} preserveAspectRatio="none" />
       </g>
-      <path d={`M0 0H${nw}V${nh}H0Z M${px.x} ${px.y}v${px.h}h${px.w}v${-px.h}Z`} fill="rgba(0,0,0,0.55)" fillRule="evenodd" />
-      <rect x={px.x} y={px.y} width={px.w} height={px.h} fill="transparent" stroke="#fff" strokeWidth={Math.max(1, handleSize / 6)} className="cursor-move" onPointerDown={(event) => begin("move", event)} />
+      <path
+        d={`M0 0H${nw}V${nh}H0Z M${px.x} ${px.y}v${px.h}h${px.w}v${-px.h}Z`}
+        fill="rgba(0,0,0,0.55)"
+        fillRule="evenodd"
+      />
+      <rect
+        x={px.x}
+        y={px.y}
+        width={px.w}
+        height={px.h}
+        fill="transparent"
+        stroke="#fff"
+        strokeWidth={Math.max(1, handleSize / 6)}
+        className="cursor-move"
+        onPointerDown={(event) => begin("move", event)}
+      />
       {[1, 2].map((i) => (
-        <g key={i} stroke="#fff" strokeOpacity={0.6} strokeWidth={Math.max(0.5, handleSize / 12)} pointerEvents="none">
+        <g
+          key={i}
+          stroke="#fff"
+          strokeOpacity={0.6}
+          strokeWidth={Math.max(0.5, handleSize / 12)}
+          pointerEvents="none"
+        >
           <line x1={px.x + (px.w * i) / 3} x2={px.x + (px.w * i) / 3} y1={px.y} y2={px.y + px.h} />
           <line y1={px.y + (px.h * i) / 3} y2={px.y + (px.h * i) / 3} x1={px.x} x2={px.x + px.w} />
         </g>
@@ -197,17 +241,25 @@ export function CropPanel({
   return (
     <div className="grid gap-5">
       <section className="grid gap-2">
-        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("aspect")}</h3>
+        <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">{t("aspect")}</h3>
         <div className="grid grid-cols-4 gap-1.5">
           {ASPECTS.map((a) => (
-            <Button key={a.id} type="button" size="xs" variant={aspect === a.id ? "default" : "outline"} onClick={() => onAspect(a.id)}>
+            <Button
+              key={a.id}
+              type="button"
+              size="xs"
+              variant={aspect === a.id ? "default" : "outline"}
+              onClick={() => onAspect(a.id)}
+            >
               {t.has(`aspects.${a.id}`) ? t(`aspects.${a.id}`) : a.id}
             </Button>
           ))}
         </div>
       </section>
       <section className="grid gap-2">
-        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("straighten")}</h3>
+        <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          {t("straighten")}
+        </h3>
         <SliderField
           label={t("angle")}
           value={el.straighten ?? 0}
@@ -220,18 +272,33 @@ export function CropPanel({
           resetLabel={t("resetValue")}
         />
         <div className="flex flex-wrap gap-1.5">
-          <Button type="button" size="sm" variant={el.flipX ? "secondary" : "outline"} onClick={() => onChange({ flipX: !el.flipX })}>
+          <Button
+            type="button"
+            size="sm"
+            variant={el.flipX ? "secondary" : "outline"}
+            onClick={() => onChange({ flipX: !el.flipX })}
+          >
             <FlipHorizontal2 /> {t("flipX")}
           </Button>
-          <Button type="button" size="sm" variant={el.flipY ? "secondary" : "outline"} onClick={() => onChange({ flipY: !el.flipY })}>
+          <Button
+            type="button"
+            size="sm"
+            variant={el.flipY ? "secondary" : "outline"}
+            onClick={() => onChange({ flipY: !el.flipY })}
+          >
             <FlipVertical2 /> {t("flipY")}
           </Button>
-          <Button type="button" size="sm" variant="ghost" onClick={() => onChange({ crop: null, straighten: undefined, focusX: 0.5, focusY: 0.5 })}>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => onChange({ crop: null, straighten: undefined, focusX: 0.5, focusY: 0.5 })}
+          >
             <RotateCcw /> {t("resetCrop")}
           </Button>
         </div>
       </section>
-      <p className="text-xs text-muted-foreground">{t("cropHint")}</p>
+      <p className="text-muted-foreground text-xs">{t("cropHint")}</p>
     </div>
   );
 }

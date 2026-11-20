@@ -43,7 +43,9 @@ export function paintValue(paint: Paint, id: string, defs: string[]) {
       const rad = (paint.angle * Math.PI) / 180;
       const dx = Math.cos(rad) / 2;
       const dy = Math.sin(rad) / 2;
-      defs.push(`<linearGradient id="${id}" x1="${n(0.5 - dx)}" y1="${n(0.5 - dy)}" x2="${n(0.5 + dx)}" y2="${n(0.5 + dy)}">${stops(paint)}</linearGradient>`);
+      defs.push(
+        `<linearGradient id="${id}" x1="${n(0.5 - dx)}" y1="${n(0.5 - dy)}" x2="${n(0.5 + dx)}" y2="${n(0.5 + dy)}">${stops(paint)}</linearGradient>`,
+      );
       return `url(#${id})`;
     }
     case "radial":
@@ -56,7 +58,11 @@ function strokeAttrs(stroke: Stroke | null | undefined, extraWidth = 1) {
   if (!stroke || stroke.width <= 0) return "";
   const width = stroke.width * extraWidth;
   const dash =
-    stroke.dash === "dashed" ? ` stroke-dasharray="${n(width * 3)} ${n(width * 2)}"` : stroke.dash === "dotted" ? ` stroke-dasharray="0 ${n(width * 2)}" stroke-linecap="round"` : "";
+    stroke.dash === "dashed"
+      ? ` stroke-dasharray="${n(width * 3)} ${n(width * 2)}"`
+      : stroke.dash === "dotted"
+        ? ` stroke-dasharray="0 ${n(width * 2)}" stroke-linecap="round"`
+        : "";
   return ` stroke="${stroke.color}" stroke-width="${n(width)}" stroke-linejoin="round"${dash}`;
 }
 
@@ -90,7 +96,9 @@ export function blobPath(width: number, height: number, seed = 1) {
   const xs = points.map((p) => p[0]);
   const ys = points.map((p) => p[1]);
   const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-  const fit = points.map(([x, y]) => [((x - minX) / (maxX - minX)) * width, ((y - minY) / (maxY - minY)) * height] as const);
+  const fit = points.map(
+    ([x, y]) => [((x - minX) / (maxX - minX)) * width, ((y - minY) / (maxY - minY)) * height] as const,
+  );
   let d = `M${n(fit[0]![0])} ${n(fit[0]![1])}`;
   for (let i = 0; i < count; i++) {
     const p0 = fit[(i - 1 + count) % count]!;
@@ -193,17 +201,30 @@ function renderText(el: TextElement, pid: string, defs: string[]) {
   const letterSpacing = spacing ? ` letter-spacing="${n(spacing)}"` : "";
   const fontAttrs = `style="font-family:${cssFontFamily(el.fontId)}" font-size="${n(size)}" font-weight="${el.fontWeight}"${letterSpacing}`;
   // Avec effets, les glyphes restent sans peinture : chaque calque les peint (lettering.ts).
-  const attrs = effects ? `${fontAttrs} xml:space="preserve"` : `${fontAttrs} fill="${fill}"${stroke} xml:space="preserve"`;
+  const attrs = effects
+    ? `${fontAttrs} xml:space="preserve"`
+    : `${fontAttrs} fill="${fill}"${stroke} xml:space="preserve"`;
   const paint = (glyphs: string) =>
     effects
-      ? letteringLayers({ pid, glyphs, fill, effects, size, defs, stroke: el.stroke, box: { x: 0, y: 0, width: el.width, height: el.height } })
+      ? letteringLayers({
+          pid,
+          glyphs,
+          fill,
+          effects,
+          size,
+          defs,
+          stroke: el.stroke,
+          box: { x: 0, y: 0, width: el.width, height: el.height },
+        })
       : glyphs;
   const { box, baseline } = lineMetrics(el);
   const parts: string[] = [];
 
   if (el.highlight) {
     const pad = el.highlight.padding;
-    parts.push(`<rect x="${n(-pad)}" y="${n(-pad)}" width="${n(el.width + pad * 2)}" height="${n(el.height + pad * 2)}" rx="${n(el.highlight.radius)}" fill="${el.highlight.color}"/>`);
+    parts.push(
+      `<rect x="${n(-pad)}" y="${n(-pad)}" width="${n(el.width + pad * 2)}" height="${n(el.height + pad * 2)}" rx="${n(el.highlight.radius)}" fill="${el.highlight.color}"/>`,
+    );
   }
 
   if (el.curve) {
@@ -211,13 +232,20 @@ function renderText(el: TextElement, pid: string, defs: string[]) {
     const line = textLines(el).join(" ");
     const y = bend > 0 ? baseline + sagitta : baseline;
     const sweep = bend > 0 ? 1 : 0;
-    defs.push(`<path id="${pid}-arc" d="M0 ${n(y)}A${n(radius)} ${n(radius)} 0 0 ${sweep} ${n(el.width)} ${n(y)}"/>`);
-    parts.push(paint(`<text ${attrs} text-anchor="middle"><textPath href="#${pid}-arc" startOffset="50%">${escapeXml(line)}</textPath></text>`));
+    defs.push(
+      `<path id="${pid}-arc" d="M0 ${n(y)}A${n(radius)} ${n(radius)} 0 0 ${sweep} ${n(el.width)} ${n(y)}"/>`,
+    );
+    parts.push(
+      paint(
+        `<text ${attrs} text-anchor="middle"><textPath href="#${pid}-arc" startOffset="50%">${escapeXml(line)}</textPath></text>`,
+      ),
+    );
     return parts.join("");
   }
 
   // L'espacement des lettres s'ajoute aussi après le dernier caractère : compensé pour centrer.
-  const x = el.align === "center" ? el.width / 2 + spacing / 2 : el.align === "right" ? el.width + spacing : 0;
+  const x =
+    el.align === "center" ? el.width / 2 + spacing / 2 : el.align === "right" ? el.width + spacing : 0;
   const anchor = el.align === "center" ? "middle" : el.align === "right" ? "end" : "start";
   const tspans = textLines(el)
     .map((line, i) => `<tspan x="${n(x)}" y="${n(i * box + baseline)}">${escapeXml(line) || " "}</tspan>`)
@@ -258,7 +286,8 @@ function imageFilter(id: string, el: ImageElement) {
   if (neutral) return null;
   const slope = f.brightness * f.contrast;
   const intercept = 0.5 - 0.5 * f.contrast;
-  const channel = (c: string) => `<feFunc${c} type="linear" slope="${n(slope)}" intercept="${n(intercept)}"/>`;
+  const channel = (c: string) =>
+    `<feFunc${c} type="linear" slope="${n(slope)}" intercept="${n(intercept)}"/>`;
   return `<filter id="${id}" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="${n(f.saturation)}"/><feComponentTransfer>${channel("R")}${channel("G")}${channel("B")}</feComponentTransfer>${f.blur ? `<feGaussianBlur stdDeviation="${n(f.blur)}"/>` : ""}</filter>`;
 }
 
@@ -267,7 +296,9 @@ function renderImage(el: ImageElement, pid: string, defs: string[]) {
   const { image, region } = place;
   defs.push(`<clipPath id="${pid}-clip">${imageMaskShape(el)}</clipPath>`);
   // Réglages de retouche ; à défaut, les anciens filtres simples (documents existants).
-  const filter = el.adjust ? adjustFilter(`${pid}-img`, el.adjust, Math.max(region.width, region.height)) : imageFilter(`${pid}-img`, el);
+  const filter = el.adjust
+    ? adjustFilter(`${pid}-img`, el.adjust, Math.max(region.width, region.height))
+    : imageFilter(`${pid}-img`, el);
   if (filter) defs.push(filter);
   const box = `x="${n(image.x)}" y="${n(image.y)}" width="${n(image.width)}" height="${n(image.height)}"`;
   const filterAttr = filter ? ` filter="url(#${pid}-img)"` : "";
@@ -278,11 +309,15 @@ function renderImage(el: ImageElement, pid: string, defs: string[]) {
     body += `<rect x="${n(region.x)}" y="${n(region.y)}" width="${n(region.width)}" height="${n(region.height)}" fill="url(#${pid}-vig)"/>`;
   }
   if (el.cutout) {
-    defs.push(`<mask id="${pid}-cut" maskUnits="userSpaceOnUse" ${box}><image href="${escapeXml(el.cutout)}" ${box} preserveAspectRatio="none"/></mask>`);
+    defs.push(
+      `<mask id="${pid}-cut" maskUnits="userSpaceOnUse" ${box}><image href="${escapeXml(el.cutout)}" ${box} preserveAspectRatio="none"/></mask>`,
+    );
     body = `<g mask="url(#${pid}-cut)">${body}</g>`;
   }
   if (el.crop) {
-    defs.push(`<clipPath id="${pid}-crop"><rect x="${n(region.x)}" y="${n(region.y)}" width="${n(region.width)}" height="${n(region.height)}"/></clipPath>`);
+    defs.push(
+      `<clipPath id="${pid}-crop"><rect x="${n(region.x)}" y="${n(region.y)}" width="${n(region.width)}" height="${n(region.height)}"/></clipPath>`,
+    );
     body = `<g clip-path="url(#${pid}-crop)">${body}</g>`;
   }
   if (place.transform) body = `<g transform="${place.transform}">${body}</g>`;

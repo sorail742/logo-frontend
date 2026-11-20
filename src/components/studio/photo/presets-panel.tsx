@@ -13,16 +13,40 @@ export function frameOf(el: ImageElement, patch: Partial<ImageElement> = {}): Im
 }
 
 /** Miniature SVG de l'élément avec d'autres réglages (image réduite pour rester légère). */
-function Thumbnail({ id, el, adjust, thumbSrc }: Readonly<{ id: string; el: ImageElement; adjust: PhotoAdjust; thumbSrc: string }>) {
+function Thumbnail({
+  id,
+  el,
+  adjust,
+  thumbSrc,
+}: Readonly<{ id: string; el: ImageElement; adjust: PhotoAdjust; thumbSrc: string }>) {
   // Identifiant propre à la vignette : les filtres de toutes les vignettes cohabitent dans la page.
-  const svg = useMemo(() => renderElement(frameOf(el, { id: `preset-${id}`, src: thumbSrc, adjust, filters: undefined })), [id, el, adjust, thumbSrc]);
+  const svg = useMemo(
+    () => renderElement(frameOf(el, { id: `preset-${id}`, src: thumbSrc, adjust, filters: undefined })),
+    [id, el, adjust, thumbSrc],
+  );
   return (
-    <svg viewBox={`0 0 ${el.width} ${el.height}`} className="h-full w-full" preserveAspectRatio="xMidYMid meet" aria-hidden="true" dangerouslySetInnerHTML={{ __html: svg }} />
+    <svg
+      viewBox={`0 0 ${el.width} ${el.height}`}
+      className="h-full w-full"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
   );
 }
 
 /** Galerie de filtres : un clic remplace tous les réglages par ceux du préréglage. */
-export function PresetsPanel({ el, thumbSrc, current, onPick }: Readonly<{ el: ImageElement; thumbSrc: string | null; current: PhotoAdjust; onPick: (adjust: PhotoAdjust) => void }>) {
+export function PresetsPanel({
+  el,
+  thumbSrc,
+  current,
+  onPick,
+}: Readonly<{
+  el: ImageElement;
+  thumbSrc: string | null;
+  current: PhotoAdjust;
+  onPick: (adjust: PhotoAdjust) => void;
+}>) {
   const t = useTranslations("studio.photo");
   const active = JSON.stringify(current);
   return (
@@ -35,9 +59,14 @@ export function PresetsPanel({ el, thumbSrc, current, onPick }: Readonly<{ el: I
             type="button"
             aria-pressed={selected}
             onClick={() => onPick(structuredClone(preset.adjust))}
-            className={cn("grid gap-1 rounded-lg border-2 p-1 text-left text-[11px] font-medium", selected ? "border-primary" : "border-transparent hover:border-muted-foreground/30")}
+            className={cn(
+              "grid gap-1 rounded-lg border-2 p-1 text-left text-[11px] font-medium",
+              selected ? "border-primary" : "hover:border-muted-foreground/30 border-transparent",
+            )}
           >
-            <span className="bg-checker block aspect-square overflow-hidden rounded-md">{thumbSrc && <Thumbnail id={preset.id} el={el} adjust={preset.adjust} thumbSrc={thumbSrc} />}</span>
+            <span className="bg-checker block aspect-square overflow-hidden rounded-md">
+              {thumbSrc && <Thumbnail id={preset.id} el={el} adjust={preset.adjust} thumbSrc={thumbSrc} />}
+            </span>
             <span className="truncate px-0.5">{t(`presets.${preset.id}`)}</span>
           </button>
         );

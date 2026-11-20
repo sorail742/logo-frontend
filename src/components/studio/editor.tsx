@@ -3,7 +3,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Check, CloudOff, Download, Keyboard, Loader2, MessageSquarePlus, Play, Redo2, SlidersHorizontal, Sparkles, Undo2, Wand2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  CloudOff,
+  Download,
+  Keyboard,
+  Loader2,
+  MessageSquarePlus,
+  Play,
+  Redo2,
+  SlidersHorizontal,
+  Sparkles,
+  Undo2,
+  Wand2,
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -49,16 +63,37 @@ type SaveState = "saved" | "pending" | "saving" | "error";
 
 /** Logos du projet : déclinaisons du serveur (texte vectorisé), sinon rendues dans le navigateur. */
 export function useBrandLogos(lid: string | undefined) {
-  const logo = useQuery({ queryKey: qk.logo(lid ?? ""), queryFn: () => api.logos.get(lid!), enabled: Boolean(lid) });
-  const variants = useQuery({ queryKey: qk.logoVariants(lid ?? ""), queryFn: () => api.logos.variants(lid!, { transparent: true }), enabled: Boolean(lid), staleTime: 5 * 60_000, retry: false });
+  const logo = useQuery({
+    queryKey: qk.logo(lid ?? ""),
+    queryFn: () => api.logos.get(lid!),
+    enabled: Boolean(lid),
+  });
+  const variants = useQuery({
+    queryKey: qk.logoVariants(lid ?? ""),
+    queryFn: () => api.logos.variants(lid!, { transparent: true }),
+    enabled: Boolean(lid),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
   return useMemo<BrandLogos>(() => {
     const list = variants.data?.variants;
-    if (list?.length) return Object.fromEntries(list.filter((v) => ["color", "white", "black", "icon", "horizontal", "vertical"].includes(v.id)).map((v) => [v.id, v.svg]));
+    if (list?.length)
+      return Object.fromEntries(
+        list
+          .filter((v) => ["color", "white", "black", "icon", "horizontal", "vertical"].includes(v.id))
+          .map((v) => [v.id, v.svg]),
+      );
     const version = logo.data?.current;
     if (!version) return {};
     if (version.svg) return { color: version.svg };
-    const render = (variant: "color" | "white" | "black", layout?: "icon") => renderLogoSvg(version.spec, { variant, layout, withBackground: false }).svg;
-    return { color: render("color"), white: render("white"), black: render("black"), ...(version.spec.iconId ? { icon: render("color", "icon") } : {}) };
+    const render = (variant: "color" | "white" | "black", layout?: "icon") =>
+      renderLogoSvg(version.spec, { variant, layout, withBackground: false }).svg;
+    return {
+      color: render("color"),
+      white: render("white"),
+      black: render("black"),
+      ...(version.spec.iconId ? { icon: render("color", "icon") } : {}),
+    };
   }, [variants.data, logo.data]);
 }
 
@@ -70,11 +105,28 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
   const onError = useApiErrorToast();
   const queryClient = useQueryClient();
   const { workspaces } = useWorkspace();
-  const design = useQuery({ queryKey: qk.studioDesign(sdid), queryFn: () => api.studio.get(sdid), staleTime: Infinity, refetchOnWindowFocus: false });
+  const design = useQuery({
+    queryKey: qk.studioDesign(sdid),
+    queryFn: () => api.studio.get(sdid),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
   const pid = design.data?.projectId;
-  const project = useQuery({ queryKey: qk.project(pid ?? ""), queryFn: () => api.projects.get(pid!), enabled: Boolean(pid) });
-  const logos = useQuery({ queryKey: qk.logos(pid ?? ""), queryFn: () => api.logos.list(pid!), enabled: Boolean(pid) });
-  const slogans = useQuery({ queryKey: qk.slogans(pid ?? ""), queryFn: () => api.slogans.list(pid!), enabled: Boolean(pid) && api.isAvailable("slogans") });
+  const project = useQuery({
+    queryKey: qk.project(pid ?? ""),
+    queryFn: () => api.projects.get(pid!),
+    enabled: Boolean(pid),
+  });
+  const logos = useQuery({
+    queryKey: qk.logos(pid ?? ""),
+    queryFn: () => api.logos.list(pid!),
+    enabled: Boolean(pid),
+  });
+  const slogans = useQuery({
+    queryKey: qk.slogans(pid ?? ""),
+    queryFn: () => api.slogans.list(pid!),
+    enabled: Boolean(pid) && api.isAvailable("slogans"),
+  });
   const mainLogo = logos.data?.find((l) => l.isFavorite) ?? logos.data?.[0];
   const brandLogos = useBrandLogos(mainLogo?.id);
   const [icons, setIcons] = useState<Record<string, IconNode> | null>(null);
@@ -87,7 +139,9 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
   const canRedo = useStudio((s) => s.future.length > 0);
 
   // Petits écrans : le panneau d'outils s'ouvre en surimpression, fermé au départ.
-  const [panel, setPanel] = useState<PanelId | null>(() => (typeof window !== "undefined" && window.innerWidth < 768 ? null : "templates"));
+  const [panel, setPanel] = useState<PanelId | null>(() =>
+    typeof window !== "undefined" && window.innerWidth < 768 ? null : "templates",
+  );
   const [propertiesOpen, setPropertiesOpen] = useState(false);
   const [dialog, setDialog] = useState<"export" | "resize" | "variations" | "help" | null>(null);
   /** Diapositive de départ du mode présentation (null : fermé). */
@@ -129,7 +183,13 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
   const brand = useMemo(
     () =>
       projectData
-        ? buildBrand({ name: projectData.chosenName?.value ?? projectData.title, slogan: sloganText, sector: projectData.brief?.sector ?? null, spec, logos: brandLogos })
+        ? buildBrand({
+            name: projectData.chosenName?.value ?? projectData.title,
+            slogan: sloganText,
+            sector: projectData.brief?.sector ?? null,
+            spec,
+            logos: brandLogos,
+          })
         : null,
     [projectData, sloganText, spec, brandLogos],
   );
@@ -143,7 +203,9 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
     if (target === savedRevision.current) return;
     setSaveState("saving");
     try {
-      const thumbnail = await svgToPngDataUrl(renderPage(state.doc, 0), { size: THUMBNAIL_SIZE }).catch(() => undefined);
+      const thumbnail = await svgToPngDataUrl(renderPage(state.doc, 0), { size: THUMBNAIL_SIZE }).catch(
+        () => undefined,
+      );
       await api.studio.save(state.meta.id, { name: state.meta.name, doc: state.doc, thumbnail });
       savedRevision.current = target;
       setSaveState(useStudio.getState().revision === target ? "saved" : "pending");
@@ -212,10 +274,20 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
     fileInput.current?.click();
   }, []);
 
-  const handlers = useMemo(() => ({ onExport: () => setDialog("export"), onHelp: () => setDialog("help"), onPresent: () => setPresenting(useStudio.getState().pageIndex) }), []);
+  const handlers = useMemo(
+    () => ({
+      onExport: () => setDialog("export"),
+      onHelp: () => setDialog("help"),
+      onPresent: () => setPresenting(useStudio.getState().pageIndex),
+    }),
+    [],
+  );
   useStudioShortcuts(handlers);
 
-  const context = useMemo<StudioContextValue>(() => ({ projectId: pid ?? "", brand, canEdit, icons, pickImages, flush }), [pid, brand, canEdit, icons, pickImages, flush]);
+  const context = useMemo<StudioContextValue>(
+    () => ({ projectId: pid ?? "", brand, canEdit, icons, pickImages, flush }),
+    [pid, brand, canEdit, icons, pickImages, flush],
+  );
 
   if (design.error) {
     return (
@@ -234,8 +306,8 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
         <div className="flex h-14 items-center gap-3 border-b px-4">
           <Skeleton className="h-6 w-40" />
         </div>
-        <output className="flex flex-1 items-center justify-center bg-muted" aria-label={t("editor.loading")}>
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        <output className="bg-muted flex flex-1 items-center justify-center" aria-label={t("editor.loading")}>
+          <Loader2 className="text-muted-foreground size-6 animate-spin" />
         </output>
       </div>
     );
@@ -249,33 +321,61 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
 
   return (
     <StudioContext.Provider value={context}>
-      <div className="flex h-svh flex-col overflow-hidden bg-background">
+      <div className="bg-background flex h-svh flex-col overflow-hidden">
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
-          <Button variant="ghost" size="icon" render={<Link href={`/app/projets/${meta.projectId}/studio`} />} nativeButton={false} aria-label={backLabel} title={backLabel}>
+          <Button
+            variant="ghost"
+            size="icon"
+            render={<Link href={`/app/projets/${meta.projectId}/studio`} />}
+            nativeButton={false}
+            aria-label={backLabel}
+            title={backLabel}
+          >
             <ArrowLeft />
           </Button>
           <Link href="/app" className="hidden shrink-0 sm:block" aria-label={t("editor.home")}>
             <PlatformLogo withText={false} />
           </Link>
-          <div className="mx-1 hidden h-6 w-px bg-border sm:block" />
+          <div className="bg-border mx-1 hidden h-6 w-px sm:block" />
           <input
             value={nameDraft ?? meta.name}
             onChange={(e) => setNameDraft(e.target.value)}
             onBlur={commitName}
             onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
             disabled={!canEdit}
-            className="h-8 w-40 min-w-0 rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold outline-none hover:border-input focus:border-ring sm:w-64"
+            className="hover:border-input focus:border-ring h-8 w-40 min-w-0 rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold outline-none sm:w-64"
             aria-label={t("editor.name")}
           />
           <SaveIndicator state={canEdit ? saveState : "saved"} readOnly={!canEdit} />
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => useStudio.getState().undo()} disabled={!canUndo} aria-label={t("editor.undo")} title={`${t("editor.undo")} (Ctrl+Z)`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => useStudio.getState().undo()}
+              disabled={!canUndo}
+              aria-label={t("editor.undo")}
+              title={`${t("editor.undo")} (Ctrl+Z)`}
+            >
               <Undo2 />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => useStudio.getState().redo()} disabled={!canRedo} aria-label={t("editor.redo")} title={`${t("editor.redo")} (${t("shortcuts.keys.redo")})`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => useStudio.getState().redo()}
+              disabled={!canRedo}
+              aria-label={t("editor.redo")}
+              title={`${t("editor.redo")} (${t("shortcuts.keys.redo")})`}
+            >
               <Redo2 />
             </Button>
-            <Button variant="ghost" size="icon" className="hidden md:inline-flex" onClick={() => setDialog("help")} aria-label={t("editor.shortcuts")} title={`${t("editor.shortcuts")} (?)`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:inline-flex"
+              onClick={() => setDialog("help")}
+              aria-label={t("editor.shortcuts")}
+              title={`${t("editor.shortcuts")} (?)`}
+            >
               <Keyboard />
             </Button>
             <Button
@@ -288,21 +388,43 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
             >
               <MessageSquarePlus />
             </Button>
-            <div className="mx-1 h-6 w-px bg-border" />
-            <Button variant="outline" onClick={() => setDialog("variations")} disabled={!canEdit} className="hidden sm:inline-flex">
+            <div className="bg-border mx-1 h-6 w-px" />
+            <Button
+              variant="outline"
+              onClick={() => setDialog("variations")}
+              disabled={!canEdit}
+              className="hidden sm:inline-flex"
+            >
               <Sparkles />
               {t("editor.variations")}
             </Button>
-            <Button variant="outline" onClick={() => setDialog("resize")} disabled={!canEdit} className="hidden sm:inline-flex">
+            <Button
+              variant="outline"
+              onClick={() => setDialog("resize")}
+              disabled={!canEdit}
+              className="hidden sm:inline-flex"
+            >
               <Wand2 />
               {t("editor.resize")}
             </Button>
             {canEdit && (
-              <Button variant="outline" size="icon" className="lg:hidden" onClick={() => setPropertiesOpen(true)} aria-label={propertiesLabel} title={propertiesLabel}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setPropertiesOpen(true)}
+                aria-label={propertiesLabel}
+                title={propertiesLabel}
+              >
                 <SlidersHorizontal />
               </Button>
             )}
-            <Button variant="outline" onClick={() => setPresenting(useStudio.getState().pageIndex)} aria-label={presentLabel} title={`${presentLabel} (Ctrl+Entrée)`}>
+            <Button
+              variant="outline"
+              onClick={() => setPresenting(useStudio.getState().pageIndex)}
+              aria-label={presentLabel}
+              title={`${presentLabel} (Ctrl+Entrée)`}
+            >
               <Play />
               <span className="max-md:hidden">{presentLabel}</span>
             </Button>
@@ -314,13 +436,23 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
         </header>
 
         <div className="flex min-h-0 flex-1">
-          {canEdit ? <SidePanel panel={panel} onPanel={setPanel} /> : <SidePanel panel={panel} onPanel={setPanel} only={["comments"]} />}
+          {canEdit ? (
+            <SidePanel panel={panel} onPanel={setPanel} />
+          ) : (
+            <SidePanel panel={panel} onPanel={setPanel} only={["comments"]} />
+          )}
           <main className="flex min-w-0 flex-1 flex-col">
-            <StudioCanvas onDropFiles={(files, at, frame) => void importImages(files, at, frame)} onRequestImage={(frameId) => pickImages(frameId)} />
+            <StudioCanvas
+              onDropFiles={(files, at, frame) => void importImages(files, at, frame)}
+              onRequestImage={(frameId) => pickImages(frameId)}
+            />
             <PageStrip />
           </main>
           {canEdit && (
-            <aside className="hidden w-[288px] shrink-0 border-l bg-background lg:block" aria-label={propertiesLabel}>
+            <aside
+              className="bg-background hidden w-[288px] shrink-0 border-l lg:block"
+              aria-label={propertiesLabel}
+            >
               <Inspector />
             </aside>
           )}
@@ -342,10 +474,15 @@ export function StudioEditor({ sdid }: Readonly<{ sdid: string }>) {
         />
         <ExportDialog open={dialog === "export"} onOpenChange={(open) => setDialog(open ? "export" : null)} />
         <ResizeDialog open={dialog === "resize"} onOpenChange={(open) => setDialog(open ? "resize" : null)} />
-        <VariationsDialog open={dialog === "variations"} onOpenChange={(open) => setDialog(open ? "variations" : null)} />
+        <VariationsDialog
+          open={dialog === "variations"}
+          onOpenChange={(open) => setDialog(open ? "variations" : null)}
+        />
         <OpenLinkedThread />
         <OpenPresentation onOpen={() => setPresenting(0)} />
-        {presenting !== null && <PresentationMode doc={doc} start={presenting} onClose={() => setPresenting(null)} />}
+        {presenting !== null && (
+          <PresentationMode doc={doc} start={presenting} onClose={() => setPresenting(null)} />
+        )}
         <ShortcutsDialog open={dialog === "help"} onOpenChange={(open) => setDialog(open ? "help" : null)} />
         {canEdit && (
           <Sheet open={propertiesOpen} onOpenChange={setPropertiesOpen}>
@@ -398,15 +535,20 @@ function OpenLinkedThread() {
 
 function SaveIndicator({ state, readOnly }: Readonly<{ state: SaveState; readOnly: boolean }>) {
   const t = useTranslations("studio.editor");
-  if (readOnly) return <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{t("readOnly")}</span>;
+  if (readOnly)
+    return (
+      <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[11px]">
+        {t("readOnly")}
+      </span>
+    );
   const content = {
     saved: { icon: <Check className="size-3.5" />, label: t("saved") },
     pending: { icon: <span className="size-1.5 rounded-full bg-amber-500" />, label: t("pending") },
     saving: { icon: <Loader2 className="size-3.5 animate-spin" />, label: t("saving") },
-    error: { icon: <CloudOff className="size-3.5 text-destructive" />, label: t("saveError") },
+    error: { icon: <CloudOff className="text-destructive size-3.5" />, label: t("saveError") },
   }[state];
   return (
-    <output className="hidden items-center gap-1.5 text-xs text-muted-foreground md:flex" aria-live="polite">
+    <output className="text-muted-foreground hidden items-center gap-1.5 text-xs md:flex" aria-live="polite">
       {content.icon}
       {content.label}
     </output>
@@ -438,7 +580,10 @@ const SHORTCUTS = [
   "pages",
 ] as const;
 
-function ShortcutsDialog({ open, onOpenChange }: Readonly<{ open: boolean; onOpenChange(open: boolean): void }>) {
+function ShortcutsDialog({
+  open,
+  onOpenChange,
+}: Readonly<{ open: boolean; onOpenChange(open: boolean): void }>) {
   const t = useTranslations("studio.shortcuts");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -450,7 +595,9 @@ function ShortcutsDialog({ open, onOpenChange }: Readonly<{ open: boolean; onOpe
           {SHORTCUTS.map((id) => (
             <div key={id} className="contents">
               <dt>
-                <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-[11px]">{t(`keys.${id}`)}</kbd>
+                <kbd className="bg-muted rounded border px-1.5 py-0.5 font-mono text-[11px]">
+                  {t(`keys.${id}`)}
+                </kbd>
               </dt>
               <dd className="text-muted-foreground">{t(`actions.${id}`)}</dd>
             </div>

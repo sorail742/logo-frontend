@@ -3,11 +3,37 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormatter, useNow, useTranslations } from "next-intl";
-import { Copy, LayoutTemplate, Loader2, MoreHorizontal, Palette, Play, Plus, Printer, Smartphone, Sparkles, Trash2, Wand2 } from "lucide-react";
+import {
+  Copy,
+  LayoutTemplate,
+  Loader2,
+  MoreHorizontal,
+  Palette,
+  Play,
+  Plus,
+  Printer,
+  Smartphone,
+  Sparkles,
+  Trash2,
+  Wand2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/common/page-header";
@@ -37,7 +63,11 @@ function FormatShape({ format, className }: Readonly<{ format: DesignFormat; cla
   );
 }
 
-export function NewDesignDialog({ open, onOpenChange, initialFormat }: Readonly<{ open: boolean; onOpenChange(open: boolean): void; initialFormat?: string }>) {
+export function NewDesignDialog({
+  open,
+  onOpenChange,
+  initialFormat,
+}: Readonly<{ open: boolean; onOpenChange(open: boolean): void; initialFormat?: string }>) {
   const t = useTranslations("studio.list");
   const tf = useTranslations("studio.formats");
   const onError = useApiErrorToast();
@@ -51,7 +81,12 @@ export function NewDesignDialog({ open, onOpenChange, initialFormat }: Readonly<
   const formatName = formatId === "custom" ? t("custom") : tf(`${formatId}.name`);
 
   const create = useMutation({
-    mutationFn: () => api.studio.create(pid, { name: (name.trim() || formatName).slice(0, 120), format: format.id, doc: createDoc(format) }),
+    mutationFn: () =>
+      api.studio.create(pid, {
+        name: (name.trim() || formatName).slice(0, 120),
+        format: format.id,
+        doc: createDoc(format),
+      }),
     onSuccess: (design) => {
       queryClient.invalidateQueries({ queryKey: qk.studio(pid) });
       onOpenChange(false);
@@ -70,7 +105,9 @@ export function NewDesignDialog({ open, onOpenChange, initialFormat }: Readonly<
         <div className="grid gap-5">
           {FORMAT_GROUPS.map((group) => (
             <fieldset key={group} className="grid gap-2">
-              <legend className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t(`groups.${group}`)}</legend>
+              <legend className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">
+                {t(`groups.${group}`)}
+              </legend>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {FORMATS.filter((f) => f.group === group).map((f) => (
                   <button
@@ -78,12 +115,23 @@ export function NewDesignDialog({ open, onOpenChange, initialFormat }: Readonly<
                     type="button"
                     onClick={() => setFormatId(f.id)}
                     aria-pressed={formatId === f.id}
-                    className={cn("flex items-center gap-2 rounded-xl border p-2 text-left transition", formatId === f.id ? "border-primary bg-primary/5 text-primary" : "text-muted-foreground hover:bg-muted")}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl border p-2 text-left transition",
+                      formatId === f.id
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "text-muted-foreground hover:bg-muted",
+                    )}
                   >
                     <FormatShape format={f} />
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium text-foreground">{tf(`${f.id}.name`)}</span>
-                      <span className="block text-[11px]">{f.print ? `${f.print.widthMm} × ${f.print.heightMm} mm` : `${f.width} × ${f.height} px`}</span>
+                      <span className="text-foreground block truncate text-sm font-medium">
+                        {tf(`${f.id}.name`)}
+                      </span>
+                      <span className="block text-[11px]">
+                        {f.print
+                          ? `${f.print.widthMm} × ${f.print.heightMm} mm`
+                          : `${f.width} × ${f.height} px`}
+                      </span>
                     </span>
                   </button>
                 ))}
@@ -91,20 +139,53 @@ export function NewDesignDialog({ open, onOpenChange, initialFormat }: Readonly<
             </fieldset>
           ))}
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("custom")}</legend>
+            <legend className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">
+              {t("custom")}
+            </legend>
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant={formatId === "custom" ? "default" : "outline"} size="sm" onClick={() => setFormatId("custom")}>
+              <Button
+                variant={formatId === "custom" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFormatId("custom")}
+              >
                 {t("customUse")}
               </Button>
-              <Input type="number" min={64} max={8000} value={custom.width} onChange={(e) => setCustom({ ...custom, width: Math.max(64, Math.min(8000, Number(e.target.value) || 64)) })} onFocus={() => setFormatId("custom")} className="h-8 w-24" aria-label={t("width")} />
+              <Input
+                type="number"
+                min={64}
+                max={8000}
+                value={custom.width}
+                onChange={(e) =>
+                  setCustom({ ...custom, width: Math.max(64, Math.min(8000, Number(e.target.value) || 64)) })
+                }
+                onFocus={() => setFormatId("custom")}
+                className="h-8 w-24"
+                aria-label={t("width")}
+              />
               <span className="text-muted-foreground">×</span>
-              <Input type="number" min={64} max={8000} value={custom.height} onChange={(e) => setCustom({ ...custom, height: Math.max(64, Math.min(8000, Number(e.target.value) || 64)) })} onFocus={() => setFormatId("custom")} className="h-8 w-24" aria-label={t("height")} />
-              <span className="text-sm text-muted-foreground">px</span>
+              <Input
+                type="number"
+                min={64}
+                max={8000}
+                value={custom.height}
+                onChange={(e) =>
+                  setCustom({ ...custom, height: Math.max(64, Math.min(8000, Number(e.target.value) || 64)) })
+                }
+                onFocus={() => setFormatId("custom")}
+                className="h-8 w-24"
+                aria-label={t("height")}
+              />
+              <span className="text-muted-foreground text-sm">px</span>
             </div>
           </fieldset>
           <label className="grid gap-1.5 text-sm font-medium">
             {t("name")}
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={formatName} maxLength={120} />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={formatName}
+              maxLength={120}
+            />
           </label>
         </div>
         <DialogFooter>
@@ -148,26 +229,36 @@ function DesignCard({ design, canEdit }: Readonly<{ design: StudioDesignSummary;
   const [confirm, setConfirm] = useState(false);
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border bg-card shadow-xs transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="glow-card-amber glow-card group border-border/80 bg-card relative overflow-hidden rounded-2xl border shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/40 hover:shadow-xl">
       <Link href={`/studio/${design.id}`} className="block">
         <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-[repeating-conic-gradient(var(--color-muted)_0_25%,transparent_0_50%)] [background-size:16px_16px] p-3">
           {design.thumbnail ? (
             // eslint-disable-next-line @next/next/no-img-element -- aperçu en data URL
             <img src={design.thumbnail} alt="" className="max-h-full max-w-full rounded-sm shadow-md" />
           ) : (
-            <LayoutTemplate className="size-8 text-muted-foreground" aria-hidden="true" />
+            <LayoutTemplate className="text-muted-foreground size-8" aria-hidden="true" />
           )}
         </div>
         <div className="grid gap-0.5 border-t px-3 py-2.5">
           <span className="truncate text-sm font-medium">{design.name}</span>
-          <span className="truncate text-xs text-muted-foreground">
-            {known ? tf(`${design.format}.name`) : `${design.width} × ${design.height}`} · {format.relativeTime(new Date(Math.min(Date.parse(design.updatedAt), now.getTime())), now)}
+          <span className="text-muted-foreground truncate text-xs">
+            {known ? tf(`${design.format}.name`) : `${design.width} × ${design.height}`} ·{" "}
+            {format.relativeTime(new Date(Math.min(Date.parse(design.updatedAt), now.getTime())), now)}
           </span>
         </div>
       </Link>
       {canEdit && (
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="secondary" size="icon-sm" className="absolute top-2 right-2 opacity-0 shadow transition group-hover:opacity-100 focus-visible:opacity-100 data-popup-open:opacity-100" aria-label={t("actions")} />}>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                className="absolute top-2 right-2 opacity-0 shadow transition group-hover:opacity-100 focus-visible:opacity-100 data-popup-open:opacity-100"
+                aria-label={t("actions")}
+              />
+            }
+          >
             <MoreHorizontal />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -219,7 +310,10 @@ export function StudioDesignsPage() {
   const { pid, can } = useProject();
   const canEdit = can("content.edit");
   const [dialog, setDialog] = useState<{ format?: string } | null>(null);
-  const { data: designs, isLoading } = useQuery({ queryKey: qk.studio(pid), queryFn: () => api.studio.list(pid) });
+  const { data: designs, isLoading } = useQuery({
+    queryKey: qk.studio(pid),
+    queryFn: () => api.studio.list(pid),
+  });
 
   const features = [
     { icon: LayoutTemplate, key: "templates" },
@@ -250,10 +344,17 @@ export function StudioDesignsPage() {
             {QUICK.map((id) => {
               const f = getFormat(id)!;
               return (
-                <button key={id} type="button" onClick={() => setDialog({ format: id })} className="flex flex-col items-center gap-1 rounded-xl border bg-card p-3 text-center text-muted-foreground transition hover:-translate-y-0.5 hover:border-primary hover:text-primary hover:shadow-sm">
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setDialog({ format: id })}
+                  className="glow-card-amber glow-card border-border/80 bg-card text-muted-foreground hover:text-foreground flex flex-col items-center gap-1.5 rounded-2xl border p-4 text-center transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/50 hover:shadow-lg"
+                >
                   <FormatShape format={f} />
-                  <span className="text-xs font-medium text-foreground">{tf(`${id}.name`)}</span>
-                  <span className="text-[10px]">{f.print ? `${f.print.widthMm} × ${f.print.heightMm} mm` : `${f.width} × ${f.height}`}</span>
+                  <span className="text-foreground text-xs font-medium">{tf(`${id}.name`)}</span>
+                  <span className="text-[10px]">
+                    {f.print ? `${f.print.widthMm} × ${f.print.heightMm} mm` : `${f.width} × ${f.height}`}
+                  </span>
                 </button>
               );
             })}
@@ -264,13 +365,17 @@ export function StudioDesignsPage() {
       <section className="grid gap-3" aria-label={t("mine")}>
         <h2 className="text-sm font-semibold">{t("mine")}</h2>
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="aspect-[4/3.6] rounded-xl" />)}</div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, i) => (
+              <Skeleton key={i} className="aspect-[4/3.6] rounded-xl" />
+            ))}
+          </div>
         ) : !designs?.length ? (
           <div className="grid gap-6 rounded-2xl border border-dashed p-8 md:grid-cols-[1fr_1.2fr] md:items-center">
             <div>
-              <Smartphone className="mb-3 size-8 text-primary" aria-hidden="true" />
+              <Smartphone className="text-primary mb-3 size-8" aria-hidden="true" />
               <p className="text-lg font-semibold">{t("emptyTitle")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("emptyBody")}</p>
+              <p className="text-muted-foreground mt-1 text-sm">{t("emptyBody")}</p>
               {canEdit && (
                 <Button className="mt-4" onClick={() => setDialog({})}>
                   <Plus />
@@ -280,10 +385,10 @@ export function StudioDesignsPage() {
             </div>
             <ul className="grid gap-3 sm:grid-cols-2">
               {features.map(({ icon: Icon, key }) => (
-                <li key={key} className="rounded-xl bg-muted/60 p-3">
-                  <Icon className="mb-1.5 size-4 text-primary" aria-hidden="true" />
+                <li key={key} className="bg-muted/60 rounded-xl p-3">
+                  <Icon className="text-primary mb-1.5 size-4" aria-hidden="true" />
                   <p className="text-sm font-medium">{t(`features.${key}.title`)}</p>
-                  <p className="text-xs text-muted-foreground">{t(`features.${key}.body`)}</p>
+                  <p className="text-muted-foreground text-xs">{t(`features.${key}.body`)}</p>
                 </li>
               ))}
             </ul>
@@ -297,7 +402,14 @@ export function StudioDesignsPage() {
         )}
       </section>
 
-      {dialog && <NewDesignDialog key={dialog.format ?? "new"} open onOpenChange={(open) => !open && setDialog(null)} initialFormat={dialog.format} />}
+      {dialog && (
+        <NewDesignDialog
+          key={dialog.format ?? "new"}
+          open
+          onOpenChange={(open) => !open && setDialog(null)}
+          initialFormat={dialog.format}
+        />
+      )}
     </>
   );
 }

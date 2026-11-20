@@ -2,7 +2,18 @@
 
 import { useMemo } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { Ban, CheckCircle2, ExternalLink, Heart, Loader2, Search, Sparkles, ThumbsDown, ThumbsUp, Undo2 } from "lucide-react";
+import {
+  Ban,
+  CheckCircle2,
+  ExternalLink,
+  Heart,
+  Loader2,
+  Search,
+  Sparkles,
+  ThumbsDown,
+  ThumbsUp,
+  Undo2,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,9 +25,11 @@ import { cn } from "@/lib/utils";
 import { hashSeed } from "@/lib/render/artwork";
 
 const STATUS_STYLES: Record<CheckStatus, string> = {
-  AVAILABLE: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
+  AVAILABLE:
+    "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
   TAKEN: "border-red-200 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200",
-  UNKNOWN: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200",
+  UNKNOWN:
+    "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200",
 };
 
 function CheckPill({ check }: Readonly<{ check: AvailabilityCheck }>) {
@@ -27,7 +40,10 @@ function CheckPill({ check }: Readonly<{ check: AvailabilityCheck }>) {
       <span className="opacity-80">· {t(`status.${check.status}`)}</span>
     </>
   );
-  const className = cn("inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs", STATUS_STYLES[check.status]);
+  const className = cn(
+    "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs",
+    STATUS_STYLES[check.status],
+  );
   return check.url && check.kind === "DOMAIN" ? (
     <a href={check.url} target="_blank" rel="noopener noreferrer" className={className}>
       {content}
@@ -48,7 +64,7 @@ export function AvailabilityResults({ checks }: Readonly<{ checks: AvailabilityC
   return (
     <div className="grid gap-3 border-t pt-3 text-sm">
       <div>
-        <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("domains")}</p>
+        <p className="text-muted-foreground mb-1.5 text-xs font-medium">{t("domains")}</p>
         <div className="flex flex-wrap gap-1.5">
           {domains.map((check) => (
             <CheckPill key={check.target} check={check} />
@@ -56,7 +72,7 @@ export function AvailabilityResults({ checks }: Readonly<{ checks: AvailabilityC
         </div>
       </div>
       <div>
-        <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("socials")}</p>
+        <p className="text-muted-foreground mb-1.5 text-xs font-medium">{t("socials")}</p>
         <div className="flex flex-wrap gap-1.5">
           {socials.map((check) => (
             <CheckPill key={check.target} check={check} />
@@ -64,10 +80,16 @@ export function AvailabilityResults({ checks }: Readonly<{ checks: AvailabilityC
         </div>
       </div>
       <div>
-        <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("trademarks")}</p>
+        <p className="text-muted-foreground mb-1.5 text-xs font-medium">{t("trademarks")}</p>
         <div className="flex flex-wrap gap-2">
           {trademarks.map((check) => (
-            <a key={check.target} href={check.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+            <a
+              key={check.target}
+              href={check.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
+            >
               {t("trademarkSearch", { base: check.target })}
               <ExternalLink className="size-3" aria-hidden="true" />
             </a>
@@ -76,12 +98,15 @@ export function AvailabilityResults({ checks }: Readonly<{ checks: AvailabilityC
       </div>
       {phonetic && (
         <p className="text-xs">
-          <span className="font-medium text-muted-foreground">{t("phonetic")} : </span>
+          <span className="text-muted-foreground font-medium">{t("phonetic")} : </span>
           {phonetic.status === "TAKEN" ? t("phoneticTaken", { name: phonetic.target }) : t("phoneticOk")}
         </p>
       )}
-      <p className="text-xs text-muted-foreground">
-        {t("checkedAt", { date: format.dateTime(new Date(checks[0]!.checkedAt), { dateStyle: "medium", timeStyle: "short" }) })} · {t("disclaimer")}
+      <p className="text-muted-foreground text-xs">
+        {t("checkedAt", {
+          date: format.dateTime(new Date(checks[0]!.checkedAt), { dateStyle: "medium", timeStyle: "short" }),
+        })}{" "}
+        · {t("disclaimer")}
       </p>
     </div>
   );
@@ -90,7 +115,10 @@ export function AvailabilityResults({ checks }: Readonly<{ checks: AvailabilityC
 /** Le nom mis en forme en trois pistes de logo, pour le juger en situation. */
 function NameLogoPreviews({ value, brief }: Readonly<{ value: string; brief?: Brief | null }>) {
   const t = useTranslations("names");
-  const svgs = useMemo(() => namePreviewSpecs(value, brief).map((spec) => renderLogoSvg(spec).svg), [value, brief]);
+  const svgs = useMemo(
+    () => namePreviewSpecs(value, brief).map((spec) => renderLogoSvg(spec).svg),
+    [value, brief],
+  );
   return (
     <fieldset className="grid grid-cols-3 gap-2">
       <legend className="sr-only">{t("logoPreviews")}</legend>
@@ -134,7 +162,13 @@ export function NameCard({
 }>) {
   const t = useTranslations("names");
   return (
-    <article className={cn("grid gap-3 rounded-xl border bg-card p-4", isChosen && "border-primary ring-2 ring-primary/30", name.isRejected && "opacity-60")}>
+    <article
+      className={cn(
+        "glow-card glow-card-3d glow-card-shimmer group border-border/80 bg-card hover:border-primary/50 grid gap-3.5 rounded-2xl border p-5 shadow-xs transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl",
+        isChosen && "border-primary bg-primary/[0.02] ring-primary/30 shadow-lg ring-2",
+        name.isRejected && "opacity-60",
+      )}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-xl font-semibold tracking-tight break-words">{name.value}</h3>
@@ -149,27 +183,33 @@ export function NameCard({
           </div>
         </div>
         {canEdit && !name.isRejected && (
-          <Button variant="ghost" size="icon" onClick={onFavorite} aria-pressed={name.isFavorite} aria-label={name.isFavorite ? t("unfavorite") : t("favorite")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onFavorite}
+            aria-pressed={name.isFavorite}
+            aria-label={name.isFavorite ? t("unfavorite") : t("favorite")}
+          >
             <Heart className={cn(name.isFavorite && "fill-red-500 text-red-500")} />
           </Button>
         )}
       </div>
       {!name.isRejected && <NameLogoPreviews value={name.value} brief={brief} />}
       <p className="text-sm">{name.meaning}</p>
-      <div className="grid gap-1 text-xs text-muted-foreground">
+      <div className="text-muted-foreground grid gap-1 text-xs">
         {name.pronunciation && <p>{t("pronunciation", { value: name.pronunciation })}</p>}
         {name.score != null && (
           <div className="flex items-center gap-2">
             <span>{t("score", { score: name.score })}</span>
-            <span className="h-1.5 flex-1 rounded-full bg-muted">
-              <span className="block h-full rounded-full bg-primary" style={{ width: `${name.score}%` }} />
+            <span className="bg-muted h-1.5 flex-1 rounded-full">
+              <span className="bg-primary block h-full rounded-full" style={{ width: `${name.score}%` }} />
             </span>
           </div>
         )}
       </div>
 
       {checking ? (
-        <p className="flex items-center gap-2 border-t pt-3 text-sm text-muted-foreground">
+        <p className="text-muted-foreground flex items-center gap-2 border-t pt-3 text-sm">
           <Loader2 className="size-4 animate-spin" aria-hidden="true" />
           {t("checking")}
         </p>
@@ -199,24 +239,43 @@ export function NameCard({
         )}
         <div className="ml-auto flex items-center gap-1">
           {name.isFavorite && (
-            <label className="mr-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Checkbox checked={compareSelected} onCheckedChange={onToggleCompare} aria-label={t("compareTitle")} />
+            <label className="text-muted-foreground mr-1 flex items-center gap-1.5 text-xs">
+              <Checkbox
+                checked={compareSelected}
+                onCheckedChange={onToggleCompare}
+                aria-label={t("compareTitle")}
+              />
               {t("compareShort")}
             </label>
           )}
           {canVote && name.isFavorite && (
             <>
-              <Button variant={name.myVote === 1 ? "secondary" : "ghost"} size="icon-sm" onClick={() => onVote(1)} aria-label={`${t("vote")} +1`}>
+              <Button
+                variant={name.myVote === 1 ? "secondary" : "ghost"}
+                size="icon-sm"
+                onClick={() => onVote(1)}
+                aria-label={`${t("vote")} +1`}
+              >
                 <ThumbsUp />
               </Button>
               <span className="min-w-4 text-center text-xs tabular-nums">{name.votes}</span>
-              <Button variant={name.myVote === -1 ? "secondary" : "ghost"} size="icon-sm" onClick={() => onVote(-1)} aria-label={`${t("vote")} -1`}>
+              <Button
+                variant={name.myVote === -1 ? "secondary" : "ghost"}
+                size="icon-sm"
+                onClick={() => onVote(-1)}
+                aria-label={`${t("vote")} -1`}
+              >
                 <ThumbsDown />
               </Button>
             </>
           )}
           {canEdit && (
-            <Button variant="ghost" size="icon-sm" onClick={onReject} aria-label={name.isRejected ? t("unreject") : t("reject")}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={onReject}
+              aria-label={name.isRejected ? t("unreject") : t("reject")}
+            >
               {name.isRejected ? <Undo2 /> : <Ban />}
             </Button>
           )}

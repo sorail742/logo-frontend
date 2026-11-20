@@ -5,7 +5,14 @@ import { useTranslations } from "next-intl";
 import { Download, FileImage, FileText, FileType2, Loader2, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { SliderField } from "./fields";
 import { waitForJob } from "@/hooks/use-job";
@@ -74,7 +81,12 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         const files: ZipEntry[] = [];
         for (const index of pages) {
           const svg = renderPage(source, index);
-          const blob = await svgToPngBlob(svg, { size: Math.round(Math.max(doc.width, doc.height) * scale), type, quality: quality / 100, background: format === "png" && transparent ? null : undefined });
+          const blob = await svgToPngBlob(svg, {
+            size: Math.round(Math.max(doc.width, doc.height) * scale),
+            type,
+            quality: quality / 100,
+            background: format === "png" && transparent ? null : undefined,
+          });
           files.push({ path: `${base}${pages.length > 1 ? `-${index + 1}` : ""}.${format}`, data: blob });
         }
         if (files.length === 1) downloadBlob(files[0]!.data as Blob, files[0]!.path);
@@ -82,12 +94,25 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       } else if (format === "svg" && !server) {
         await ensureFonts(documentFonts(doc));
         const files: ZipEntry[] = [];
-        for (const index of pages) files.push({ path: `${base}${pages.length > 1 ? `-${index + 1}` : ""}.svg`, data: await svgToStandalone(renderPage(doc, index)) });
-        if (files.length === 1) downloadBlob(new Blob([files[0]!.data as string], { type: "image/svg+xml" }), files[0]!.path);
+        for (const index of pages)
+          files.push({
+            path: `${base}${pages.length > 1 ? `-${index + 1}` : ""}.svg`,
+            data: await svgToStandalone(renderPage(doc, index)),
+          });
+        if (files.length === 1)
+          downloadBlob(new Blob([files[0]!.data as string], { type: "image/svg+xml" }), files[0]!.path);
         else downloadBlob(await buildZip(files), `${base}-svg.zip`);
       } else {
         await flush();
-        const { jobId } = await api.studio.requestExport(meta.id, { format: format === "pdf" ? "pdf" : "svg", pages: scope === "current" ? [pageIndex] : undefined, cropMarks: format === "pdf" && Boolean(doc.print) && cropMarks }, crypto.randomUUID());
+        const { jobId } = await api.studio.requestExport(
+          meta.id,
+          {
+            format: format === "pdf" ? "pdf" : "svg",
+            pages: scope === "current" ? [pageIndex] : undefined,
+            cropMarks: format === "pdf" && Boolean(doc.print) && cropMarks,
+          },
+          crypto.randomUUID(),
+        );
         const job = await waitForJob(jobId);
         if (job.status !== "SUCCEEDED" || !job.result?.downloadUrl) throw new Error(job.error ?? t("failed"));
         openDownload(job.result.downloadUrl);
@@ -106,7 +131,11 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{doc.print ? t("printDescription", { width: doc.print.widthMm, height: doc.print.heightMm }) : t("description", { size: pixels(1) })}</DialogDescription>
+          <DialogDescription>
+            {doc.print
+              ? t("printDescription", { width: doc.print.widthMm, height: doc.print.heightMm })
+              : t("description", { size: pixels(1) })}
+          </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={t("format")}>
           {FORMATS.map(({ id, icon: Icon }) => {
@@ -119,7 +148,10 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 aria-checked={format === id}
                 disabled={disabled}
                 onClick={() => setFormat(id)}
-                className={cn("grid place-items-center gap-1 rounded-xl border p-3 text-xs font-semibold uppercase transition disabled:opacity-40", format === id ? "border-primary bg-primary/5 text-primary" : "hover:bg-muted")}
+                className={cn(
+                  "grid place-items-center gap-1 rounded-xl border p-3 text-xs font-semibold uppercase transition disabled:opacity-40",
+                  format === id ? "border-primary bg-primary/5 text-primary" : "hover:bg-muted",
+                )}
                 title={disabled ? t("serverOnly") : undefined}
               >
                 <Icon className="size-5" aria-hidden="true" />
@@ -128,13 +160,31 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             );
           })}
         </div>
-        <p className="text-xs leading-relaxed text-muted-foreground">{t(`help.${format}`, { print: doc.print ? "yes" : "no" })}</p>
+        <p className="text-muted-foreground text-xs leading-relaxed">
+          {t(`help.${format}`, { print: doc.print ? "yes" : "no" })}
+        </p>
 
         {doc.pages.length > 1 && (
-          <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-0.5 text-xs" role="radiogroup" aria-label={t("pages")}>
+          <div
+            className="bg-muted grid grid-cols-2 gap-1 rounded-lg p-0.5 text-xs"
+            role="radiogroup"
+            aria-label={t("pages")}
+          >
             {(["all", "current"] as const).map((s) => (
-              <button key={s} type="button" role="radio" aria-checked={scope === s} onClick={() => setScope(s)} className={cn("rounded-md py-1.5 transition", scope === s ? "bg-background font-medium shadow-sm" : "text-muted-foreground")}>
-                {s === "all" ? t("allPages", { count: doc.pages.length }) : t("currentPage", { number: pageIndex + 1 })}
+              <button
+                key={s}
+                type="button"
+                role="radio"
+                aria-checked={scope === s}
+                onClick={() => setScope(s)}
+                className={cn(
+                  "rounded-md py-1.5 transition",
+                  scope === s ? "bg-background font-medium shadow-sm" : "text-muted-foreground",
+                )}
+              >
+                {s === "all"
+                  ? t("allPages", { count: doc.pages.length })
+                  : t("currentPage", { number: pageIndex + 1 })}
               </button>
             ))}
           </div>
@@ -144,9 +194,18 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           <div className="grid gap-3">
             <div className="grid grid-cols-4 gap-1.5">
               {[0.5, 1, 2, 3].map((s) => (
-                <button key={s} type="button" onClick={() => setScale(s)} aria-pressed={scale === s} className={cn("rounded-lg border px-2 py-1.5 text-xs transition", scale === s ? "border-primary bg-primary/5 font-medium text-primary" : "hover:bg-muted")}>
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setScale(s)}
+                  aria-pressed={scale === s}
+                  className={cn(
+                    "rounded-lg border px-2 py-1.5 text-xs transition",
+                    scale === s ? "border-primary bg-primary/5 text-primary font-medium" : "hover:bg-muted",
+                  )}
+                >
                   ×{s}
-                  <span className="block text-[10px] text-muted-foreground">{pixels(s)}</span>
+                  <span className="text-muted-foreground block text-[10px]">{pixels(s)}</span>
                 </button>
               ))}
             </div>
@@ -156,7 +215,16 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 <Switch checked={transparent} onCheckedChange={setTransparent} />
               </label>
             )}
-            {format === "jpg" && <SliderField label={t("quality")} value={quality} min={50} max={100} format={(v) => `${v} %`} onChange={setQuality} />}
+            {format === "jpg" && (
+              <SliderField
+                label={t("quality")}
+                value={quality}
+                min={50}
+                max={100}
+                format={(v) => `${v} %`}
+                onChange={setQuality}
+              />
+            )}
           </div>
         )}
         {format === "pdf" && doc.print && (
@@ -177,4 +245,3 @@ export function ExportDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     </Dialog>
   );
 }
-

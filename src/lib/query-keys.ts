@@ -4,7 +4,8 @@ export const qk = {
   workspaces: ["workspaces"] as const,
   members: (wid: string) => ["workspaces", wid, "members"] as const,
   invitations: (wid: string) => ["workspaces", wid, "invitations"] as const,
-  projects: (wid: string, filters?: ProjectFilters) => ["workspaces", wid, "projects", filters ?? {}] as const,
+  projects: (wid: string, filters?: ProjectFilters) =>
+    ["workspaces", wid, "projects", filters ?? {}] as const,
   project: (pid: string) => ["projects", pid] as const,
   activity: (pid: string) => ["projects", pid, "activity"] as const,
   names: (pid: string) => ["projects", pid, "names"] as const,
@@ -23,7 +24,8 @@ export const qk = {
   apparelTemplates: ["apparel", "templates"] as const,
   apparelPresets: ["apparel", "rule-presets"] as const,
   website: (pid: string) => ["projects", pid, "website"] as const,
-  websiteBrand: (webid: string, logoId: string | null) => ["websites", webid, "brand", logoId ?? "auto"] as const,
+  websiteBrand: (webid: string, logoId: string | null) =>
+    ["websites", webid, "brand", logoId ?? "auto"] as const,
   websiteMessages: (webid: string) => ["websites", webid, "messages"] as const,
   credits: (wid: string) => ["workspaces", wid, "credits"] as const,
   ledger: (wid: string) => ["workspaces", wid, "ledger"] as const,

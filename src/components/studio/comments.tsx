@@ -44,7 +44,11 @@ export function useDesignThreads() {
   const threads = useMemo(() => {
     const all = [...(query.data ?? [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     const roots = all.filter((c) => !c.parentId);
-    return roots.map((root, i): Thread => ({ root, replies: all.filter((c) => c.parentId === root.id), number: i + 1 }));
+    return roots.map((root, i): Thread => ({
+      root,
+      replies: all.filter((c) => c.parentId === root.id),
+      number: i + 1,
+    }));
   }, [query.data]);
   return { ...query, threads };
 }
@@ -63,7 +67,7 @@ function Body({ text }: { text: string }) {
     <p className="text-sm whitespace-pre-wrap">
       {text.split(/(@[\p{L}\d_.-]+)/u).map((part, i) =>
         part.startsWith("@") ? (
-          <span key={i} className="font-medium text-primary">
+          <span key={i} className="text-primary font-medium">
             {part}
           </span>
         ) : (
@@ -82,16 +86,42 @@ function useCommentActions() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: designCommentsKey(projectId, sdid) });
   const create = useMutation({
     mutationFn: (input: { body: string; anchor?: Comment["anchor"]; parentId?: string }) =>
-      api.comments.create(projectId, { targetType: "DESIGN", targetId: sdid, body: input.body, anchor: input.anchor ?? undefined, parentId: input.parentId }),
+      api.comments.create(projectId, {
+        targetType: "DESIGN",
+        targetId: sdid,
+        body: input.body,
+        anchor: input.anchor ?? undefined,
+        parentId: input.parentId,
+      }),
     onSuccess: refresh,
     onError,
   });
-  const resolve = useMutation({ mutationFn: ({ id, resolved }: { id: string; resolved: boolean }) => api.comments.resolve(id, resolved), onSuccess: refresh, onError });
-  const remove = useMutation({ mutationFn: (id: string) => api.comments.remove(id), onSuccess: refresh, onError });
+  const resolve = useMutation({
+    mutationFn: ({ id, resolved }: { id: string; resolved: boolean }) => api.comments.resolve(id, resolved),
+    onSuccess: refresh,
+    onError,
+  });
+  const remove = useMutation({
+    mutationFn: (id: string) => api.comments.remove(id),
+    onSuccess: refresh,
+    onError,
+  });
   return { create, resolve, remove };
 }
 
-function Composer({ onSubmit, placeholder, autoFocus, pending, onCancel }: { onSubmit(body: string): void; placeholder: string; autoFocus?: boolean; pending: boolean; onCancel?: () => void }) {
+function Composer({
+  onSubmit,
+  placeholder,
+  autoFocus,
+  pending,
+  onCancel,
+}: {
+  onSubmit(body: string): void;
+  placeholder: string;
+  autoFocus?: boolean;
+  pending: boolean;
+  onCancel?: () => void;
+}) {
   const t = useTranslations("studio.comments");
   const [body, setBody] = useState("");
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -127,7 +157,7 @@ function Composer({ onSubmit, placeholder, autoFocus, pending, onCancel }: { onS
         aria-label={placeholder}
       />
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-muted-foreground">{t("sendHint")}</span>
+        <span className="text-muted-foreground text-[10px]">{t("sendHint")}</span>
         <div className="flex gap-1">
           {onCancel && (
             <Button variant="ghost" size="xs" onClick={onCancel}>
@@ -156,9 +186,14 @@ function ThreadCard({ thread, onClose }: { thread: Thread; onClose(): void }) {
   const messages = [thread.root, ...thread.replies];
 
   return (
-    <div className="grid w-80 gap-3 rounded-2xl border bg-popover p-3 text-popover-foreground shadow-xl" onPointerDown={(e) => e.stopPropagation()}>
+    <div
+      className="bg-popover text-popover-foreground grid w-80 gap-3 rounded-2xl border p-3 shadow-xl"
+      onPointerDown={(e) => e.stopPropagation()}
+    >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold text-muted-foreground">{t("thread", { number: thread.number })}</span>
+        <span className="text-muted-foreground text-xs font-semibold">
+          {t("thread", { number: thread.number })}
+        </span>
         <div className="flex items-center gap-0.5">
           {(canEdit || thread.root.authorId === userId) && (
             <Button
@@ -179,16 +214,18 @@ function ThreadCard({ thread, onClose }: { thread: Thread; onClose(): void }) {
       <ol className="grid max-h-72 gap-3 overflow-y-auto">
         {messages.map((comment) => (
           <li key={comment.id} className="group flex gap-2">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">{initials(comment.authorName)}</span>
+            <span className="bg-primary/15 text-primary flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold">
+              {initials(comment.authorName)}
+            </span>
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">{comment.authorName}</span>·
+              <p className="text-muted-foreground flex items-center gap-1 text-xs">
+                <span className="text-foreground font-medium">{comment.authorName}</span>·
                 {format.relativeTime(new Date(Math.min(Date.parse(comment.createdAt), now.getTime())), now)}
                 {comment.authorId === userId && (
                   <button
                     type="button"
                     onClick={() => remove.mutate(comment.id)}
-                    className="ml-auto rounded p-0.5 opacity-0 transition group-hover:opacity-100 hover:text-destructive focus-visible:opacity-100"
+                    className="hover:text-destructive ml-auto rounded p-0.5 opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
                     aria-label={t("delete")}
                     title={comment.parentId ? t("delete") : t("deleteThread")}
                   >
@@ -201,8 +238,16 @@ function ThreadCard({ thread, onClose }: { thread: Thread; onClose(): void }) {
           </li>
         ))}
       </ol>
-      {resolved && <p className="rounded-lg bg-emerald-50 px-2 py-1 text-xs text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">{t("resolvedNote")}</p>}
-      <Composer placeholder={t("reply")} pending={create.isPending} onSubmit={(body) => create.mutate({ body, parentId: thread.root.id })} />
+      {resolved && (
+        <p className="rounded-lg bg-emerald-50 px-2 py-1 text-xs text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+          {t("resolvedNote")}
+        </p>
+      )}
+      <Composer
+        placeholder={t("reply")}
+        pending={create.isPending}
+        onSubmit={(body) => create.mutate({ body, parentId: thread.root.id })}
+      />
     </div>
   );
 }
@@ -224,8 +269,15 @@ export function CommentLayer() {
   if (!doc || !page || !api.isAvailable("comments")) return null;
   const state = useStudio.getState();
 
-  const toScreen = (x: number, y: number) => ({ left: panX + x * doc.width * zoom, top: panY + y * doc.height * zoom });
-  const visible = threads.filter((th) => th.root.anchor?.pageId === page.id && (commentMode || !th.root.resolvedAt || th.root.id === activeThread));
+  const toScreen = (x: number, y: number) => ({
+    left: panX + x * doc.width * zoom,
+    top: panY + y * doc.height * zoom,
+  });
+  const visible = threads.filter(
+    (th) =>
+      th.root.anchor?.pageId === page.id &&
+      (commentMode || !th.root.resolvedAt || th.root.id === activeThread),
+  );
   const active = threads.find((th) => th.root.id === activeThread);
   const cardAt = (left: number, top: number) => ({
     left: left + 340 > viewport.width ? Math.max(8, left - 340) : left + 22,
@@ -246,7 +298,7 @@ export function CommentLayer() {
             className={cn(
               "pointer-events-auto absolute flex size-8 -translate-y-full items-center justify-center rounded-full rounded-bl-none border-2 border-white text-xs font-bold shadow-lg transition hover:scale-110",
               resolved ? "bg-muted-foreground/70 text-white" : "bg-primary text-primary-foreground",
-              th.root.id === activeThread && "ring-4 ring-primary/30",
+              th.root.id === activeThread && "ring-primary/30 ring-4",
             )}
             style={pos}
             aria-label={t("pin", { number: th.number, author: th.root.authorName })}
@@ -258,17 +310,31 @@ export function CommentLayer() {
       })}
 
       {active?.root.anchor?.pageId === page.id && (
-        <div className="pointer-events-auto absolute" style={cardAt(toScreen(active.root.anchor.x, active.root.anchor.y).left, toScreen(active.root.anchor.x, active.root.anchor.y).top)}>
+        <div
+          className="pointer-events-auto absolute"
+          style={cardAt(
+            toScreen(active.root.anchor.x, active.root.anchor.y).left,
+            toScreen(active.root.anchor.x, active.root.anchor.y).top,
+          )}
+        >
           <ThreadCard thread={active} onClose={() => state.openThread(null)} />
         </div>
       )}
 
       {draftPin && (
         <>
-          <span className="absolute flex size-8 -translate-y-full items-center justify-center rounded-full rounded-bl-none border-2 border-white bg-amber-500 text-white shadow-lg" style={toScreen(draftPin.x, draftPin.y)} aria-hidden="true">
+          <span
+            className="absolute flex size-8 -translate-y-full items-center justify-center rounded-full rounded-bl-none border-2 border-white bg-amber-500 text-white shadow-lg"
+            style={toScreen(draftPin.x, draftPin.y)}
+            aria-hidden="true"
+          >
             <MessageSquare className="size-4" />
           </span>
-          <div className="pointer-events-auto absolute w-80 rounded-2xl border bg-popover p-3 shadow-xl" style={cardAt(toScreen(draftPin.x, draftPin.y).left, toScreen(draftPin.x, draftPin.y).top)} onPointerDown={(e) => e.stopPropagation()}>
+          <div
+            className="bg-popover pointer-events-auto absolute w-80 rounded-2xl border p-3 shadow-xl"
+            style={cardAt(toScreen(draftPin.x, draftPin.y).left, toScreen(draftPin.x, draftPin.y).top)}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <Composer
               autoFocus
               placeholder={t("placeholder")}
@@ -286,7 +352,9 @@ export function CommentLayer() {
       )}
 
       {commentMode && !draftPin && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-foreground px-3 py-1.5 text-xs whitespace-nowrap text-background shadow">{t("modeHint")}</div>
+        <div className="bg-foreground text-background absolute top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1.5 text-xs whitespace-nowrap shadow">
+          {t("modeHint")}
+        </div>
       )}
     </div>
   );
@@ -302,7 +370,8 @@ export function CommentsListPanel() {
   const activeThread = useStudio((s) => s.activeThread);
   const { threads, isLoading } = useDesignThreads();
   const [filter, setFilter] = useState<"open" | "resolved">("open");
-  if (!api.isAvailable("comments")) return <p className="text-xs text-muted-foreground">{t("unavailable")}</p>;
+  if (!api.isAvailable("comments"))
+    return <p className="text-muted-foreground text-xs">{t("unavailable")}</p>;
   const state = useStudio.getState();
   const list = threads.filter((th) => (filter === "open" ? !th.root.resolvedAt : th.root.resolvedAt));
 
@@ -314,20 +383,36 @@ export function CommentsListPanel() {
 
   return (
     <div className="grid gap-3">
-      <Button variant={commentMode ? "default" : "outline"} onClick={() => state.setCommentMode(!commentMode)}>
+      <Button
+        variant={commentMode ? "default" : "outline"}
+        onClick={() => state.setCommentMode(!commentMode)}
+      >
         <MessageSquare />
         {commentMode ? t("stopCommenting") : t("startCommenting")}
       </Button>
-      <p className="text-[11px] leading-relaxed text-muted-foreground">{t("help")}</p>
-      <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-0.5 text-xs">
+      <p className="text-muted-foreground text-[11px] leading-relaxed">{t("help")}</p>
+      <div className="bg-muted grid grid-cols-2 gap-1 rounded-lg p-0.5 text-xs">
         {(["open", "resolved"] as const).map((f) => (
-          <button key={f} type="button" onClick={() => setFilter(f)} aria-pressed={filter === f} className={cn("rounded-md py-1.5 transition", filter === f ? "bg-background font-medium shadow-sm" : "text-muted-foreground")}>
-            {t(f, { count: threads.filter((th) => (f === "open" ? !th.root.resolvedAt : th.root.resolvedAt)).length })}
+          <button
+            key={f}
+            type="button"
+            onClick={() => setFilter(f)}
+            aria-pressed={filter === f}
+            className={cn(
+              "rounded-md py-1.5 transition",
+              filter === f ? "bg-background font-medium shadow-sm" : "text-muted-foreground",
+            )}
+          >
+            {t(f, {
+              count: threads.filter((th) => (f === "open" ? !th.root.resolvedAt : th.root.resolvedAt)).length,
+            })}
           </button>
         ))}
       </div>
       {isLoading ? null : !list.length ? (
-        <p className="py-6 text-center text-xs text-muted-foreground">{filter === "open" ? t("emptyOpen") : t("emptyResolved")}</p>
+        <p className="text-muted-foreground py-6 text-center text-xs">
+          {filter === "open" ? t("emptyOpen") : t("emptyResolved")}
+        </p>
       ) : (
         <ul className="grid gap-2">
           {list.map((th) => {
@@ -337,16 +422,24 @@ export function CommentsListPanel() {
                 <button
                   type="button"
                   onClick={() => show(th)}
-                  className={cn("grid w-full gap-1 rounded-xl border p-3 text-left transition hover:bg-muted", activeThread === th.root.id && "border-primary bg-primary/5")}
+                  className={cn(
+                    "hover:bg-muted grid w-full gap-1 rounded-xl border p-3 text-left transition",
+                    activeThread === th.root.id && "border-primary bg-primary/5",
+                  )}
                 >
-                  <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">{th.number}</span>
-                    <span className="font-medium text-foreground">{th.root.authorName}</span>
+                  <span className="text-muted-foreground flex items-center gap-2 text-xs">
+                    <span className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full text-[10px] font-bold">
+                      {th.number}
+                    </span>
+                    <span className="text-foreground font-medium">{th.root.authorName}</span>
                     <span className="ml-auto">{pageNumber > 0 ? t("page", { number: pageNumber }) : ""}</span>
                   </span>
                   <span className="line-clamp-2 text-sm">{th.root.body}</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {format.relativeTime(new Date(Math.min(Date.parse(th.root.createdAt), now.getTime())), now)}
+                  <span className="text-muted-foreground text-[11px]">
+                    {format.relativeTime(
+                      new Date(Math.min(Date.parse(th.root.createdAt), now.getTime())),
+                      now,
+                    )}
                     {th.replies.length > 0 && ` · ${t("replies", { count: th.replies.length })}`}
                   </span>
                 </button>

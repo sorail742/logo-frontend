@@ -24,11 +24,22 @@ function ThemeSwatch({ theme, colors }: { theme: SiteTheme; colors: SiteContent[
   const hero = theme === "bold" ? colors.primary : colors.background;
   const ink = theme === "bold" ? "#ffffff" : colors.text;
   return (
-    <div className="h-16 overflow-hidden rounded-md border" style={{ background: colors.background }} aria-hidden="true">
-      <div className={cn("flex h-10 flex-col justify-center gap-1 px-2", theme === "elegant" && "items-center")} style={{ background: hero }}>
+    <div
+      className="h-16 overflow-hidden rounded-md border"
+      style={{ background: colors.background }}
+      aria-hidden="true"
+    >
+      <div
+        className={cn("flex h-10 flex-col justify-center gap-1 px-2", theme === "elegant" && "items-center")}
+        style={{ background: hero }}
+      >
         <span className="block h-1.5 w-12 rounded-full" style={{ background: ink, opacity: 0.85 }} />
         <span
-          className={cn("block h-2.5 w-10", theme === "modern" && "rounded-full", theme === "bold" && "rounded")}
+          className={cn(
+            "block h-2.5 w-10",
+            theme === "modern" && "rounded-full",
+            theme === "bold" && "rounded",
+          )}
           style={{ background: theme === "bold" ? colors.secondary : colors.primary }}
         />
       </div>
@@ -37,13 +48,26 @@ function ThemeSwatch({ theme, colors }: { theme: SiteTheme; colors: SiteContent[
   );
 }
 
-function FontPicker({ label, value, onChange }: { label: string; value: SiteFont; onChange: (font: SiteFont) => void }) {
+function FontPicker({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: SiteFont;
+  onChange: (font: SiteFont) => void;
+}) {
   const t = useTranslations("site.style");
   const font = getFont(value.id);
   return (
     <div className="grid grid-cols-[1fr_6.5rem] gap-2">
       <LabeledField label={label}>
-        <NativeSelect value={value.id} onChange={(e) => onChange({ id: e.target.value, weight: closestWeight(e.target.value, value.weight) })}>
+        <NativeSelect
+          value={value.id}
+          onChange={(e) =>
+            onChange({ id: e.target.value, weight: closestWeight(e.target.value, value.weight) })
+          }
+        >
           {FONTS.map((f) => (
             <option key={f.id} value={f.id}>
               {f.name}
@@ -52,7 +76,10 @@ function FontPicker({ label, value, onChange }: { label: string; value: SiteFont
         </NativeSelect>
       </LabeledField>
       <LabeledField label={t("weight")}>
-        <NativeSelect value={String(value.weight)} onChange={(e) => onChange({ ...value, weight: Number(e.target.value) })}>
+        <NativeSelect
+          value={String(value.weight)}
+          onChange={(e) => onChange({ ...value, weight: Number(e.target.value) })}
+        >
           {font.weights.map((w) => (
             <option key={w} value={w}>
               {w}
@@ -101,15 +128,17 @@ export function SiteStylePanel({
               onClick={() => set({ theme })}
               className={cn(
                 "grid gap-1.5 rounded-lg border-2 p-2 text-left transition",
-                content.theme === theme ? "border-primary" : "border-transparent bg-muted/50 hover:border-muted-foreground/30",
+                content.theme === theme
+                  ? "border-primary"
+                  : "bg-muted/50 hover:border-muted-foreground/30 border-transparent",
               )}
             >
               <ThemeSwatch theme={theme} colors={content.colors} />
               <span className="flex items-center gap-1 text-sm font-medium">
-                {content.theme === theme && <Check className="size-3.5 text-primary" aria-hidden="true" />}
+                {content.theme === theme && <Check className="text-primary size-3.5" aria-hidden="true" />}
                 {t(`themes.${theme}`)}
               </span>
-              <span className="text-xs leading-snug text-muted-foreground">{t(`themeHints.${theme}`)}</span>
+              <span className="text-muted-foreground text-xs leading-snug">{t(`themeHints.${theme}`)}</span>
             </button>
           ))}
         </CardContent>
@@ -149,7 +178,8 @@ export function SiteStylePanel({
                   maxLength={7}
                   className="font-mono"
                   onBlur={(e) => {
-                    if (HEX.test(e.target.value)) set({ colors: { ...content.colors, [key]: e.target.value.toLowerCase() } });
+                    if (HEX.test(e.target.value))
+                      set({ colors: { ...content.colors, [key]: e.target.value.toLowerCase() } });
                   }}
                 />
               </div>
@@ -163,8 +193,16 @@ export function SiteStylePanel({
           <CardTitle className="text-base">{t("fonts")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
-          <FontPicker label={t("heading")} value={content.fonts.heading} onChange={(heading) => set({ fonts: { ...content.fonts, heading } })} />
-          <FontPicker label={t("body")} value={content.fonts.body} onChange={(body) => set({ fonts: { ...content.fonts, body } })} />
+          <FontPicker
+            label={t("heading")}
+            value={content.fonts.heading}
+            onChange={(heading) => set({ fonts: { ...content.fonts, heading } })}
+          />
+          <FontPicker
+            label={t("body")}
+            value={content.fonts.body}
+            onChange={(body) => set({ fonts: { ...content.fonts, body } })}
+          />
         </CardContent>
       </Card>
 
@@ -182,7 +220,10 @@ export function SiteStylePanel({
             </NativeSelect>
           </LabeledField>
           <LabeledField label={t("language")} hint={t("languageHint")}>
-            <NativeSelect value={content.language} onChange={(e) => set({ language: e.target.value as SiteContent["language"] })}>
+            <NativeSelect
+              value={content.language}
+              onChange={(e) => set({ language: e.target.value as SiteContent["language"] })}
+            >
               {(["fr", "en"] as const).map((language) => (
                 <option key={language} value={language}>
                   {t(`languages.${language}`)}
@@ -200,7 +241,7 @@ export function SiteStylePanel({
               />
             </label>
             {website.free && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {t("creditFree")}{" "}
                 <ButtonLink href="/app/facturation" variant="link" size="xs" className="h-auto p-0">
                   {tp("upgrade")}

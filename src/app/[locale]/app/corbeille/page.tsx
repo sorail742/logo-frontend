@@ -41,24 +41,40 @@ export default function TrashPage() {
       ) : data?.length === 0 ? (
         <EmptyState icon={Trash2} title={t("app.trash.empty")} />
       ) : (
-        <ul className="divide-y rounded-xl border">
+        <div className="grid gap-3">
           {data?.map((project) => (
-            <li key={project.id} className="flex items-center gap-3 p-4">
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{project.chosenName?.value ?? project.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t("app.trash.deletedOn", { date: format.dateTime(new Date(project.deletedAt!), { dateStyle: "medium" }) })}
-                </p>
+            <div
+              key={project.id}
+              className="glow-card bg-card hover:border-primary/40 flex items-center justify-between gap-4 rounded-2xl border p-4 shadow-2xs transition"
+            >
+              <div className="flex min-w-0 items-center gap-3.5">
+                <div className="bg-destructive/10 text-destructive flex size-10 shrink-0 items-center justify-center rounded-xl">
+                  <Trash2 className="size-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{project.chosenName?.value ?? project.title}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {t("app.trash.deletedOn", {
+                      date: format.dateTime(new Date(project.deletedAt!), { dateStyle: "medium" }),
+                    })}
+                  </p>
+                </div>
               </div>
               {can("project.delete") && (
-                <Button variant="outline" onClick={() => restore.mutate(project.id)} disabled={restore.isPending}>
-                  <RotateCcw />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => restore.mutate(project.id)}
+                  disabled={restore.isPending}
+                  className="shrink-0 gap-1.5"
+                >
+                  <RotateCcw className="size-4" />
                   {t("common.actions.restore")}
                 </Button>
               )}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </>
   );

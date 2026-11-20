@@ -11,7 +11,10 @@ import type { LogoSpec } from "@/lib/types";
 export function brandStyle(spec: LogoSpec): Pick<SiteContent, "colors" | "fonts"> {
   const darkBackground = readableOn(spec.colors.background) === "#ffffff";
   const heading = { id: spec.fontId, weight: closestWeight(spec.fontId, spec.fontWeight) };
-  const body = getFont(spec.fontId).category === "sans" ? { id: spec.fontId, weight: closestWeight(spec.fontId, 400) } : { id: "inter", weight: 400 };
+  const body =
+    getFont(spec.fontId).category === "sans"
+      ? { id: spec.fontId, weight: closestWeight(spec.fontId, 400) }
+      : { id: "inter", weight: 400 };
   return {
     colors: {
       primary: spec.colors.primary,
@@ -31,7 +34,8 @@ export function socialsOf(list: { network: string; url: string }[]) {
   for (const { network, url } of list) {
     const key = network.trim().toLowerCase();
     const id = NETWORKS[key] ?? key;
-    if (url.trim() && (SITE_SOCIALS as readonly string[]).includes(id)) social[id as SiteSocial] = url.trim().slice(0, 300);
+    if (url.trim() && (SITE_SOCIALS as readonly string[]).includes(id))
+      social[id as SiteSocial] = url.trim().slice(0, 300);
   }
   return social;
 }

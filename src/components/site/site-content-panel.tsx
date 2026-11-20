@@ -36,7 +36,12 @@ function iconSvg(id: string) {
   const icon = getIcon(id);
   if (!icon) return "";
   const body = icon.node
-    .map(([tag, attrs]) => `<${tag} ${Object.entries(attrs).map(([k, v]) => `${k}="${escapeXml(v)}"`).join(" ")}/>`)
+    .map(
+      ([tag, attrs]) =>
+        `<${tag} ${Object.entries(attrs)
+          .map(([k, v]) => `${k}="${escapeXml(v)}"`)
+          .join(" ")}/>`,
+    )
     .join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 }
@@ -78,13 +83,13 @@ function ItemList<T>({
     <div className="grid gap-3">
       {items.map((item, index) => (
         // L'ordre des éléments ne change pas pendant la saisie : l'index suffit comme clé.
-        <div key={index} className="grid gap-2 rounded-lg border bg-muted/30 p-3">
+        <div key={index} className="bg-muted/30 grid gap-2 rounded-lg border p-3">
           {render(item, (patch) => onChange(items.map((it, i) => (i === index ? { ...it, ...patch } : it))))}
           <Button
             type="button"
             size="xs"
             variant="ghost"
-            className="justify-self-end text-muted-foreground"
+            className="text-muted-foreground justify-self-end"
             disabled={disabled}
             onClick={() => onChange(items.filter((_, i) => i !== index))}
           >
@@ -93,7 +98,13 @@ function ItemList<T>({
         </div>
       ))}
       {items.length < max && (
-        <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => onChange([...items, create()])}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={disabled}
+          onClick={() => onChange([...items, create()])}
+        >
           <Plus /> {addLabel}
         </Button>
       )}
@@ -101,7 +112,16 @@ function ItemList<T>({
   );
 }
 
-function HeroFields({ section, update, brand, mediaActions, disabled }: { section: Section<"hero">; update: (patch: Partial<Section<"hero">>) => void } & Omit<PanelProps, "content" | "onChange">) {
+function HeroFields({
+  section,
+  update,
+  brand,
+  mediaActions,
+  disabled,
+}: { section: Section<"hero">; update: (patch: Partial<Section<"hero">>) => void } & Omit<
+  PanelProps,
+  "content" | "onChange"
+>) {
   const t = useTranslations("site.fields");
   return (
     <>
@@ -109,14 +129,22 @@ function HeroFields({ section, update, brand, mediaActions, disabled }: { sectio
         <Input value={section.title} maxLength={120} onChange={(e) => update({ title: e.target.value })} />
       </LabeledField>
       <LabeledField label={t("subtitle")}>
-        <Textarea value={section.subtitle} maxLength={240} rows={2} onChange={(e) => update({ subtitle: e.target.value })} />
+        <Textarea
+          value={section.subtitle}
+          maxLength={240}
+          rows={2}
+          onChange={(e) => update({ subtitle: e.target.value })}
+        />
       </LabeledField>
       <div className="grid gap-3 sm:grid-cols-2">
         <LabeledField label={t("cta")}>
           <Input value={section.cta} maxLength={40} onChange={(e) => update({ cta: e.target.value })} />
         </LabeledField>
         <LabeledField label={t("ctaTarget")}>
-          <NativeSelect value={section.ctaTarget} onChange={(e) => update({ ctaTarget: e.target.value as Section<"hero">["ctaTarget"] })}>
+          <NativeSelect
+            value={section.ctaTarget}
+            onChange={(e) => update({ ctaTarget: e.target.value as Section<"hero">["ctaTarget"] })}
+          >
             {(["contact", "whatsapp", "services"] as const).map((target) => (
               <option key={target} value={target}>
                 {t(`ctaTargets.${target}`)}
@@ -140,7 +168,14 @@ function HeroFields({ section, update, brand, mediaActions, disabled }: { sectio
   );
 }
 
-function SectionFields({ section, update, ...rest }: { section: SiteSection; update: (patch: Partial<SiteSection>) => void } & Omit<PanelProps, "content" | "onChange">) {
+function SectionFields({
+  section,
+  update,
+  ...rest
+}: { section: SiteSection; update: (patch: Partial<SiteSection>) => void } & Omit<
+  PanelProps,
+  "content" | "onChange"
+>) {
   const t = useTranslations("site.fields");
   const { disabled } = rest;
   const title = (
@@ -156,10 +191,19 @@ function SectionFields({ section, update, ...rest }: { section: SiteSection; upd
         <>
           {title}
           <LabeledField label={t("text")} hint={t("textHint")}>
-            <Textarea value={section.text} maxLength={3000} rows={6} onChange={(e) => update({ text: e.target.value })} />
+            <Textarea
+              value={section.text}
+              maxLength={3000}
+              rows={6}
+              onChange={(e) => update({ text: e.target.value })}
+            />
           </LabeledField>
           <LabeledField label={t("values")} hint={t("valuesHint")}>
-            <TagInput value={section.values} max={8} onChange={(values) => update({ values: values.map((v) => v.slice(0, 60)) })} />
+            <TagInput
+              value={section.values}
+              max={8}
+              onChange={(values) => update({ values: values.map((v) => v.slice(0, 60)) })}
+            />
           </LabeledField>
         </>
       );
@@ -168,7 +212,12 @@ function SectionFields({ section, update, ...rest }: { section: SiteSection; upd
         <>
           {title}
           <LabeledField label={t("intro")}>
-            <Textarea value={section.intro} maxLength={400} rows={2} onChange={(e) => update({ intro: e.target.value })} />
+            <Textarea
+              value={section.intro}
+              maxLength={400}
+              rows={2}
+              onChange={(e) => update({ intro: e.target.value })}
+            />
           </LabeledField>
           <ItemList
             items={section.items}
@@ -181,12 +230,20 @@ function SectionFields({ section, update, ...rest }: { section: SiteSection; upd
               <>
                 <div className="grid grid-cols-[1fr_auto] items-end gap-2">
                   <LabeledField label={t("itemTitle")}>
-                    <Input value={item.title} maxLength={80} onChange={(e) => set({ title: e.target.value })} />
+                    <Input
+                      value={item.title}
+                      maxLength={80}
+                      onChange={(e) => set({ title: e.target.value })}
+                    />
                   </LabeledField>
                   <LabeledField label={t("icon")}>
                     <div className="flex items-center gap-1.5">
-                      <SvgView svg={iconSvg(item.icon)} className="size-8 rounded-md bg-background" />
-                      <NativeSelect value={item.icon} onChange={(e) => set({ icon: e.target.value })} className="w-32">
+                      <SvgView svg={iconSvg(item.icon)} className="bg-background size-8 rounded-md" />
+                      <NativeSelect
+                        value={item.icon}
+                        onChange={(e) => set({ icon: e.target.value })}
+                        className="w-32"
+                      >
                         {ICONS.map((icon) => (
                           <option key={icon.id} value={icon.id}>
                             {icon.id}
@@ -197,7 +254,12 @@ function SectionFields({ section, update, ...rest }: { section: SiteSection; upd
                   </LabeledField>
                 </div>
                 <LabeledField label={t("itemText")}>
-                  <Textarea value={item.text} maxLength={400} rows={2} onChange={(e) => set({ text: e.target.value })} />
+                  <Textarea
+                    value={item.text}
+                    maxLength={400}
+                    rows={2}
+                    onChange={(e) => set({ text: e.target.value })}
+                  />
                 </LabeledField>
               </>
             )}
@@ -237,11 +299,20 @@ function SectionFields({ section, update, ...rest }: { section: SiteSection; upd
             render={(item, set) => (
               <>
                 <LabeledField label={t("quote")}>
-                  <Textarea value={item.quote} maxLength={600} rows={3} onChange={(e) => set({ quote: e.target.value })} />
+                  <Textarea
+                    value={item.quote}
+                    maxLength={600}
+                    rows={3}
+                    onChange={(e) => set({ quote: e.target.value })}
+                  />
                 </LabeledField>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <LabeledField label={t("author")}>
-                    <Input value={item.author} maxLength={80} onChange={(e) => set({ author: e.target.value })} />
+                    <Input
+                      value={item.author}
+                      maxLength={80}
+                      onChange={(e) => set({ author: e.target.value })}
+                    />
                   </LabeledField>
                   <LabeledField label={t("role")}>
                     <Input value={item.role} maxLength={80} onChange={(e) => set({ role: e.target.value })} />
@@ -266,10 +337,19 @@ function SectionFields({ section, update, ...rest }: { section: SiteSection; upd
             render={(item, set) => (
               <>
                 <LabeledField label={t("question")}>
-                  <Input value={item.question} maxLength={200} onChange={(e) => set({ question: e.target.value })} />
+                  <Input
+                    value={item.question}
+                    maxLength={200}
+                    onChange={(e) => set({ question: e.target.value })}
+                  />
                 </LabeledField>
                 <LabeledField label={t("answer")}>
-                  <Textarea value={item.answer} maxLength={1200} rows={3} onChange={(e) => set({ answer: e.target.value })} />
+                  <Textarea
+                    value={item.answer}
+                    maxLength={1200}
+                    rows={3}
+                    onChange={(e) => set({ answer: e.target.value })}
+                  />
                 </LabeledField>
               </>
             )}
@@ -281,12 +361,17 @@ function SectionFields({ section, update, ...rest }: { section: SiteSection; upd
         <>
           {title}
           <LabeledField label={t("text")}>
-            <Textarea value={section.text} maxLength={400} rows={2} onChange={(e) => update({ text: e.target.value })} />
+            <Textarea
+              value={section.text}
+              maxLength={400}
+              rows={2}
+              onChange={(e) => update({ text: e.target.value })}
+            />
           </LabeledField>
           <label className="flex items-center justify-between gap-3 text-sm">
             <span>
               {t("form")}
-              <span className="block text-xs text-muted-foreground">{t("formHint")}</span>
+              <span className="text-muted-foreground block text-xs">{t("formHint")}</span>
             </span>
             <Switch checked={section.form} disabled={disabled} onCheckedChange={(form) => update({ form })} />
           </label>
@@ -318,19 +403,45 @@ function SectionCard({
   // L'accueil reste en tête : les autres sections se déplacent sous lui.
   const movable = section.type !== "hero";
   return (
-    <div className={cn("rounded-xl border bg-card", !section.visible && "opacity-70")}>
+    <div className={cn("bg-card rounded-xl border", !section.visible && "opacity-70")}>
       <div className="flex items-center gap-2 px-3 py-2">
-        <button type="button" onClick={onToggle} aria-expanded={open} className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm font-medium">
-          <ChevronDown className={cn("size-4 shrink-0 transition-transform", !open && "-rotate-90")} aria-hidden="true" />
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm font-medium"
+        >
+          <ChevronDown
+            className={cn("size-4 shrink-0 transition-transform", !open && "-rotate-90")}
+            aria-hidden="true"
+          />
           <span className="truncate">{t(section.type)}</span>
-          {!section.visible && <span className="text-xs font-normal text-muted-foreground">· {t("hidden")}</span>}
+          {!section.visible && (
+            <span className="text-muted-foreground text-xs font-normal">· {t("hidden")}</span>
+          )}
         </button>
         {movable && (
           <>
-            <Button type="button" size="icon-xs" variant="ghost" aria-label={t("moveUp")} title={t("moveUp")} disabled={disabled || index <= 1} onClick={() => onMove(-1)}>
+            <Button
+              type="button"
+              size="icon-xs"
+              variant="ghost"
+              aria-label={t("moveUp")}
+              title={t("moveUp")}
+              disabled={disabled || index <= 1}
+              onClick={() => onMove(-1)}
+            >
               <ArrowUp />
             </Button>
-            <Button type="button" size="icon-xs" variant="ghost" aria-label={t("moveDown")} title={t("moveDown")} disabled={disabled || index >= count - 1} onClick={() => onMove(1)}>
+            <Button
+              type="button"
+              size="icon-xs"
+              variant="ghost"
+              aria-label={t("moveDown")}
+              title={t("moveDown")}
+              disabled={disabled || index >= count - 1}
+              onClick={() => onMove(1)}
+            >
               <ArrowDown />
             </Button>
           </>
@@ -345,7 +456,11 @@ function SectionCard({
       </div>
       {open && (
         <div className="grid gap-3 border-t px-3 py-3">
-          <SectionFields section={section} update={(patch) => onChange({ ...section, ...patch } as SiteSection)} {...rest} />
+          <SectionFields
+            section={section}
+            update={(patch) => onChange({ ...section, ...patch } as SiteSection)}
+            {...rest}
+          />
         </div>
       )}
     </div>
@@ -363,7 +478,8 @@ export function SiteContentPanel({
   const t = useTranslations("site");
   const { disabled } = rest;
   const set = (patch: Partial<SiteContent>) => onChange({ ...content, ...patch });
-  const setContact = (patch: Partial<SiteContent["contact"]>) => set({ contact: { ...content.contact, ...patch } });
+  const setContact = (patch: Partial<SiteContent["contact"]>) =>
+    set({ contact: { ...content.contact, ...patch } });
 
   const move = (index: number, delta: -1 | 1) => {
     const target = index + delta;
@@ -398,17 +514,36 @@ export function SiteContentPanel({
         <CardContent className="grid gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <LabeledField label={t("contact.phone")}>
-              <Input value={content.contact.phone} maxLength={40} inputMode="tel" onChange={(e) => setContact({ phone: e.target.value })} />
+              <Input
+                value={content.contact.phone}
+                maxLength={40}
+                inputMode="tel"
+                onChange={(e) => setContact({ phone: e.target.value })}
+              />
             </LabeledField>
             <LabeledField label={t("contact.whatsapp")} hint={t("contact.whatsappHint")}>
-              <Input value={content.contact.whatsapp} maxLength={40} inputMode="tel" onChange={(e) => setContact({ whatsapp: e.target.value })} />
+              <Input
+                value={content.contact.whatsapp}
+                maxLength={40}
+                inputMode="tel"
+                onChange={(e) => setContact({ whatsapp: e.target.value })}
+              />
             </LabeledField>
           </div>
           <LabeledField label={t("contact.email")}>
-            <Input type="email" value={content.contact.email} maxLength={200} onChange={(e) => setContact({ email: e.target.value })} />
+            <Input
+              type="email"
+              value={content.contact.email}
+              maxLength={200}
+              onChange={(e) => setContact({ email: e.target.value })}
+            />
           </LabeledField>
           <LabeledField label={t("contact.address")}>
-            <Input value={content.contact.address} maxLength={300} onChange={(e) => setContact({ address: e.target.value })} />
+            <Input
+              value={content.contact.address}
+              maxLength={300}
+              onChange={(e) => setContact({ address: e.target.value })}
+            />
           </LabeledField>
           <LabeledField label={t("contact.hours")}>
             <Textarea
@@ -446,7 +581,11 @@ export function SiteContentPanel({
         </CardHeader>
         <CardContent className="grid gap-3">
           <LabeledField label={t("seo.pageTitle")} hint={t("seo.pageTitleHint")}>
-            <Input value={content.seo.title} maxLength={120} onChange={(e) => set({ seo: { ...content.seo, title: e.target.value } })} />
+            <Input
+              value={content.seo.title}
+              maxLength={120}
+              onChange={(e) => set({ seo: { ...content.seo, title: e.target.value } })}
+            />
           </LabeledField>
           <LabeledField label={t("seo.pageDescription")} hint={t("seo.pageDescriptionHint")}>
             <Textarea

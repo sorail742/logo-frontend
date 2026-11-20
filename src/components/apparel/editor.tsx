@@ -10,6 +10,7 @@ import {
   Download,
   Eye,
   EyeOff,
+  FlipHorizontal2,
   Loader2,
   Redo2,
   Send,
@@ -40,10 +41,15 @@ import { cn } from "@/lib/utils";
 import { omit } from "@/lib/object";
 import { useApparel } from "@/stores/apparel";
 import { AddPanel } from "./add-panel";
+import { ToolRail, type ToolTabId } from "./tool-rail";
+import { ToolDrawer } from "./tool-drawer";
+import { BottomBar } from "./bottom-bar";
+import { Maximize, Minimize } from "lucide-react";
 import { ApparelCanvas } from "./canvas";
 import { ExportMenu } from "./export-menu";
 import { Inspector } from "./inspector";
 import { ProofDialog } from "./proof-dialog";
+import { ImageStudioModal } from "./image-studio/image-studio-modal";
 import { STATUS_VARIANT } from "./status";
 
 // Éditeur plein écran d'une tenue : chargement de la tenue et de son support, sauvegarde
@@ -65,6 +71,7 @@ export interface ApparelEditorContextValue {
   /** Zone visée par les ajouts (zone choisie, sinon la première de la vue). */
   zone: PrintZone | undefined;
   pickImage(): void;
+  openImageStudio(imageUrl: string, elementId?: string): void;
   /** Enregistre immédiatement les éléments en attente (avant un contrôle ou un export). */
   flush(): Promise<void>;
   /** Réglages renvoyés par l'API (statut du BAT compris), sans toucher aux éléments en cours. */
@@ -180,17 +187,28 @@ export function ApparelEditor({ did }: Readonly<{ did: string }>) {
   const brandLogos = useBrandLogos(mainLogo?.id);
 
   const meta = useApparel((s) => s.design);
+  const elements = useApparel((s) => s.elements);
   const view = useApparel((s) => s.view);
   const revision = useApparel((s) => s.revision);
   const targetZone = useApparel((s) => s.targetZone);
   const previewSize = useApparel((s) => s.previewSize);
   const showZones = useApparel((s) => s.showZones);
+  const isMirrored = useApparel((s) => s.isMirrored);
   const canUndo = useApparel((s) => s.past.length > 0);
   const canRedo = useApparel((s) => s.future.length > 0);
 
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [proofOpen, setProofOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState<"add" | "inspect" | null>(null);
+  const [activeToolTab, setActiveToolTab] = useState<ToolTabId | null>("zones");
+  const [zoom, setZoom] = useState(1);
+  const [showGrid, setShowGrid] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [studioImage, setStudioImage] = useState<{
+    imageUrl: string;
+    elementId?: string;
+    zone: PrintZone;
+  } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const savedRevision = useRef(0);
   const saving = useRef<Promise<void> | null>(null);
@@ -215,7 +233,11 @@ export function ApparelEditor({ did }: Readonly<{ did: string }>) {
     void ensureFonts(
       d.elements
         .filter((e) => e.content.fontId)
-        .map((e) => ({ fontId: e.content.fontId!, fontWeight: e.content.fontWeight ?? 700, text: e.content.text })),
+        .map((e) => ({
+          fontId: e.content.fontId!,
+          fontWeight: e.content.fontWeight ?? 700,
+          text: e.content.text,
+        })),
     );
   }, [design.data, template]);
 
@@ -314,6 +336,11 @@ export function ApparelEditor({ did }: Readonly<{ did: string }>) {
       if (isTyping(event.target) || !canEdit) return;
       const key = event.key.toLowerCase();
       if (historyShortcut(event, key)) return;
+      if (key === "m" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        useApparel.getState().toggleMirror();
+        return;
+      }
       const { selection, previewSize } = useApparel.getState();
       if (selection && !previewSize) elementShortcut(event, key, selection);
     };
@@ -322,6 +349,13 @@ export function ApparelEditor({ did }: Readonly<{ did: string }>) {
   }, [canEdit]);
 
   const pickImage = useCallback(() => fileInput.current?.click(), []);
+  const openImageStudio = useCallback(
+    (imageUrl: string, elementId?: string) => {
+      if (!zone) return;
+      setStudioImage({ imageUrl, elementId, zone });
+    },
+    [zone],
+  );
   const localId = useCallback(
     (id: string | undefined) => (id ? (serverIds.current.get(id) ?? id) : undefined),
     [],
@@ -349,6 +383,7 @@ export function ApparelEditor({ did }: Readonly<{ did: string }>) {
       brandColors,
       zone,
       pickImage,
+      openImageStudio,
       flush,
       applyDesign: syncStatus,
       localId,
@@ -362,6 +397,7 @@ export function ApparelEditor({ did }: Readonly<{ did: string }>) {
       brandColors,
       zone,
       pickImage,
+      openImageStudio,
       flush,
       syncStatus,
       localId,
@@ -466,6 +502,21 @@ export function ApparelEditor({ did }: Readonly<{ did: string }>) {
             >
               {showZones ? <Eye /> : <EyeOff />}
             </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => useApparel.getState().toggleMirror()}
+              aria-pressed={isMirrored}
+              aria-label="Mode miroir (DTF / Flex)"
+              title={
+                isMirrored
+                  ? "Désactiver le mode miroir (M)"
+                  : "Activer le mode miroir transfert DTF / Flex (Touche M)"
+              }
+              className={cn(isMirrored && "bg-primary/10 text-primary ring-primary/30 ring-1")}
+            >
+              <FlipHorizontal2 className="size-4" />
+            </Button>
             <NativeSelect
               value={previewSize ?? ""}
               onChange={(event) => useApparel.getState().setPreviewSize(event.target.value || null)}
@@ -495,58 +546,119 @@ export function ApparelEditor({ did }: Readonly<{ did: string }>) {
           </div>
         </header>
 
-        <div className="flex min-h-0 flex-1">
-          <aside
-            className="hidden w-72 shrink-0 overflow-y-auto border-r p-3 lg:block"
-            aria-label={addTitle}
-          >
-            <AddPanel />
-          </aside>
-          <main className="bg-muted/40 flex min-w-0 flex-1 flex-col">
-            <div className="bg-background/60 flex items-center gap-2 border-b px-2 py-1.5">
-              <div className="flex gap-1 overflow-x-auto" role="tablist" aria-label={t("editor.views")}>
-                {views.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    role="tab"
-                    aria-selected={view === v}
-                    onClick={() => useApparel.getState().setView(v)}
-                    className={cn(
-                      "h-8 shrink-0 rounded-lg px-3 text-xs font-medium transition",
-                      view === v
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-muted",
-                    )}
-                  >
-                    {t(`views.${v}`)}
-                  </button>
-                ))}
+        <div className="relative flex min-h-0 flex-1 overflow-hidden">
+          {/* Tool Rail (Canva style) */}
+          {!focusMode && (
+            <ToolRail
+              activeTab={activeToolTab}
+              layerCount={
+                elements.filter((el) => template.zones.some((z) => z.view === view && z.key === el.zoneKey))
+                  .length
+              }
+              onTabClick={(id) => setActiveToolTab((prev) => (prev === id ? null : id))}
+            />
+          )}
+
+          {/* Tool Drawer */}
+          {!focusMode && activeToolTab && (
+            <ToolDrawer activeTab={activeToolTab} onClose={() => setActiveToolTab(null)} />
+          )}
+
+          {/* Central Canvas Area */}
+          <main className="bg-muted/30 relative flex min-w-0 flex-1 flex-col overflow-hidden">
+            {/* View switcher bar */}
+            <div className="bg-background/80 z-10 flex items-center justify-between gap-2 border-b px-3 py-1.5 backdrop-blur-md">
+              <div
+                className="flex items-center gap-1.5 overflow-x-auto"
+                role="tablist"
+                aria-label={t("editor.views")}
+              >
+                {views.map((v) => {
+                  const hasElements = elements.some((el) =>
+                    template.zones.some((z) => z.view === v && z.key === el.zoneKey),
+                  );
+                  const active = view === v;
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => useApparel.getState().setView(v)}
+                      className={cn(
+                        "relative flex h-8 shrink-0 items-center gap-1.5 rounded-xl px-3.5 text-xs font-semibold transition-all select-none",
+                        active
+                          ? "bg-[#0B6B4F] text-white shadow-xs"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      )}
+                    >
+                      <span>{t(`views.${v}`)}</span>
+                      {hasElements && (
+                        <span
+                          className={cn("size-1.5 rounded-full", active ? "bg-white" : "bg-emerald-500")}
+                          title="Contient des impressions"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-              <div className="ml-auto flex gap-1 lg:hidden">
-                {canEdit && (
-                  <Button size="sm" variant="outline" onClick={() => setPanelOpen("add")}>
-                    {addTitle}
-                  </Button>
-                )}
+
+              {/* Focus mode toggle & mobile panels */}
+              <div className="flex items-center gap-1.5">
                 <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setPanelOpen("inspect")}
-                  aria-label={inspectorTitle}
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() => setFocusMode((prev) => !prev)}
+                  title={focusMode ? "Quitter le mode focus (F)" : "Mode focus plein écran (Touche F)"}
+                  className={cn(focusMode && "bg-primary/10 text-primary")}
                 >
-                  <SlidersHorizontal />
+                  {focusMode ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
                 </Button>
+
+                <div className="flex gap-1 lg:hidden">
+                  {canEdit && (
+                    <Button size="sm" variant="outline" onClick={() => setPanelOpen("add")}>
+                      {addTitle}
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPanelOpen("inspect")}
+                    aria-label={inspectorTitle}
+                  >
+                    <SlidersHorizontal />
+                  </Button>
+                </div>
               </div>
             </div>
-            <ApparelCanvas template={template} canEdit={canEdit} />
+
+            {/* Realistic Canvas */}
+            <ApparelCanvas template={template} canEdit={canEdit} zoom={zoom} showGrid={showGrid} />
+
+            {/* Bottom Bar Dock */}
+            <BottomBar
+              zoom={zoom}
+              showZones={showZones}
+              showGrid={showGrid}
+              saveStatus={canEdit ? saveLabel : t("editor.readOnly")}
+              onZoomChange={(lvl) => setZoom(lvl)}
+              onToggleZones={() => useApparel.getState().toggleZones()}
+              onToggleGrid={() => setShowGrid((prev) => !prev)}
+              onResetZoom={() => setZoom(1)}
+            />
           </main>
-          <aside
-            className="hidden w-80 shrink-0 overflow-y-auto border-l lg:block"
-            aria-label={inspectorTitle}
-          >
-            <Inspector />
-          </aside>
+
+          {/* Right Inspector */}
+          {!focusMode && (
+            <aside
+              className="bg-card hidden w-80 shrink-0 scrollbar-none overflow-y-auto border-l lg:block"
+              aria-label={inspectorTitle}
+            >
+              <Inspector />
+            </aside>
+          )}
         </div>
 
         <Sheet open={panelOpen !== null} onOpenChange={(open) => !open && setPanelOpen(null)}>
@@ -559,6 +671,51 @@ export function ApparelEditor({ did }: Readonly<{ did: string }>) {
         </Sheet>
 
         {proofOpen && <ProofDialog onClose={() => setProofOpen(false)} />}
+
+        {studioImage && (
+          <ImageStudioModal
+            initialImageUrl={studioImage.imageUrl}
+            targetZoneMm={{ width: studioImage.zone.maxWidthMm, height: studioImage.zone.maxHeightMm }}
+            activeTechnique={design.data?.technique ?? "DTF"}
+            garmentColorHex={design.data?.garmentColor ?? "#ffffff"}
+            onApply={({ dataUrl, svg, analysis }) => {
+              if (studioImage.elementId) {
+                useApparel.getState().update(studioImage.elementId, (el) => {
+                  if (!el.content.photo) return el;
+                  return {
+                    ...el,
+                    content: {
+                      ...el.content,
+                      photo: {
+                        ...el.content.photo,
+                        src: dataUrl,
+                      },
+                    },
+                  };
+                });
+                toast.success("Image mise à jour dans la tenue");
+              } else {
+                const img = new Image();
+                img.onload = () => {
+                  useApparel.getState().add(
+                    createImageElement(
+                      {
+                        src: dataUrl,
+                        naturalWidth: img.naturalWidth || 800,
+                        naturalHeight: img.naturalHeight || 800,
+                      },
+                      studioImage.zone,
+                    ),
+                  );
+                  toast.success("Image ajoutée à la zone d'impression");
+                };
+                img.src = dataUrl;
+              }
+              setStudioImage(null);
+            }}
+            onClose={() => setStudioImage(null)}
+          />
+        )}
 
         <input
           ref={fileInput}

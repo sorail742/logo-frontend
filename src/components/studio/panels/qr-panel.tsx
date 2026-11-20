@@ -32,7 +32,13 @@ function payload(kind: QrKind, f: Fields): string | null {
       return f.phone?.replace(/\D/g, "") ? whatsappLink(f.phone, f.message?.trim()) : null;
     case "contact":
       return f.name?.trim() && (f.phone?.trim() || f.email?.trim() || f.website?.trim())
-        ? vcard({ fullName: f.name.trim(), organization: f.organization?.trim(), phone: f.phone?.trim(), email: f.email?.trim(), website: f.website?.trim() })
+        ? vcard({
+            fullName: f.name.trim(),
+            organization: f.organization?.trim(),
+            phone: f.phone?.trim(),
+            email: f.email?.trim(),
+            website: f.website?.trim(),
+          })
         : null;
     case "wifi":
       return f.ssid?.trim() ? wifiPayload(f.ssid.trim(), f.password ?? "") : null;
@@ -42,7 +48,13 @@ function payload(kind: QrKind, f: Fields): string | null {
 const FIELDS: Record<QrKind, { id: string; type?: string }[]> = {
   link: [{ id: "url", type: "url" }],
   whatsapp: [{ id: "phone", type: "tel" }, { id: "message" }],
-  contact: [{ id: "name" }, { id: "organization" }, { id: "phone", type: "tel" }, { id: "email", type: "email" }, { id: "website", type: "url" }],
+  contact: [
+    { id: "name" },
+    { id: "organization" },
+    { id: "phone", type: "tel" },
+    { id: "email", type: "email" },
+    { id: "website", type: "url" },
+  ],
   wifi: [{ id: "ssid" }, { id: "password" }],
 };
 
@@ -54,7 +66,8 @@ export function QrPanel() {
   const [useBrand, setUseBrand] = useState(false);
 
   // Couleur de la marque seulement si elle contraste assez avec le fond blanc du code.
-  const brandInk = brand && contrastRatio(brand.colors.primary, "#ffffff") >= 4.5 ? brand.colors.primary : null;
+  const brandInk =
+    brand && contrastRatio(brand.colors.primary, "#ffffff") >= 4.5 ? brand.colors.primary : null;
   const color = useBrand && brandInk ? brandInk : "#111111";
   const content = payload(kind, fields);
   const svg = useMemo(() => {
@@ -69,12 +82,14 @@ export function QrPanel() {
   const add = () => {
     if (!svg) return;
     const size = pageUnit() * 0.24;
-    addCentered([createSvg(svg, "graphic", { width: size, height: size, role: "info", name: t(`kinds.${kind}`) })]);
+    addCentered([
+      createSvg(svg, "graphic", { width: size, height: size, role: "info", name: t(`kinds.${kind}`) }),
+    ]);
   };
 
   return (
     <div className="grid gap-4">
-      <p className="text-[11px] leading-relaxed text-muted-foreground">{t("help")}</p>
+      <p className="text-muted-foreground text-[11px] leading-relaxed">{t("help")}</p>
       <div className="grid grid-cols-2 gap-1.5">
         {KINDS.map((option) => (
           <button
@@ -82,7 +97,10 @@ export function QrPanel() {
             type="button"
             aria-pressed={kind === option}
             onClick={() => setKind(option)}
-            className={cn("rounded-lg border px-2 py-1.5 text-xs", kind === option ? "border-primary bg-accent font-medium" : "hover:bg-muted")}
+            className={cn(
+              "rounded-lg border px-2 py-1.5 text-xs",
+              kind === option ? "border-primary bg-accent font-medium" : "hover:bg-muted",
+            )}
           >
             {t(`kinds.${option}`)}
           </button>
@@ -109,12 +127,16 @@ export function QrPanel() {
         </label>
       )}
       <div className="flex aspect-square items-center justify-center rounded-lg border bg-white p-3">
-        {svg ? <SvgView svg={svg} label={t("preview")} className="size-full" /> : <QrCode className="size-10 text-muted-foreground/40" aria-hidden="true" />}
+        {svg ? (
+          <SvgView svg={svg} label={t("preview")} className="size-full" />
+        ) : (
+          <QrCode className="text-muted-foreground/40 size-10" aria-hidden="true" />
+        )}
       </div>
       <Button onClick={add} disabled={!svg}>
         {t("add")}
       </Button>
-      <p className="text-[11px] leading-relaxed text-muted-foreground">{t("printTip")}</p>
+      <p className="text-muted-foreground text-[11px] leading-relaxed">{t("printTip")}</p>
     </div>
   );
 }

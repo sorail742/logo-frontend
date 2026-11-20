@@ -38,7 +38,9 @@ function hash(value: string) {
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
 const STOPWORDS = new Set(
-  "les des une pour avec dans sur par aux que qui est sont nous vous leur leurs plus mais ainsi entre their with from that this and the".split(" "),
+  "les des une pour avec dans sur par aux que qui est sont nous vous leur leurs plus mais ainsi entre their with from that this and the".split(
+    " ",
+  ),
 );
 
 // Termes injurieux ou à connotation négative (liste noire, NOM-14) : extrait de démonstration.
@@ -86,9 +88,7 @@ function seedWords(brief: Brief | null, title: string) {
     ...(brief?.mission ?? "").split(/[^\p{L}]+/u),
     ...title.split(/[^\p{L}]+/u),
   ];
-  const words = raw
-    .map((w) => w.trim().toLowerCase())
-    .filter((w) => w.length >= 4 && !STOPWORDS.has(w));
+  const words = raw.map((w) => w.trim().toLowerCase()).filter((w) => w.length >= 4 && !STOPWORDS.has(w));
   return [...new Set(words)].slice(0, 12);
 }
 
@@ -135,7 +135,9 @@ export function generateNames(options: {
   const feedback = (options.feedback ?? "").toLowerCase();
   let maxLength = brief?.maxLength ?? 18;
   if (feedback.includes("court") || feedback.includes("short")) maxLength = Math.min(maxLength, 8);
-  let styles: NameStyle[] = brief?.nameStyles?.length ? brief.nameStyles : ["INVENTED", "COMPOUND", "METAPHORICAL", "DESCRIPTIVE"];
+  let styles: NameStyle[] = brief?.nameStyles?.length
+    ? brief.nameStyles
+    : ["INVENTED", "COMPOUND", "METAPHORICAL", "DESCRIPTIVE"];
   if (feedback.includes("sérieux") || feedback.includes("serieux") || feedback.includes("serious")) {
     styles = ["DESCRIPTIVE", "ACRONYM", "PROPER"];
   }
@@ -162,7 +164,9 @@ export function generateNames(options: {
       value = capitalize(stem + pick(random, ENDINGS));
       meaning = `Nom inventé à partir de « ${word} », court et facile à déposer.`;
     } else if (style === "COMPOUND") {
-      value = capitalize(slugify(word).slice(0, 5)) + capitalize(slugify(other === word ? pick(random, ["lab", "cap", "nova"]) : other).slice(0, 4));
+      value =
+        capitalize(slugify(word).slice(0, 5)) +
+        capitalize(slugify(other === word ? pick(random, ["lab", "cap", "nova"]) : other).slice(0, 4));
       meaning = `Composé de « ${word} » et « ${other === word ? "un suffixe dynamique" : other} ».`;
     } else if (style === "METAPHORICAL") {
       const [metaphor, sense] = pick(random, METAPHORS);
@@ -186,8 +190,16 @@ export function generateNames(options: {
     const compact = value.replace(/\s/g, "");
     if (compact.length < 3 || compact.length > maxLength) continue;
     if (options.exclude.has(key) || results.some((r) => r.value.toLowerCase() === key)) continue;
-    if (BLOCKLIST.some((term) => key.includes(term)) || avoid.some((term) => term && key.includes(term))) continue;
-    results.push({ value, acronym, meaning, style, pronunciation: pronunciation(value), score: scoreName(value, random) });
+    if (BLOCKLIST.some((term) => key.includes(term)) || avoid.some((term) => term && key.includes(term)))
+      continue;
+    results.push({
+      value,
+      acronym,
+      meaning,
+      style,
+      pronunciation: pronunciation(value),
+      score: scoreName(value, random),
+    });
   }
   return results;
 }
@@ -221,9 +233,20 @@ export function availabilityChecks(name: string, otherChosenNames: string[]): Av
     url: `https://branddb.wipo.int/en/similarname?brandName=${encodeURIComponent(name)}`,
     checkedAt,
   });
-  checks.push({ kind: "TRADEMARK", target: "OAPI", status: "UNKNOWN", url: "https://www.oapi.int/", checkedAt });
+  checks.push({
+    kind: "TRADEMARK",
+    target: "OAPI",
+    status: "UNKNOWN",
+    url: "https://www.oapi.int/",
+    checkedAt,
+  });
   const similar = otherChosenNames.find((other) => phoneticKey(other) === phoneticKey(name));
-  checks.push({ kind: "PHONETIC", target: similar ?? "Plateforme", status: similar ? "TAKEN" : "AVAILABLE", checkedAt });
+  checks.push({
+    kind: "PHONETIC",
+    target: similar ?? "Plateforme",
+    status: similar ? "TAKEN" : "AVAILABLE",
+    checkedAt,
+  });
   return checks;
 }
 
@@ -241,7 +264,9 @@ export function phoneticKey(value: string) {
 }
 
 function iconsFor(brief: Brief | null, random: () => number) {
-  const terms = [...(brief?.values ?? []), brief?.sector ?? "", ...(brief?.mustInclude ?? [])].map((t) => t.toLowerCase());
+  const terms = [...(brief?.values ?? []), brief?.sector ?? "", ...(brief?.mustInclude ?? [])].map((t) =>
+    t.toLowerCase(),
+  );
   const matches = new Set<string>();
   for (const term of terms) {
     for (const icon of searchIcons(term.slice(0, 6))) matches.add(icon.id);
@@ -268,11 +293,45 @@ function paletteFromInput(palette: string[] | undefined, style: LogoStyle, rando
 
 const STYLE_FONTS: Record<LogoStyle, string[]> = {
   MINIMAL: ["space-grotesk", "inter", "manrope", "dm-sans", "outfit", "raleway", "work-sans"],
-  MODERN: ["poppins", "plus-jakarta-sans", "outfit", "syne", "unbounded", "bricolage-grotesque", "montserrat", "rubik"],
-  CLASSIC: ["playfair", "fraunces", "dm-serif-display", "cormorant-garamond", "libre-baskerville", "lora", "merriweather"],
-  INSTITUTIONAL: ["merriweather", "roboto-slab", "libre-baskerville", "montserrat", "archivo", "work-sans", "lora"],
+  MODERN: [
+    "poppins",
+    "plus-jakarta-sans",
+    "outfit",
+    "syne",
+    "unbounded",
+    "bricolage-grotesque",
+    "montserrat",
+    "rubik",
+  ],
+  CLASSIC: [
+    "playfair",
+    "fraunces",
+    "dm-serif-display",
+    "cormorant-garamond",
+    "libre-baskerville",
+    "lora",
+    "merriweather",
+  ],
+  INSTITUTIONAL: [
+    "merriweather",
+    "roboto-slab",
+    "libre-baskerville",
+    "montserrat",
+    "archivo",
+    "work-sans",
+    "lora",
+  ],
   PLAYFUL: ["nunito", "righteous", "comfortaa", "quicksand", "lobster", "rubik", "bebas-neue"],
-  AFRICAN: ["oswald", "anton", "bebas-neue", "alfa-slab-one", "abril-fatface", "teko", "barlow-condensed", "archivo-black"],
+  AFRICAN: [
+    "oswald",
+    "anton",
+    "bebas-neue",
+    "alfa-slab-one",
+    "abril-fatface",
+    "teko",
+    "barlow-condensed",
+    "archivo-black",
+  ],
 };
 
 export function generateLogoSpecs(options: {
@@ -292,11 +351,16 @@ export function generateLogoSpecs(options: {
   const feedback = (options.feedback ?? "").toLowerCase();
   const specs: LogoSpec[] = [];
   const fonts = STYLE_FONTS[options.style].filter((id) => LOGO_FONTS.some((f) => f.id === id));
-  const frames: LogoSpec["iconFrame"][] = feedback.includes("simple") ? ["none"] : ["circle", "rounded", "none", "hexagon"];
+  const frames: LogoSpec["iconFrame"][] = feedback.includes("simple")
+    ? ["none"]
+    : ["circle", "rounded", "none", "hexagon"];
 
   for (let i = 0; i < (options.count ?? 8); i++) {
     const base = options.reference;
-    const colors = feedback.includes("même") || feedback.includes("same") ? base?.colors ?? paletteFromInput(options.palette, options.style, random) : paletteFromInput(options.palette, options.style, random);
+    const colors =
+      feedback.includes("même") || feedback.includes("same")
+        ? (base?.colors ?? paletteFromInput(options.palette, options.style, random))
+        : paletteFromInput(options.palette, options.style, random);
     const iconId = feedback.includes("autre icône") || !base ? icons[i % icons.length]! : base.iconId;
     specs.push({
       type: options.type,
@@ -304,11 +368,17 @@ export function generateLogoSpecs(options: {
       tagline: random() > 0.5 ? options.tagline : "",
       fontId: pick(random, fonts.length ? fonts : ["montserrat"]),
       fontWeight: pick(random, [600, 700, 800]),
-      letterSpacing: options.style === "MINIMAL" || options.style === "INSTITUTIONAL" ? 0.04 : pick(random, [0, 0, 0.02, 0.08]),
+      letterSpacing:
+        options.style === "MINIMAL" || options.style === "INSTITUTIONAL"
+          ? 0.04
+          : pick(random, [0, 0, 0.02, 0.08]),
       uppercase: options.style === "INSTITUTIONAL" || options.style === "AFRICAN" ? true : random() > 0.7,
       iconId: options.type === "MONOGRAM" ? null : iconId,
       iconScale: 1,
-      iconFrame: options.type === "MONOGRAM" ? pick(random, ["circle", "rounded", "hexagon"] as const) : pick(random, frames),
+      iconFrame:
+        options.type === "MONOGRAM"
+          ? pick(random, ["circle", "rounded", "hexagon"] as const)
+          : pick(random, frames),
       layout: options.type === "WORDMARK" ? "text" : i % 3 === 2 ? "vertical" : "horizontal",
       colors,
     });
@@ -318,13 +388,42 @@ export function generateLogoSpecs(options: {
 
 const SLOGAN_TEMPLATES: Record<"fr" | "en", Record<SloganTone, string[]>> = {
   fr: {
-    INSPIRING: ["Ensemble, faisons grandir {value}", "{Value}, aujourd'hui pour demain", "Semer {value}, récolter l'avenir", "Chaque geste compte", "Plus loin, ensemble"],
-    INSTITUTIONAL: ["Au service de {value}", "L'engagement au cœur de {sector}", "La référence en {sector}", "Agir avec rigueur et {value}", "Votre partenaire de confiance"],
-    CATCHY: ["{Name}, et ça change tout", "Simple. Rapide. {Name}.", "Le {sector} autrement", "Osez {value}", "{Name}, c'est maintenant"],
-    ENGAGED: ["Agir pour {value}, maintenant", "Notre force : {value}", "Pour une Guinée plus {value}", "Debout pour {value}", "Changer les choses, ensemble"],
+    INSPIRING: [
+      "Ensemble, faisons grandir {value}",
+      "{Value}, aujourd'hui pour demain",
+      "Semer {value}, récolter l'avenir",
+      "Chaque geste compte",
+      "Plus loin, ensemble",
+    ],
+    INSTITUTIONAL: [
+      "Au service de {value}",
+      "L'engagement au cœur de {sector}",
+      "La référence en {sector}",
+      "Agir avec rigueur et {value}",
+      "Votre partenaire de confiance",
+    ],
+    CATCHY: [
+      "{Name}, et ça change tout",
+      "Simple. Rapide. {Name}.",
+      "Le {sector} autrement",
+      "Osez {value}",
+      "{Name}, c'est maintenant",
+    ],
+    ENGAGED: [
+      "Agir pour {value}, maintenant",
+      "Notre force : {value}",
+      "Pour une Guinée plus {value}",
+      "Debout pour {value}",
+      "Changer les choses, ensemble",
+    ],
   },
   en: {
-    INSPIRING: ["Growing {value} together", "{Value} today, for tomorrow", "Every step counts", "Further, together"],
+    INSPIRING: [
+      "Growing {value} together",
+      "{Value} today, for tomorrow",
+      "Every step counts",
+      "Further, together",
+    ],
     INSTITUTIONAL: ["Serving {value}", "Trusted in {sector}", "Commitment at the heart of {sector}"],
     CATCHY: ["{Name}. That changes everything.", "Simple. Fast. {Name}.", "{sector}, reinvented"],
     ENGAGED: ["Acting for {value}, now", "Standing up for {value}", "Change starts with us"],
@@ -344,7 +443,16 @@ export function generateSlogans(options: {
   const random = rng(options.seed);
   const values = options.brief?.values?.length ? options.brief.values : ["progrès", "unité", "travail"];
   if (options.kind === "DEVISE") {
-    const pool = [...values, "Unité", "Travail", "Progrès", "Solidarité", "Justice", "Engagement", "Excellence"];
+    const pool = [
+      ...values,
+      "Unité",
+      "Travail",
+      "Progrès",
+      "Solidarité",
+      "Justice",
+      "Engagement",
+      "Excellence",
+    ];
     const results = new Set<string>();
     let guard = 0;
     while (results.size < 5 && guard++ < 100) {
@@ -367,7 +475,12 @@ export function generateSlogans(options: {
   let guard = 0;
   while (results.length < 10 && guard++ < 200) {
     const value = pick(random, values);
-    const text = pick(random, [...templates, ...SLOGAN_TEMPLATES[options.language][pick(random, ["INSPIRING", "CATCHY", "ENGAGED", "INSTITUTIONAL"] as const)]])
+    const text = pick(random, [
+      ...templates,
+      ...SLOGAN_TEMPLATES[options.language][
+        pick(random, ["INSPIRING", "CATCHY", "ENGAGED", "INSTITUTIONAL"] as const)
+      ],
+    ])
       .replace("{value}", value.toLowerCase())
       .replace("{Value}", capitalize(value))
       .replace("{Name}", options.name)

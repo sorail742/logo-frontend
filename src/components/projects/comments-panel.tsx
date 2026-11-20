@@ -53,13 +53,20 @@ function CommentsPanelContent({ pid, targetType, targetId }: CommentsPanelProps)
     },
     onError,
   });
-  const remove = useMutation({ mutationFn: (cid: string) => api.comments.remove(cid), onSuccess: refresh, onError });
+  const remove = useMutation({
+    mutationFn: (cid: string) => api.comments.remove(cid),
+    onSuccess: refresh,
+    onError,
+  });
 
   const comments = data?.filter((c) => c.targetType === targetType && c.targetId === targetId) ?? [];
   const others = members.filter((m) => m.userId !== userId);
   const canComment = can("comment.create");
   const canModerate = can("members.manage");
-  const mention = (fullName: string) => setBody((current) => `${current}${current && !current.endsWith(" ") ? " " : ""}@${mentionHandle(fullName)} `);
+  const mention = (fullName: string) =>
+    setBody(
+      (current) => `${current}${current && !current.endsWith(" ") ? " " : ""}@${mentionHandle(fullName)} `,
+    );
 
   return (
     <Card>
@@ -67,13 +74,13 @@ function CommentsPanelContent({ pid, targetType, targetId }: CommentsPanelProps)
         <CardTitle className="text-sm">{t("title")}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3">
-        {comments.length === 0 && <p className="text-sm text-muted-foreground">{t("empty")}</p>}
+        {comments.length === 0 && <p className="text-muted-foreground text-sm">{t("empty")}</p>}
         <ul className="grid gap-3">
           {comments.map((comment) => (
-            <li key={comment.id} className="group rounded-lg bg-muted/50 p-3 text-sm">
+            <li key={comment.id} className="group bg-muted/50 rounded-lg p-3 text-sm">
               <div className="flex items-start gap-2">
-                <p className="flex-1 text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">{comment.authorName}</span> ·{" "}
+                <p className="text-muted-foreground flex-1 text-xs">
+                  <span className="text-foreground font-medium">{comment.authorName}</span> ·{" "}
                   {/* Un commentaire plus récent que l'heure de référence (rafraîchie chaque minute) n'est pas « dans 4 secondes ». */}
                   {format.relativeTime(new Date(Math.min(Date.parse(comment.createdAt), now.getTime())), now)}
                 </p>
@@ -94,7 +101,7 @@ function CommentsPanelContent({ pid, targetType, targetId }: CommentsPanelProps)
               <p className="mt-1 whitespace-pre-wrap">
                 {comment.body.split(/(@[\p{L}\d_.-]+)/u).map((part, i) =>
                   part.startsWith("@") ? (
-                    <span key={i} className="font-medium text-primary">
+                    <span key={i} className="text-primary font-medium">
                       {part}
                     </span>
                   ) : (
@@ -103,7 +110,9 @@ function CommentsPanelContent({ pid, targetType, targetId }: CommentsPanelProps)
                 )}
               </p>
               {comment.mentions?.length > 0 && (
-                <p className="sr-only">{t("mentioned", { names: comment.mentions.map((m) => m.fullName).join(", ") })}</p>
+                <p className="sr-only">
+                  {t("mentioned", { names: comment.mentions.map((m) => m.fullName).join(", ") })}
+                </p>
               )}
             </li>
           ))}
@@ -117,20 +126,33 @@ function CommentsPanelContent({ pid, targetType, targetId }: CommentsPanelProps)
             }}
           >
             <div className="flex gap-2">
-              <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder={t("placeholder")} rows={2} className="min-h-0" aria-label={t("placeholder")} maxLength={2000} />
-              <Button type="submit" size="icon-lg" disabled={!body.trim() || create.isPending} aria-label={t("send")}>
+              <Textarea
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder={t("placeholder")}
+                rows={2}
+                className="min-h-0"
+                aria-label={t("placeholder")}
+                maxLength={2000}
+              />
+              <Button
+                type="submit"
+                size="icon-lg"
+                disabled={!body.trim() || create.isPending}
+                aria-label={t("send")}
+              >
                 <Send />
               </Button>
             </div>
             {others.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs">
                 <span>{t("mention")}</span>
                 {others.map((member) => (
                   <button
                     key={member.userId}
                     type="button"
                     onClick={() => mention(member.fullName)}
-                    className="rounded-full border px-2 py-0.5 text-foreground hover:bg-muted"
+                    className="text-foreground hover:bg-muted rounded-full border px-2 py-0.5"
                     title={member.fullName}
                   >
                     @{mentionHandle(member.fullName)}

@@ -32,8 +32,10 @@ const TAGLINE_SIZE = 20;
 const PAD = 32;
 
 function variantColors(colors: LogoColors, variant: LogoVariant): LogoColors {
-  if (variant === "black") return { primary: "#111111", secondary: "#111111", text: "#111111", background: "#ffffff" };
-  if (variant === "white") return { primary: "#ffffff", secondary: "#ffffff", text: "#ffffff", background: "#111111" };
+  if (variant === "black")
+    return { primary: "#111111", secondary: "#111111", text: "#111111", background: "#ffffff" };
+  if (variant === "white")
+    return { primary: "#ffffff", secondary: "#ffffff", text: "#ffffff", background: "#111111" };
   return {
     ...colors,
     // Contraste texte / fond d'au moins 4,5:1 (§5.5)
@@ -73,7 +75,9 @@ function renderMark(
   if (spec.iconFrame === "circle") {
     parts.push(`<circle cx="${cx}" cy="${cy}" r="${size / 2}" fill="${colors.primary}"/>`);
   } else if (spec.iconFrame === "rounded") {
-    parts.push(`<rect x="${x}" y="${y}" width="${size}" height="${size}" rx="${size * 0.22}" fill="${colors.primary}"/>`);
+    parts.push(
+      `<rect x="${x}" y="${y}" width="${size}" height="${size}" rx="${size * 0.22}" fill="${colors.primary}"/>`,
+    );
   } else if (spec.iconFrame === "hexagon") {
     const r = size / 2;
     const points = Array.from({ length: 6 }, (_, i) => {
@@ -113,7 +117,9 @@ function renderMark(
 
 function textAttrs(spec: LogoSpec, fontFamily: (id: string) => string) {
   const weight = closestWeight(spec.fontId, spec.fontWeight);
-  const spacing = spec.letterSpacing ? ` letter-spacing="${(spec.letterSpacing * TEXT_SIZE).toFixed(2)}"` : "";
+  const spacing = spec.letterSpacing
+    ? ` letter-spacing="${(spec.letterSpacing * TEXT_SIZE).toFixed(2)}"`
+    : "";
   return `font-size="${TEXT_SIZE}" font-weight="${weight}"${spacing} style="font-family:${fontFamily(spec.fontId)}"`;
 }
 
@@ -137,7 +143,8 @@ export function renderLogoSvg(spec: LogoSpec, options: RenderOptions = {}): Rend
   const variant = options.variant ?? "color";
   const fontFamily = options.fontFamily ?? cssFontFamily;
   const animate = options.animate ?? false;
-  const part = (cls: string, content: string) => (animate && content ? `<g class="${cls}">${content}</g>` : content);
+  const part = (cls: string, content: string) =>
+    animate && content ? `<g class="${cls}">${content}</g>` : content;
   const colors = variantColors(spec.colors, variant);
   let layout: LogoLayout = options.layout ?? spec.layout;
   if (spec.type === "WORDMARK" && !options.layout) layout = "text";
@@ -145,7 +152,9 @@ export function renderLogoSvg(spec: LogoSpec, options: RenderOptions = {}): Rend
   const text = displayText(spec);
   const tagline = spec.tagline.trim();
   const textWidth = estimateTextWidth(text, spec.fontId, TEXT_SIZE, spec.letterSpacing);
-  const taglineWidth = tagline ? estimateTextWidth(tagline.toUpperCase(), "montserrat", TAGLINE_SIZE, 0.18) : 0;
+  const taglineWidth = tagline
+    ? estimateTextWidth(tagline.toUpperCase(), "montserrat", TAGLINE_SIZE, 0.18)
+    : 0;
   const blockWidth = Math.max(textWidth, taglineWidth);
   const textBlockHeight = TEXT_SIZE + (tagline ? TAGLINE_SIZE + 14 : 0);
   const markSize = 112;
@@ -156,7 +165,10 @@ export function renderLogoSvg(spec: LogoSpec, options: RenderOptions = {}): Rend
 
   const taglineEl = (x: number, y: number, anchor: "start" | "middle") =>
     tagline
-      ? part("lm-tag", `<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${TAGLINE_SIZE}" font-weight="600" letter-spacing="${(0.18 * TAGLINE_SIZE).toFixed(1)}" fill="${colors.secondary === colors.background ? colors.text : ensureContrast(colors.secondary, colors.background, 3)}" style="font-family:${fontFamily("montserrat")}">${escapeXml(tagline.toUpperCase())}</text>`)
+      ? part(
+          "lm-tag",
+          `<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${TAGLINE_SIZE}" font-weight="600" letter-spacing="${(0.18 * TAGLINE_SIZE).toFixed(1)}" fill="${colors.secondary === colors.background ? colors.text : ensureContrast(colors.secondary, colors.background, 3)}" style="font-family:${fontFamily("montserrat")}">${escapeXml(tagline.toUpperCase())}</text>`,
+        )
       : "";
 
   if (spec.type === "EMBLEM" && layout !== "icon" && layout !== "text") {
@@ -176,7 +188,7 @@ export function renderLogoSvg(spec: LogoSpec, options: RenderOptions = {}): Rend
     const inner = { ...spec, iconFrame: "none" as const };
     const markColors = { ...colors, primary: variant === "white" ? "#111111" : "#ffffff" };
     body.push(renderMark(inner, markColors, cx - 48, cy - r * 0.62, 96, variant, fontFamily, animate));
-    const fitted = Math.min(TEXT_SIZE, ((diameter - 80) / Math.max(text.length, 1)) / 0.62);
+    const fitted = Math.min(TEXT_SIZE, (diameter - 80) / Math.max(text.length, 1) / 0.62);
     body.push(
       part(
         "lm-text",
@@ -198,14 +210,24 @@ export function renderLogoSvg(spec: LogoSpec, options: RenderOptions = {}): Rend
   } else if (layout === "text") {
     width = blockWidth + PAD * 2;
     height = textBlockHeight + PAD * 2;
-    body.push(part("lm-text", `<text x="${width / 2}" y="${PAD + TEXT_SIZE * 0.8}" text-anchor="middle" ${textAttrs(spec, fontFamily)} fill="${colors.text}">${escapeXml(text)}</text>`));
+    body.push(
+      part(
+        "lm-text",
+        `<text x="${width / 2}" y="${PAD + TEXT_SIZE * 0.8}" text-anchor="middle" ${textAttrs(spec, fontFamily)} fill="${colors.text}">${escapeXml(text)}</text>`,
+      ),
+    );
     body.push(taglineEl(width / 2, PAD + TEXT_SIZE + TAGLINE_SIZE + 6, "middle"));
   } else if (layout === "vertical") {
     width = Math.max(blockWidth, markSize) + PAD * 2;
     height = markSize + 28 + textBlockHeight + PAD * 2;
     body.push(renderMark(spec, colors, (width - markSize) / 2, PAD, markSize, variant, fontFamily, animate));
     const baseline = PAD + markSize + 28 + TEXT_SIZE * 0.8;
-    body.push(part("lm-text", `<text x="${width / 2}" y="${baseline}" text-anchor="middle" ${textAttrs(spec, fontFamily)} fill="${colors.text}">${escapeXml(text)}</text>`));
+    body.push(
+      part(
+        "lm-text",
+        `<text x="${width / 2}" y="${baseline}" text-anchor="middle" ${textAttrs(spec, fontFamily)} fill="${colors.text}">${escapeXml(text)}</text>`,
+      ),
+    );
     body.push(taglineEl(width / 2, baseline + TAGLINE_SIZE + 18, "middle"));
   } else {
     const gap = 28;
@@ -215,7 +237,12 @@ export function renderLogoSvg(spec: LogoSpec, options: RenderOptions = {}): Rend
     const textX = PAD + markSize + gap;
     const top = (height - textBlockHeight) / 2;
     const baseline = top + TEXT_SIZE * 0.8;
-    body.push(part("lm-text", `<text x="${textX}" y="${baseline}" ${textAttrs(spec, fontFamily)} fill="${colors.text}">${escapeXml(text)}</text>`));
+    body.push(
+      part(
+        "lm-text",
+        `<text x="${textX}" y="${baseline}" ${textAttrs(spec, fontFamily)} fill="${colors.text}">${escapeXml(text)}</text>`,
+      ),
+    );
     body.push(taglineEl(textX, baseline + TAGLINE_SIZE + 18, "start"));
   }
 

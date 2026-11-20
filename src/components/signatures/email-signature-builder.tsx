@@ -26,7 +26,10 @@ import { cn } from "@/lib/utils";
 async function copyRich(html: string, text: string) {
   try {
     await navigator.clipboard.write([
-      new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([text], { type: "text/plain" }) }),
+      new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([text], { type: "text/plain" }),
+      }),
     ]);
     return true;
   } catch {
@@ -70,8 +73,20 @@ function parseCsv(source: string) {
     });
   const [header = [], ...data] = rows;
   const index = (...keys: string[]) => header.findIndex((h) => keys.includes(h.toLowerCase().trim()));
-  const cols = { name: index("nom", "name", "fullname"), title: index("fonction", "title", "poste"), email: index("email", "e-mail"), phone: index("telephone", "téléphone", "phone") };
-  return data.map((cells) => ({ fullName: cells[cols.name] ?? "", jobTitle: cells[cols.title] ?? "", email: cells[cols.email] ?? "", phone: cells[cols.phone] ?? "" })).filter((r) => r.fullName);
+  const cols = {
+    name: index("nom", "name", "fullname"),
+    title: index("fonction", "title", "poste"),
+    email: index("email", "e-mail"),
+    phone: index("telephone", "téléphone", "phone"),
+  };
+  return data
+    .map((cells) => ({
+      fullName: cells[cols.name] ?? "",
+      jobTitle: cells[cols.title] ?? "",
+      email: cells[cols.email] ?? "",
+      phone: cells[cols.phone] ?? "",
+    }))
+    .filter((r) => r.fullName);
 }
 
 export function EmailSignatureBuilder({
@@ -97,7 +112,8 @@ export function EmailSignatureBuilder({
 
   const html = useMemo(() => renderEmailSignature(template, data, brand), [template, data, brand]);
   const text = useMemo(() => renderEmailSignatureText(data, brand), [data, brand]);
-  const set = <K extends keyof EmailSignatureData>(key: K, value: EmailSignatureData[K]) => setData((d) => ({ ...d, [key]: value }));
+  const set = <K extends keyof EmailSignatureData>(key: K, value: EmailSignatureData[K]) =>
+    setData((d) => ({ ...d, [key]: value }));
 
   const copy = async () => {
     if (await copyRich(html, text)) {
@@ -120,17 +136,27 @@ export function EmailSignatureBuilder({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      <Card>
+      <Card className="glow-card border-border/80 hover:border-primary/40 shadow-xs">
         <CardHeader>
           <CardTitle className="text-sm">{t("form")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("fullName")} htmlFor="sig-name">
-              <Input id="sig-name" value={data.fullName} onChange={(e) => set("fullName", e.target.value)} autoComplete="name" />
+              <Input
+                id="sig-name"
+                value={data.fullName}
+                onChange={(e) => set("fullName", e.target.value)}
+                autoComplete="name"
+              />
             </Field>
             <Field label={t("jobTitle")} htmlFor="sig-title">
-              <Input id="sig-title" value={data.jobTitle} onChange={(e) => set("jobTitle", e.target.value)} autoComplete="organization-title" />
+              <Input
+                id="sig-title"
+                value={data.jobTitle}
+                onChange={(e) => set("jobTitle", e.target.value)}
+                autoComplete="organization-title"
+              />
             </Field>
           </div>
           <Field label={t("phones")} hint={t("phoneHint")}>
@@ -141,18 +167,38 @@ export function EmailSignatureBuilder({
                     type="tel"
                     inputMode="tel"
                     value={phone}
-                    onChange={(e) => set("phones", data.phones.map((p, i) => (i === index ? e.target.value : p)))}
+                    onChange={(e) =>
+                      set(
+                        "phones",
+                        data.phones.map((p, i) => (i === index ? e.target.value : p)),
+                      )
+                    }
                     aria-label={`${t("phones")} ${index + 1}`}
                   />
                   {data.phones.length > 1 && (
-                    <Button variant="ghost" size="icon" onClick={() => set("phones", data.phones.filter((_, i) => i !== index))} aria-label="×">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        set(
+                          "phones",
+                          data.phones.filter((_, i) => i !== index),
+                        )
+                      }
+                      aria-label="×"
+                    >
                       <X />
                     </Button>
                   )}
                 </div>
               ))}
               {data.phones.length < 3 && (
-                <Button variant="ghost" size="sm" className="justify-self-start" onClick={() => set("phones", [...data.phones, "+224 "])}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="justify-self-start"
+                  onClick={() => set("phones", [...data.phones, "+224 "])}
+                >
                   <Plus />
                   {t("addPhone")}
                 </Button>
@@ -161,14 +207,31 @@ export function EmailSignatureBuilder({
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("email")} htmlFor="sig-email">
-              <Input id="sig-email" type="email" value={data.email} onChange={(e) => set("email", e.target.value)} autoComplete="email" />
+              <Input
+                id="sig-email"
+                type="email"
+                value={data.email}
+                onChange={(e) => set("email", e.target.value)}
+                autoComplete="email"
+              />
             </Field>
             <Field label={t("website")} htmlFor="sig-web">
-              <Input id="sig-web" type="url" value={data.website} onChange={(e) => set("website", e.target.value)} placeholder="https://" />
+              <Input
+                id="sig-web"
+                type="url"
+                value={data.website}
+                onChange={(e) => set("website", e.target.value)}
+                placeholder="https://"
+              />
             </Field>
           </div>
           <Field label={t("address")} htmlFor="sig-address">
-            <Input id="sig-address" value={data.address} onChange={(e) => set("address", e.target.value)} autoComplete="street-address" />
+            <Input
+              id="sig-address"
+              value={data.address}
+              onChange={(e) => set("address", e.target.value)}
+              autoComplete="street-address"
+            />
           </Field>
           <fieldset className="grid gap-2">
             <legend className="mb-1 text-sm font-medium">{t("socials")}</legend>
@@ -177,31 +240,60 @@ export function EmailSignatureBuilder({
                 key={social.network}
                 type="url"
                 value={social.url}
-                onChange={(e) => set("socials", data.socials.map((s, i) => (i === index ? { ...s, url: e.target.value } : s)))}
+                onChange={(e) =>
+                  set(
+                    "socials",
+                    data.socials.map((s, i) => (i === index ? { ...s, url: e.target.value } : s)),
+                  )
+                }
                 placeholder={t("socialUrl", { network: social.network })}
                 aria-label={t("socialUrl", { network: social.network })}
               />
             ))}
           </fieldset>
           <Field label={t("photo")} htmlFor="sig-photo">
-            <Input id="sig-photo" type="url" value={data.photoUrl} onChange={(e) => set("photoUrl", e.target.value)} placeholder="https://" />
+            <Input
+              id="sig-photo"
+              type="url"
+              value={data.photoUrl}
+              onChange={(e) => set("photoUrl", e.target.value)}
+              placeholder="https://"
+            />
           </Field>
           <Field label={t("legal")} htmlFor="sig-legal">
-            <Textarea id="sig-legal" rows={2} value={data.legal} onChange={(e) => set("legal", e.target.value)} placeholder={t("legalPlaceholder")} />
+            <Textarea
+              id="sig-legal"
+              rows={2}
+              value={data.legal}
+              onChange={(e) => set("legal", e.target.value)}
+              placeholder={t("legalPlaceholder")}
+            />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t("banner")} htmlFor="sig-banner">
-              <Input id="sig-banner" type="url" value={data.bannerUrl ?? ""} onChange={(e) => set("bannerUrl", e.target.value)} placeholder="https://" />
+              <Input
+                id="sig-banner"
+                type="url"
+                value={data.bannerUrl ?? ""}
+                onChange={(e) => set("bannerUrl", e.target.value)}
+                placeholder="https://"
+              />
             </Field>
             <Field label={t("bannerLink")} htmlFor="sig-banner-link">
-              <Input id="sig-banner-link" type="url" value={data.bannerLink ?? ""} onChange={(e) => set("bannerLink", e.target.value)} placeholder="https://" />
+              <Input
+                id="sig-banner-link"
+                type="url"
+                value={data.bannerLink ?? ""}
+                onChange={(e) => set("bannerLink", e.target.value)}
+                placeholder="https://"
+              />
             </Field>
           </div>
         </CardContent>
       </Card>
 
       <div className="grid content-start gap-6">
-        <Card>
+        <Card className="glow-card border-border/80 hover:border-primary/40 shadow-xs">
           <CardHeader>
             <CardTitle className="text-sm">{t("template")}</CardTitle>
           </CardHeader>
@@ -213,7 +305,10 @@ export function EmailSignatureBuilder({
                   type="button"
                   aria-pressed={template === tpl.id}
                   onClick={() => setTemplate(tpl.id)}
-                  className={cn("rounded-lg border px-2 py-1.5 text-xs", template === tpl.id ? "border-primary bg-accent font-medium" : "hover:bg-muted")}
+                  className={cn(
+                    "rounded-lg border px-2 py-1.5 text-xs",
+                    template === tpl.id ? "border-primary bg-accent font-medium" : "hover:bg-muted",
+                  )}
                 >
                   {tpl.name}
                 </button>
@@ -222,20 +317,31 @@ export function EmailSignatureBuilder({
             <div>
               <p className="mb-2 text-sm font-medium">{t("preview")}</p>
               {/* HTML produit par renderEmailSignature : toutes les valeurs saisies sont échappées */}
-              <div className="overflow-x-auto rounded-lg border bg-white p-4 text-black" dangerouslySetInnerHTML={{ __html: html }} />
-              <p className="mt-2 text-xs text-muted-foreground">{t("imageNote")}</p>
+              <div
+                className="overflow-x-auto rounded-lg border bg-white p-4 text-black"
+                dangerouslySetInnerHTML={{ __html: html }}
+              />
+              <p className="text-muted-foreground mt-2 text-xs">{t("imageNote")}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button onClick={copy} disabled={!data.fullName}>
                 {copied ? <Check /> : <ClipboardCopy />}
                 {t("copy")}
               </Button>
-              <Button variant="outline" onClick={() => navigator.clipboard.writeText(html).then(() => toast.success(t("copied")))} disabled={!data.fullName}>
+              <Button
+                variant="outline"
+                onClick={() => navigator.clipboard.writeText(html).then(() => toast.success(t("copied")))}
+                disabled={!data.fullName}
+              >
                 <FileCode2 />
                 {t("copyHtml")}
               </Button>
               {onSave && (
-                <Button variant="outline" onClick={() => onSave(data, template)} disabled={!data.fullName || saving}>
+                <Button
+                  variant="outline"
+                  onClick={() => onSave(data, template)}
+                  disabled={!data.fullName || saving}
+                >
                   <Save />
                   {t("save")}
                 </Button>
@@ -243,7 +349,9 @@ export function EmailSignatureBuilder({
             </div>
             <details className="text-sm">
               <summary className="cursor-pointer font-medium">{t("plainText")}</summary>
-              <pre className="mt-2 overflow-x-auto rounded-lg bg-muted p-3 text-xs whitespace-pre-wrap">{text}</pre>
+              <pre className="bg-muted mt-2 overflow-x-auto rounded-lg p-3 text-xs whitespace-pre-wrap">
+                {text}
+              </pre>
               <Button variant="ghost" size="sm" onClick={() => navigator.clipboard.writeText(text)}>
                 {t("copyText")}
               </Button>
@@ -251,7 +359,7 @@ export function EmailSignatureBuilder({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glow-card border-border/80 hover:border-primary/40 shadow-xs">
           <CardHeader>
             <CardTitle className="text-sm">{t("install")}</CardTitle>
           </CardHeader>
@@ -265,16 +373,28 @@ export function EmailSignatureBuilder({
         </Card>
 
         {batch !== "hidden" && (
-          <Card>
+          <Card className="glow-card border-border/80 hover:border-primary/40 shadow-xs">
             <CardHeader>
               <CardTitle className="text-sm">{t("batch")}</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
-              <p className="text-sm text-muted-foreground">{batch === "enabled" ? t("batchBody") : t("batchProOnly")}</p>
+              <p className="text-muted-foreground text-sm">
+                {batch === "enabled" ? t("batchBody") : t("batchProOnly")}
+              </p>
               {batch === "enabled" && (
                 <>
-                  <input ref={fileInput} type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => runBatch(e.target.files?.[0])} />
-                  <Button variant="outline" className="justify-self-start" onClick={() => fileInput.current?.click()}>
+                  <input
+                    ref={fileInput}
+                    type="file"
+                    accept=".csv,text/csv"
+                    className="sr-only"
+                    onChange={(e) => runBatch(e.target.files?.[0])}
+                  />
+                  <Button
+                    variant="outline"
+                    className="justify-self-start"
+                    onClick={() => fileInput.current?.click()}
+                  >
                     <Upload />
                     {t("batchFile")}
                   </Button>

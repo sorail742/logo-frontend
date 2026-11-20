@@ -21,7 +21,17 @@ import {
 import type { LogoSpec } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-function Choice<T extends string>({ value, options, label, onChange }: { value: T; options: readonly T[]; label: (option: T) => string; onChange: (option: T) => void }) {
+function Choice<T extends string>({
+  value,
+  options,
+  label,
+  onChange,
+}: {
+  value: T;
+  options: readonly T[];
+  label: (option: T) => string;
+  onChange: (option: T) => void;
+}) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.map((option) => (
@@ -30,7 +40,10 @@ function Choice<T extends string>({ value, options, label, onChange }: { value: 
           type="button"
           aria-pressed={value === option}
           onClick={() => onChange(option)}
-          className={cn("rounded-lg border px-3 py-1.5 text-sm", value === option ? "border-primary bg-accent font-medium" : "hover:bg-muted")}
+          className={cn(
+            "rounded-lg border px-3 py-1.5 text-sm",
+            value === option ? "border-primary bg-accent font-medium" : "hover:bg-muted",
+          )}
         >
           {label(option)}
         </button>
@@ -40,7 +53,15 @@ function Choice<T extends string>({ value, options, label, onChange }: { value: 
 }
 
 /** Logo animé : aperçu, SVG animé pour le web, vidéo pour les statuts et réseaux sociaux. */
-export function LogoAnimationPanel({ spec, canDownload, isFree }: { spec: LogoSpec; canDownload: boolean; isFree: boolean }) {
+export function LogoAnimationPanel({
+  spec,
+  canDownload,
+  isFree,
+}: {
+  spec: LogoSpec;
+  canDownload: boolean;
+  isFree: boolean;
+}) {
   const t = useTranslations("logos.animation");
   const onError = useApiErrorToast();
   const [style, setStyle] = useState<LogoAnimation>("reveal");
@@ -109,23 +130,43 @@ export function LogoAnimationPanel({ spec, canDownload, isFree }: { spec: LogoSp
         <CardDescription className="text-xs">{isFree ? t("free") : t("body")}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border bg-muted">
+        <div className="bg-muted relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border">
           {preview && (
             // eslint-disable-next-line @next/next/no-img-element -- SVG animé local (URL blob)
-            <img key={`${preview}-${replay}`} src={preview} alt={t("alt", { name: spec.text })} className="size-full object-contain" />
+            <img
+              key={`${preview}-${replay}`}
+              src={preview}
+              alt={t("alt", { name: spec.text })}
+              className="size-full object-contain"
+            />
           )}
-          <Button variant="secondary" size="sm" className="absolute right-2 bottom-2" onClick={() => setReplay((n) => n + 1)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="absolute right-2 bottom-2"
+            onClick={() => setReplay((n) => n + 1)}
+          >
             <RotateCcw />
             {t("replay")}
           </Button>
         </div>
         <div className="grid gap-2">
-          <p className="text-xs font-medium text-muted-foreground">{t("style")}</p>
-          <Choice value={style} options={LOGO_ANIMATIONS} label={(option) => t(`styles.${option}`)} onChange={setStyle} />
+          <p className="text-muted-foreground text-xs font-medium">{t("style")}</p>
+          <Choice
+            value={style}
+            options={LOGO_ANIMATIONS}
+            label={(option) => t(`styles.${option}`)}
+            onChange={setStyle}
+          />
         </div>
         <div className="grid gap-2">
-          <p className="text-xs font-medium text-muted-foreground">{t("background")}</p>
-          <Choice value={background} options={["light", "brand"] as const} label={(option) => t(`backgrounds.${option}`)} onChange={setBackground} />
+          <p className="text-muted-foreground text-xs font-medium">{t("background")}</p>
+          <Choice
+            value={background}
+            options={["light", "brand"] as const}
+            label={(option) => t(`backgrounds.${option}`)}
+            onChange={setBackground}
+          />
         </div>
         {downloads && (
           <div className="grid gap-2 border-t pt-4">
@@ -142,7 +183,7 @@ export function LogoAnimationPanel({ spec, canDownload, isFree }: { spec: LogoSp
               )}
             </div>
             {progress !== null && <Progress value={Math.round(progress * 100)} aria-label={t("recording")} />}
-            <p className="text-xs text-muted-foreground">{t("videoNote")}</p>
+            <p className="text-muted-foreground text-xs">{t("videoNote")}</p>
           </div>
         )}
       </CardContent>

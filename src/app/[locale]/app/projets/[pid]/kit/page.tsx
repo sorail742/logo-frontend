@@ -46,7 +46,15 @@ function KitComingSoon() {
 }
 
 /** Lien de téléchargement : URL signée de l'API (nouvel onglet) ou page interne (mode simulé). */
-function FileLink({ href, children, variant = "outline" }: { href: string; children: ReactNode; variant?: "outline" | "default" }) {
+function FileLink({
+  href,
+  children,
+  variant = "outline",
+}: {
+  href: string;
+  children: ReactNode;
+  variant?: "outline" | "default";
+}) {
   if (/^https?:\/\//.test(href)) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant })}>
@@ -87,7 +95,10 @@ function KitContent() {
     refetchInterval: KIT_REFRESH_MS,
   });
   const { data: logos = [] } = useQuery({ queryKey: qk.logos(pid), queryFn: () => api.logos.list(pid) });
-  const { data: signatures = [] } = useQuery({ queryKey: qk.signatures(pid), queryFn: () => api.signatures.list(pid) });
+  const { data: signatures = [] } = useQuery({
+    queryKey: qk.signatures(pid),
+    queryFn: () => api.signatures.list(pid),
+  });
   const kit = kits.find((k) => k.id === selectedId) ?? kits[0] ?? null;
   const invalidate = [qk.brandKits(pid)];
   const guide = useJob(guideJob, { invalidate });
@@ -106,16 +117,23 @@ function KitContent() {
   });
   const restore = useMutation({
     mutationFn: (kid: string) => api.brandKits.restore(kid),
-    onSuccess: (created) => onCreated(created, t("restored", { version: created.restoredFrom ?? "", newVersion: created.version })),
+    onSuccess: (created) =>
+      onCreated(created, t("restored", { version: created.restoredFrom ?? "", newVersion: created.version })),
     onError,
   });
   const share = useMutation({
     mutationFn: (enabled: boolean) =>
-      api.brandKits.share(kit!.id, { enabled, password: password || undefined, expiresAt: expires ? endOfDay(expires) : null }),
+      api.brandKits.share(kit!.id, {
+        enabled,
+        password: password || undefined,
+        expiresAt: expires ? endOfDay(expires) : null,
+      }),
     onSuccess: (updated) => {
       toast.success(t("shareUpdated"));
       setPassword("");
-      queryClient.setQueryData<BrandKit[]>(qk.brandKits(pid), (list) => list?.map((k) => (k.id === updated.id ? updated : k)));
+      queryClient.setQueryData<BrandKit[]>(qk.brandKits(pid), (list) =>
+        list?.map((k) => (k.id === updated.id ? updated : k)),
+      );
     },
     onError,
   });
@@ -134,7 +152,10 @@ function KitContent() {
   const name = project?.chosenName?.value ?? project?.title ?? "";
   const isFree = credits.data?.planCode === "FREE";
   const canEdit = can("content.edit");
-  const shareUrl = kit?.shareToken && typeof window !== "undefined" ? `${window.location.origin}${locale === "fr" ? "" : `/${locale}`}/kit/${kit.shareToken}` : null;
+  const shareUrl =
+    kit?.shareToken && typeof window !== "undefined"
+      ? `${window.location.origin}${locale === "fr" ? "" : `/${locale}`}/kit/${kit.shareToken}`
+      : null;
   const today = new Date().toISOString().slice(0, 10);
 
   // Mode simulé : l'archive est assemblée dans le navigateur.
@@ -146,7 +167,13 @@ function KitContent() {
       const blob = await buildKitZip(kit, {
         projectName: kit.name ?? name,
         signatures,
-        brand: { name: kit.name ?? name, slogan: kit.slogan ?? undefined, logoUrl: null, primary: logo?.colors.primary ?? "#0f766e", secondary: logo?.colors.secondary ?? "#f59e0b" },
+        brand: {
+          name: kit.name ?? name,
+          slogan: kit.slogan ?? undefined,
+          logoUrl: null,
+          primary: logo?.colors.primary ?? "#0f766e",
+          secondary: logo?.colors.secondary ?? "#f59e0b",
+        },
       });
       downloadBlob(blob, `kit-${slugify(kit.name ?? name) || "marque"}-v${kit.version}.zip`);
     } catch (error) {
@@ -197,27 +224,66 @@ function KitContent() {
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="grid min-w-0 content-start gap-6">
-          {kit && <KitView kit={kit} projectName={name} acronym={project?.chosenName?.acronym} meaning={project?.chosenName?.meaning} />}
-          {kit?.logoSpec && !kit.logoSvg && <MockupGallery spec={kit.logoSpec} canDownload={can("export.download")} isFree={isFree} />}
-          {kit?.logoSpec && !kit.logoSvg && <SocialKitSection spec={kit.logoSpec} name={kit.name ?? name} canDownload={can("export.download")} isFree={isFree} />}
-          {kit && <BrandTextsCard name={kit.name ?? name} slogan={kit.slogan} mission={kit.mission} devise={kit.devise} brief={project?.brief} />}
+          {kit && (
+            <KitView
+              kit={kit}
+              projectName={name}
+              acronym={project?.chosenName?.acronym}
+              meaning={project?.chosenName?.meaning}
+            />
+          )}
+          {kit?.logoSpec && !kit.logoSvg && (
+            <MockupGallery spec={kit.logoSpec} canDownload={can("export.download")} isFree={isFree} />
+          )}
+          {kit?.logoSpec && !kit.logoSvg && (
+            <SocialKitSection
+              spec={kit.logoSpec}
+              name={kit.name ?? name}
+              canDownload={can("export.download")}
+              isFree={isFree}
+            />
+          )}
+          {kit && (
+            <BrandTextsCard
+              name={kit.name ?? name}
+              slogan={kit.slogan}
+              mission={kit.mission}
+              devise={kit.devise}
+              brief={project?.brief}
+            />
+          )}
           {kit && <CommentsPanel pid={pid} targetType="KIT" targetId={kit.id} />}
         </div>
         <div className="grid content-start gap-6">
-          <Card>
+          <Card className="glow-card border-border/80 hover:border-primary/40 shadow-xs">
             <CardHeader>
               <CardTitle className="text-sm">{t("versions")}</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-1.5">
               {kits.map((k, index) => (
-                <div key={k.id} className={cn("flex items-center gap-1 rounded-lg border", kit?.id === k.id ? "border-primary bg-accent" : "hover:bg-muted")}>
-                  <button type="button" onClick={() => setSelectedId(k.id)} aria-pressed={kit?.id === k.id} className="min-w-0 flex-1 px-3 py-2 text-left text-sm">
+                <div
+                  key={k.id}
+                  className={cn(
+                    "flex items-center gap-1 rounded-lg border",
+                    kit?.id === k.id ? "border-primary bg-accent" : "hover:bg-muted",
+                  )}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(k.id)}
+                    aria-pressed={kit?.id === k.id}
+                    className="min-w-0 flex-1 px-3 py-2 text-left text-sm"
+                  >
                     <span className="flex items-center gap-2 font-medium">
                       {t("version", { version: k.version })}
                       {index === 0 && <Badge variant="secondary">{t("current")}</Badge>}
                     </span>
-                    <span className="block text-xs text-muted-foreground">
-                      {k.restoredFrom ? t("restoredFrom", { version: k.restoredFrom }) : t("createdAt", { date: format.dateTime(new Date(k.createdAt), { dateStyle: "medium" }) })}
+                    <span className="text-muted-foreground block text-xs">
+                      {k.restoredFrom
+                        ? t("restoredFrom", { version: k.restoredFrom })
+                        : t("createdAt", {
+                            date: format.dateTime(new Date(k.createdAt), { dateStyle: "medium" }),
+                          })}
                     </span>
                   </button>
                   {canEdit && index > 0 && (
@@ -239,7 +305,7 @@ function KitContent() {
           </Card>
 
           {kit && can("export.download") && (
-            <Card>
+            <Card className="glow-card border-border/80 hover:border-primary/40 shadow-xs">
               <CardHeader>
                 <CardTitle className="text-sm">{t("deliverables")}</CardTitle>
                 <CardDescription className="text-xs">{t("asyncNote")}</CardDescription>
@@ -250,7 +316,7 @@ function KitContent() {
                     <FileText className="size-4" aria-hidden="true" />
                     {t("guide")}
                   </p>
-                  <p className="text-xs text-muted-foreground">{t("guideBody")}</p>
+                  <p className="text-muted-foreground text-xs">{t("guideBody")}</p>
                   {kit.guidePdfUrl ? (
                     <div className="flex flex-wrap items-center gap-2">
                       <FileLink href={kit.guidePdfUrl}>{t("openGuide")}</FileLink>
@@ -262,13 +328,17 @@ function KitContent() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
-                      <Button variant="outline" onClick={startGuide} disabled={guide.running || isFree || !canEdit}>
+                      <Button
+                        variant="outline"
+                        onClick={startGuide}
+                        disabled={guide.running || isFree || !canEdit}
+                      >
                         {t("generateGuide")}
                       </Button>
                       <CreditCost cost={kit.guideCost} />
                     </div>
                   )}
-                  {isFree && <p className="text-xs text-muted-foreground">{t("guideFree")}</p>}
+                  {isFree && <p className="text-muted-foreground text-xs">{t("guideFree")}</p>}
                   <JobProgress event={guide.event} running={guide.running} />
                 </div>
                 <div className="grid gap-2 border-t pt-4">
@@ -276,7 +346,7 @@ function KitContent() {
                     <FileArchive className="size-4" aria-hidden="true" />
                     {t("zip")}
                   </p>
-                  <p className="text-xs text-muted-foreground">{t("zipBody")}</p>
+                  <p className="text-muted-foreground text-xs">{t("zipBody")}</p>
                   {kit.zipUrl === "client" ? (
                     <Button onClick={buildClientZip} disabled={zipping}>
                       {zipping && <Loader2 className="animate-spin" />}
@@ -294,11 +364,15 @@ function KitContent() {
                       )}
                     </div>
                   ) : (
-                    <Button variant="outline" onClick={startZip} disabled={zip.running || !can("export.download")}>
+                    <Button
+                      variant="outline"
+                      onClick={startZip}
+                      disabled={zip.running || !can("export.download")}
+                    >
                       {t("generateZip")}
                     </Button>
                   )}
-                  {isFree && <p className="text-xs text-muted-foreground">{t("zipFree")}</p>}
+                  {isFree && <p className="text-muted-foreground text-xs">{t("zipFree")}</p>}
                   <JobProgress event={zip.event} running={zip.running} />
                 </div>
                 {isFree && (
@@ -311,7 +385,7 @@ function KitContent() {
           )}
 
           {kit && canEdit && (
-            <Card>
+            <Card className="glow-card border-border/80 hover:border-primary/40 shadow-xs">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-sm">
                   <Link2 className="size-4" aria-hidden="true" />
@@ -322,19 +396,38 @@ function KitContent() {
               <CardContent className="grid gap-3">
                 {shareUrl ? (
                   <>
-                    <Input value={shareUrl} readOnly aria-label={t("share")} onFocus={(e) => e.target.select()} />
+                    <Input
+                      value={shareUrl}
+                      readOnly
+                      aria-label={t("share")}
+                      onFocus={(e) => e.target.select()}
+                    />
                     {kit.hasPassword && (
-                      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
                         <Lock className="size-3.5" aria-hidden="true" />
                         {t("protected")}
                       </p>
                     )}
-                    {kit.shareExpiresAt && <p className="text-xs text-muted-foreground">{format.dateTime(new Date(kit.shareExpiresAt), { dateStyle: "long" })}</p>}
+                    {kit.shareExpiresAt && (
+                      <p className="text-muted-foreground text-xs">
+                        {format.dateTime(new Date(kit.shareExpiresAt), { dateStyle: "long" })}
+                      </p>
+                    )}
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => navigator.clipboard.writeText(shareUrl).then(() => toast.success(t("shareCopied")))}>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          navigator.clipboard.writeText(shareUrl).then(() => toast.success(t("shareCopied")))
+                        }
+                      >
                         {t("shareCopy")}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => share.mutate(false)} disabled={share.isPending}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => share.mutate(false)}
+                        disabled={share.isPending}
+                      >
                         {t("shareDisable")}
                       </Button>
                     </div>
@@ -342,12 +435,28 @@ function KitContent() {
                 ) : (
                   <>
                     <Field label={t("sharePassword")} htmlFor="share-password">
-                      <Input id="share-password" type="password" autoComplete="new-password" minLength={4} value={password} onChange={(e) => setPassword(e.target.value)} />
+                      <Input
+                        id="share-password"
+                        type="password"
+                        autoComplete="new-password"
+                        minLength={4}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
                     </Field>
                     <Field label={t("shareExpires")} htmlFor="share-expires">
-                      <Input id="share-expires" type="date" min={today} value={expires} onChange={(e) => setExpires(e.target.value)} />
+                      <Input
+                        id="share-expires"
+                        type="date"
+                        min={today}
+                        value={expires}
+                        onChange={(e) => setExpires(e.target.value)}
+                      />
                     </Field>
-                    <Button onClick={() => share.mutate(true)} disabled={share.isPending || (password.length > 0 && password.length < 4)}>
+                    <Button
+                      onClick={() => share.mutate(true)}
+                      disabled={share.isPending || (password.length > 0 && password.length < 4)}
+                    >
                       {t("shareEnable")}
                     </Button>
                   </>

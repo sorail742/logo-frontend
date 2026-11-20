@@ -38,7 +38,7 @@ export function AcceptInvitation() {
         </Button>
       ) : (
         <>
-          <p className="text-sm text-muted-foreground">{t("loginFirst")}</p>
+          <p className="text-muted-foreground text-sm">{t("loginFirst")}</p>
           <ButtonLink href={`/connexion?next=${encodeURIComponent(`/invitation/${token}`)}`} size="lg">
             {t("accept")}
           </ButtonLink>

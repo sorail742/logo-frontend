@@ -6,7 +6,14 @@ import { useTranslations } from "next-intl";
 import { Columns2, Loader2, RotateCcw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useApiErrorToast } from "@/hooks/use-api-error";
 import { api, errorMessage, newIdempotencyKey } from "@/lib/api";
 import { qk } from "@/lib/query-keys";
@@ -54,18 +61,29 @@ function legacyAdjust(el: ImageElement): PhotoAdjust {
 }
 
 /** Aperçu de l'élément (cadre, réglages, détourage, effets) à la taille de la vue. */
-function ElementPreview({ el, onPick, picking }: Readonly<{ el: ImageElement; picking: boolean; onPick: (x: number, y: number) => void }>) {
+function ElementPreview({
+  el,
+  onPick,
+  picking,
+}: Readonly<{ el: ImageElement; picking: boolean; onPick: (x: number, y: number) => void }>) {
   // Identifiant propre à l'atelier : le même élément est aussi rendu sur le canevas.
   const markup = useMemo(() => renderElement(frameOf(el, { id: `${el.id}-atelier` })), [el]);
   return (
     <svg
       viewBox={`0 0 ${el.width} ${el.height}`}
       className={cn("max-h-full max-w-full overflow-visible drop-shadow-xl", picking && "cursor-crosshair")}
-      style={{ aspectRatio: `${el.width} / ${el.height}`, width: el.width >= el.height ? "100%" : "auto", height: el.width >= el.height ? "auto" : "100%" }}
+      style={{
+        aspectRatio: `${el.width} / ${el.height}`,
+        width: el.width >= el.height ? "100%" : "auto",
+        height: el.width >= el.height ? "auto" : "100%",
+      }}
       onClick={(event) => {
         if (!picking) return;
         const rect = event.currentTarget.getBoundingClientRect();
-        onPick(((event.clientX - rect.left) / rect.width) * el.width, ((event.clientY - rect.top) / rect.height) * el.height);
+        onPick(
+          ((event.clientX - rect.left) / rect.width) * el.width,
+          ((event.clientY - rect.top) / rect.height) * el.height,
+        );
       }}
       dangerouslySetInnerHTML={{ __html: markup }}
     />
@@ -108,7 +126,11 @@ export function PhotoEditor({
   const [maskVersion, setMaskVersion] = useState(0);
   const [maskTouched, setMaskTouched] = useState(false);
   const [cutout, setCutout] = useState<CutoutSettings>(() => defaultCutoutSettings(el));
-  const { data: caps } = useQuery({ queryKey: qk.capabilities, queryFn: () => api.library.capabilities(), staleTime: 5 * 60_000 });
+  const { data: caps } = useQuery({
+    queryKey: qk.capabilities,
+    queryFn: () => api.library.capabilities(),
+    staleTime: 5 * 60_000,
+  });
 
   const adjust = useMemo(() => draft.adjust ?? legacyAdjust(draft), [draft]);
   const setAdjust = (next: PhotoAdjust) => setDraft((d) => ({ ...d, adjust: next, filters: undefined }));
@@ -128,7 +150,14 @@ export function PhotoEditor({
   useEffect(() => {
     if (!thumb || (tab !== "adjust" && tab !== "curves")) return undefined;
     const timer = setTimeout(() => {
-      const frame = frameOf(draft, { id: "histogram", src: thumb.src, cutout: null, outline: null, glow: null, mask: "none" });
+      const frame = frameOf(draft, {
+        id: "histogram",
+        src: thumb.src,
+        cutout: null,
+        outline: null,
+        glow: null,
+        mask: "none",
+      });
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${draft.width} ${draft.height}" width="${draft.width}" height="${draft.height}">${renderElement(frame)}</svg>`;
       svgPixels(svg, 320)
         .then((px) => setHist(computeHistogram(px)))
@@ -173,7 +202,10 @@ export function PhotoEditor({
   const previewMask = useMemo(() => {
     // maskVersion change à chaque modification en place du masque : l'aperçu est recalculé.
     if (!mask || !source || maskVersion < 0) return null;
-    return refineMask(mask, source.width, source.height, { feather: cutout.feather, contract: cutout.contract });
+    return refineMask(mask, source.width, source.height, {
+      feather: cutout.feather,
+      contract: cutout.contract,
+    });
   }, [mask, maskVersion, source, cutout.feather, cutout.contract]);
 
   const ai = useMutation({
@@ -225,23 +257,37 @@ export function PhotoEditor({
   };
 
   const resetAll = () => {
-    setDraft({ ...el, adjust: undefined, filters: undefined, crop: null, straighten: undefined, cutout: null, outline: null, glow: null });
+    setDraft({
+      ...el,
+      adjust: undefined,
+      filters: undefined,
+      crop: null,
+      straighten: undefined,
+      cutout: null,
+      outline: null,
+      glow: null,
+    });
     if (source) touchMask(fullMask(source));
   };
 
   const apply = () => {
     let result: ImageElement = { ...draft };
     if (maskTouched && mask && source) {
-      const final = refineMask(mask, source.width, source.height, { feather: cutout.feather, contract: cutout.contract });
+      const final = refineMask(mask, source.width, source.height, {
+        feather: cutout.feather,
+        contract: cutout.contract,
+      });
       result.cutout = isFullMask(final) ? null : maskToDataUrl(final, source.width, source.height);
     }
     // Recadrage à d'autres proportions que le cadre : le cadre prend celles du recadrage.
     if (result.crop && result.fit === "cover" && aspect !== "frame") {
       const ratio = (result.crop.width * result.naturalWidth) / (result.crop.height * result.naturalHeight);
       const height = result.width / ratio;
-      if (Math.abs(height - result.height) > 0.5) result = { ...result, y: result.y + (result.height - height) / 2, height, focusX: 0.5, focusY: 0.5 };
+      if (Math.abs(height - result.height) > 0.5)
+        result = { ...result, y: result.y + (result.height - height) / 2, height, focusX: 0.5, focusY: 0.5 };
     }
-    if (result.crop?.x === 0 && result.crop.y === 0 && result.crop.width === 1 && result.crop.height === 1) result.crop = null;
+    if (result.crop?.x === 0 && result.crop.y === 0 && result.crop.width === 1 && result.crop.height === 1)
+      result.crop = null;
     onApply(result);
   };
 
@@ -251,7 +297,10 @@ export function PhotoEditor({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent showCloseButton={false} className="flex h-[min(92vh,920px)] w-[min(1320px,96vw)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none">
+      <DialogContent
+        showCloseButton={false}
+        className="flex h-[min(92vh,920px)] w-[min(1320px,96vw)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none"
+      >
         <DialogHeader className="flex-row flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
           <div>
             <DialogTitle>{t("title")}</DialogTitle>
@@ -284,15 +333,39 @@ export function PhotoEditor({
         <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,1fr)_22rem]">
           <div className="bg-checker relative flex min-h-[40vh] items-center justify-center overflow-hidden p-6">
             {tab === "crop" && !comparing && (
-              <CropView el={draft} crop={crop} ratio={aspect === "free" ? null : aspectRatio(aspect, draft)} onChange={(next) => patch({ crop: next })} />
+              <CropView
+                el={draft}
+                crop={crop}
+                ratio={aspect === "free" ? null : aspectRatio(aspect, draft)}
+                onChange={(next) => patch({ crop: next })}
+              />
             )}
-            {tab === "cutout" && !comparing && (source && mask && previewMask ? (
-              <CutoutView source={source} mask={mask} preview={previewMask} version={maskVersion} settings={cutout} onEdit={() => touchMask()} />
-            ) : (
-              <Loader2 className="size-6 animate-spin text-muted-foreground" aria-label={t("loading")} />
-            ))}
-            {(tab === "adjust" || tab === "curves" || tab === "presets" || comparing) && <ElementPreview el={shown} picking={picking && !comparing} onPick={(x, y) => void pickWhite(x, y)} />}
-            {picking && <p className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full bg-background/90 px-3 py-1 text-xs shadow">{t("pickHint")}</p>}
+            {tab === "cutout" &&
+              !comparing &&
+              (source && mask && previewMask ? (
+                <CutoutView
+                  source={source}
+                  mask={mask}
+                  preview={previewMask}
+                  version={maskVersion}
+                  settings={cutout}
+                  onEdit={() => touchMask()}
+                />
+              ) : (
+                <Loader2 className="text-muted-foreground size-6 animate-spin" aria-label={t("loading")} />
+              ))}
+            {(tab === "adjust" || tab === "curves" || tab === "presets" || comparing) && (
+              <ElementPreview
+                el={shown}
+                picking={picking && !comparing}
+                onPick={(x, y) => void pickWhite(x, y)}
+              />
+            )}
+            {picking && (
+              <p className="bg-background/90 absolute top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs shadow">
+                {t("pickHint")}
+              </p>
+            )}
           </div>
 
           <aside className="flex min-h-0 flex-col border-l">
@@ -307,7 +380,12 @@ export function PhotoEditor({
                     setTab(id);
                     setPicking(false);
                   }}
-                  className={cn("h-8 shrink-0 rounded-md px-2.5 text-xs font-medium", tab === id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted")}
+                  className={cn(
+                    "h-8 shrink-0 rounded-md px-2.5 text-xs font-medium",
+                    tab === id
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted",
+                  )}
                 >
                   {t(`tabs.${id}`)}
                 </button>
@@ -315,17 +393,30 @@ export function PhotoEditor({
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
               {(tab === "adjust" || tab === "curves") && <HistogramView histogram={hist} className="mb-4" />}
-              {tab === "adjust" && <AdjustPanel adjust={adjust} onChange={setAdjust} picking={picking} onPick={setPicking} />}
-              {tab === "curves" && <CurvesEditor curves={adjust.curves} histogram={hist} onChange={(curves) => setAdjust({ ...adjust, curves })} />}
-              {tab === "presets" && <PresetsPanel el={draft} thumbSrc={thumb?.src ?? null} current={adjust} onPick={setAdjust} />}
-              {tab === "crop" && <CropPanel el={draft} aspect={aspect} onAspect={chooseAspect} onChange={patch} />}
+              {tab === "adjust" && (
+                <AdjustPanel adjust={adjust} onChange={setAdjust} picking={picking} onPick={setPicking} />
+              )}
+              {tab === "curves" && (
+                <CurvesEditor
+                  curves={adjust.curves}
+                  histogram={hist}
+                  onChange={(curves) => setAdjust({ ...adjust, curves })}
+                />
+              )}
+              {tab === "presets" && (
+                <PresetsPanel el={draft} thumbSrc={thumb?.src ?? null} current={adjust} onPick={setAdjust} />
+              )}
+              {tab === "crop" && (
+                <CropPanel el={draft} aspect={aspect} onAspect={chooseAspect} onChange={patch} />
+              )}
               {tab === "cutout" && (
                 <CutoutPanel
                   el={draft}
                   settings={cutout}
                   onSettings={(next) => setCutout((c) => ({ ...c, ...next }))}
                   onAuto={() => {
-                    if (source) touchMask(removeBackground(source, cutout.tolerance, { holes: cutout.holes }));
+                    if (source)
+                      touchMask(removeBackground(source, cutout.tolerance, { holes: cutout.holes }));
                   }}
                   onAi={() => ai.mutate()}
                   aiAvailable={Boolean(caps?.cutout && projectId)}

@@ -65,7 +65,9 @@ export async function prepareImage(file: File): Promise<string> {
 }
 
 function sameImage(a: SiteImage, b: SiteImage) {
-  return a.kind === "media" ? b.kind === "media" && a.id === b.id : b.kind === "mockup" && a.scene === b.scene;
+  return a.kind === "media"
+    ? b.kind === "media" && a.id === b.id
+    : b.kind === "mockup" && a.scene === b.scene;
 }
 
 function Tile({
@@ -94,8 +96,8 @@ function Tile({
         title={label}
         onClick={onClick}
         className={cn(
-          "block aspect-[4/3] w-full overflow-hidden rounded-lg border-2 bg-muted transition",
-          selected ? "border-primary" : "border-transparent hover:border-muted-foreground/40",
+          "bg-muted block aspect-[4/3] w-full overflow-hidden rounded-lg border-2 transition",
+          selected ? "border-primary" : "hover:border-muted-foreground/40 border-transparent",
         )}
       >
         {src ? (
@@ -105,7 +107,7 @@ function Tile({
           <span className="text-xs">{label}</span>
         )}
         {selected && (
-          <span className="absolute top-1 left-1 rounded-full bg-primary p-0.5 text-primary-foreground">
+          <span className="bg-primary text-primary-foreground absolute top-1 left-1 rounded-full p-0.5">
             <Check className="size-3" aria-hidden="true" />
           </span>
         )}
@@ -190,15 +192,17 @@ export function ImagePicker({
           onClick={() => onChange([])}
           className={cn(
             "flex items-center gap-2 rounded-lg border-2 px-3 py-2 text-left text-sm",
-            value.length === 0 ? "border-primary" : "border-transparent bg-muted hover:border-muted-foreground/40",
+            value.length === 0
+              ? "border-primary"
+              : "bg-muted hover:border-muted-foreground/40 border-transparent",
           )}
         >
-          {value.length === 0 && <Check className="size-4 text-primary" aria-hidden="true" />}
+          {value.length === 0 && <Check className="text-primary size-4" aria-hidden="true" />}
           {t("none")}
         </button>
       )}
       <div>
-        <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("mockups")}</p>
+        <p className="text-muted-foreground mb-1.5 text-xs font-medium">{t("mockups")}</p>
         <div className="grid grid-cols-4 gap-2">
           {MOCKUP_SCENES.map((scene) => {
             const image: SiteImage = { kind: "mockup", scene: scene.id };
@@ -216,7 +220,7 @@ export function ImagePicker({
         </div>
       </div>
       <div>
-        <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("uploads")}</p>
+        <p className="text-muted-foreground mb-1.5 text-xs font-medium">{t("uploads")}</p>
         <div className="grid grid-cols-4 gap-2">
           {media.map((item) => {
             const image: SiteImage = { kind: "media", id: item.id, alt: item.alt };
@@ -237,9 +241,13 @@ export function ImagePicker({
             type="button"
             disabled={disabled || uploading}
             onClick={() => input.current?.click()}
-            className="flex aspect-[4/3] flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-xs text-muted-foreground hover:border-primary hover:text-foreground disabled:opacity-50"
+            className="text-muted-foreground hover:border-primary hover:text-foreground flex aspect-[4/3] flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-xs disabled:opacity-50"
           >
-            {uploading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <ImagePlus className="size-4" aria-hidden="true" />}
+            {uploading ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <ImagePlus className="size-4" aria-hidden="true" />
+            )}
             {uploading ? t("uploading") : t("upload")}
           </button>
         </div>

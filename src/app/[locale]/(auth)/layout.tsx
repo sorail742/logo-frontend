@@ -26,11 +26,19 @@ export default async function AuthLayout({ children, params }: LayoutProps<"/[lo
             {children}
           </main>
         </div>
-        <aside className="relative isolate hidden overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-900 to-slate-950 p-12 text-white lg:flex lg:flex-col lg:justify-center">
-          <div className="absolute -top-24 -right-24 -z-10 size-96 rounded-full bg-emerald-400/20 blur-3xl" aria-hidden="true" />
-          <div className="absolute -bottom-32 -left-24 -z-10 size-96 rounded-full bg-amber-400/15 blur-3xl" aria-hidden="true" />
+        <aside className="relative isolate hidden overflow-hidden bg-[linear-gradient(145deg,#11372f_0%,#17483d_58%,#1c2d28_100%)] p-12 text-white lg:flex lg:flex-col lg:justify-center">
+          <div
+            className="absolute -top-24 -right-24 -z-10 size-96 rounded-full bg-emerald-300/10 blur-3xl"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute -bottom-32 -left-24 -z-10 size-96 rounded-full bg-amber-300/8 blur-3xl"
+            aria-hidden="true"
+          />
           <div className="mx-auto w-full max-w-xl">
-            <p className="text-xs font-semibold tracking-[0.18em] text-emerald-300 uppercase">{t("studio.kicker")}</p>
+            <p className="text-xs font-semibold tracking-[0.18em] text-emerald-300 uppercase">
+              {t("studio.kicker")}
+            </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-balance">{t("studio.title")}</h2>
             <ul className="mt-5 grid gap-2 text-sm text-white/80">
               {(t.raw("bento.studio.points") as string[]).map((point) => (

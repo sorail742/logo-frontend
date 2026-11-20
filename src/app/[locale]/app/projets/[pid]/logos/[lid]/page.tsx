@@ -41,7 +41,10 @@ export default function LogoEditorPage() {
   const [label, setLabel] = useState("");
 
   const { data: logo } = useQuery({ queryKey: qk.logo(lid), queryFn: () => api.logos.get(lid) });
-  const { data: versions = [] } = useQuery({ queryKey: qk.logoVersions(lid), queryFn: () => api.logos.versions(lid) });
+  const { data: versions = [] } = useQuery({
+    queryKey: qk.logoVersions(lid),
+    queryFn: () => api.logos.versions(lid),
+  });
 
   useEffect(() => {
     if (logo && useLogoEditor.getState().logoId !== logo.id) load(logo.id, logo.current.spec);
@@ -76,7 +79,16 @@ export default function LogoEditorPage() {
   });
 
   const main = useMemo(() => (spec ? renderLogoSvg(spec).svg : ""), [spec]);
-  const tiny = useMemo(() => (spec ? renderLogoSvg({ ...spec, iconFrame: spec.iconFrame === "none" ? "circle" : spec.iconFrame }, { layout: "icon" }).svg : ""), [spec]);
+  const tiny = useMemo(
+    () =>
+      spec
+        ? renderLogoSvg(
+            { ...spec, iconFrame: spec.iconFrame === "none" ? "circle" : spec.iconFrame },
+            { layout: "icon" },
+          ).svg
+        : "",
+    [spec],
+  );
 
   if (!spec || !logo || useLogoEditor.getState().logoId !== lid) {
     return <Skeleton className="h-96 w-full rounded-xl" />;
@@ -96,10 +108,24 @@ export default function LogoEditorPage() {
         {dirty && <span className="text-xs text-amber-700 dark:text-amber-300">{t("editor.unsaved")}</span>}
         {canEdit && (
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="outline" size="icon" onClick={undo} disabled={!past.length} aria-label={t("editor.undo")} title={t("editor.undo")}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={undo}
+              disabled={!past.length}
+              aria-label={t("editor.undo")}
+              title={t("editor.undo")}
+            >
               <Undo2 />
             </Button>
-            <Button variant="outline" size="icon" onClick={redo} disabled={!future.length} aria-label={t("editor.redo")} title={t("editor.redo")}>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={redo}
+              disabled={!future.length}
+              aria-label={t("editor.redo")}
+              title={t("editor.redo")}
+            >
               <Redo2 />
             </Button>
             <Button onClick={() => setSaveOpen(true)} disabled={!dirty}>
@@ -131,7 +157,7 @@ export default function LogoEditorPage() {
                   <div className="flex size-8 items-center justify-center overflow-hidden rounded-md bg-neutral-900">
                     <SvgView svg={tiny} className="size-8" />
                   </div>
-                  <span className="text-xs text-muted-foreground">{t("editor.readability")}</span>
+                  <span className="text-muted-foreground text-xs">{t("editor.readability")}</span>
                 </div>
               </div>
               <LogoMockups spec={spec} />
@@ -140,12 +166,27 @@ export default function LogoEditorPage() {
 
           <VariantsGrid spec={spec} />
 
-          <MockupGallery spec={spec} canDownload={can("export.download")} isFree={credits.data?.planCode === "FREE"} />
+          <MockupGallery
+            spec={spec}
+            canDownload={can("export.download")}
+            isFree={credits.data?.planCode === "FREE"}
+          />
 
-          <LogoAnimationPanel spec={spec} canDownload={can("export.download")} isFree={credits.data?.planCode === "FREE"} />
+          <LogoAnimationPanel
+            spec={spec}
+            canDownload={can("export.download")}
+            isFree={credits.data?.planCode === "FREE"}
+          />
 
           <div className="grid gap-6 xl:grid-cols-2">
-            {can("export.download") && <ExportPanel spec={spec} logoId={lid} isFree={credits.data?.planCode === "FREE"} saved={!dirty} />}
+            {can("export.download") && (
+              <ExportPanel
+                spec={spec}
+                logoId={lid}
+                isFree={credits.data?.planCode === "FREE"}
+                saved={!dirty}
+              />
+            )}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-sm">
@@ -157,16 +198,28 @@ export default function LogoEditorPage() {
                 <ol className="grid gap-2">
                   {versions.map((version) => (
                     <li key={version.id} className="flex items-center gap-3 rounded-lg border p-2">
-                      <SvgView svg={renderLogoSvg(version.spec).svg} className="bg-checker h-10 w-16 shrink-0 rounded p-1" />
+                      <SvgView
+                        svg={renderLogoSvg(version.spec).svg}
+                        className="bg-checker h-10 w-16 shrink-0 rounded p-1"
+                      />
                       <div className="min-w-0 flex-1 text-sm">
                         <p className="truncate font-medium">
                           v{version.number}
                           {version.label ? ` · ${version.label}` : ""}
                         </p>
-                        <p className="text-xs text-muted-foreground">{format.dateTime(new Date(version.createdAt), { dateStyle: "medium", timeStyle: "short" })}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {format.dateTime(new Date(version.createdAt), {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </p>
                       </div>
                       {canEdit && (
-                        <Button variant="ghost" size="sm" onClick={() => useLogoEditor.getState().update(version.spec)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => useLogoEditor.getState().update(version.spec)}
+                        >
                           {t("editor.restore")}
                         </Button>
                       )}
@@ -187,7 +240,12 @@ export default function LogoEditorPage() {
             <DialogTitle>{t("editor.saveVersion")}</DialogTitle>
           </DialogHeader>
           <Field label={t("editor.versionLabel")} htmlFor="version-label">
-            <Input id="version-label" value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t("editor.versionLabelPlaceholder")} />
+            <Input
+              id="version-label"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder={t("editor.versionLabelPlaceholder")}
+            />
           </Field>
           <DialogFooter>
             <Button onClick={() => save.mutate()} disabled={save.isPending}>

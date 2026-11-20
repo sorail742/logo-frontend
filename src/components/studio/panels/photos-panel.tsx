@@ -24,7 +24,11 @@ type Orientation = PhotoOrientation | "all";
 const ORIENTATIONS: Orientation[] = ["all", "landscape", "portrait", "square"];
 
 export function useCapabilities() {
-  return useQuery({ queryKey: qk.capabilities, queryFn: () => api.library.capabilities(), staleTime: 10 * 60_000 });
+  return useQuery({
+    queryKey: qk.capabilities,
+    queryFn: () => api.library.capabilities(),
+    staleTime: 10 * 60_000,
+  });
 }
 
 function Unavailable() {
@@ -32,9 +36,9 @@ function Unavailable() {
   const { pickImages } = useStudioContext();
   return (
     <div className="grid justify-items-center gap-3 rounded-xl border border-dashed px-4 py-8 text-center">
-      <Images className="size-8 text-muted-foreground" aria-hidden="true" />
+      <Images className="text-muted-foreground size-8" aria-hidden="true" />
       <p className="text-sm font-semibold">{t("unavailableTitle")}</p>
-      <p className="text-xs leading-relaxed text-muted-foreground">{t("unavailable")}</p>
+      <p className="text-muted-foreground text-xs leading-relaxed">{t("unavailable")}</p>
       <Button size="sm" variant="outline" onClick={() => pickImages(null)}>
         <ImageUp />
         {t("importOwn")}
@@ -43,13 +47,38 @@ function Unavailable() {
   );
 }
 
-function PhotoTile({ photo, busy, disabled, onAdd }: { photo: LibraryPhoto; busy: boolean; disabled: boolean; onAdd(): void }) {
+function PhotoTile({
+  photo,
+  busy,
+  disabled,
+  onAdd,
+}: {
+  photo: LibraryPhoto;
+  busy: boolean;
+  disabled: boolean;
+  onAdd(): void;
+}) {
   const t = useTranslations("studio.photos");
   return (
-    <div className="group relative overflow-hidden rounded-lg" style={{ aspectRatio: `${photo.width} / ${photo.height}`, background: photo.color ?? undefined }}>
-      <button type="button" onClick={onAdd} disabled={disabled} className="block size-full disabled:cursor-wait" aria-label={t("add", { author: photo.author })} title={photo.alt || undefined}>
+    <div
+      className="group relative overflow-hidden rounded-lg"
+      style={{ aspectRatio: `${photo.width} / ${photo.height}`, background: photo.color ?? undefined }}
+    >
+      <button
+        type="button"
+        onClick={onAdd}
+        disabled={disabled}
+        className="block size-full disabled:cursor-wait"
+        aria-label={t("add", { author: photo.author })}
+        title={photo.alt || undefined}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element -- vignette servie par Pexels */}
-        <img src={photo.thumbUrl} alt="" loading="lazy" className="size-full object-cover transition group-hover:scale-[1.03]" />
+        <img
+          src={photo.thumbUrl}
+          alt=""
+          loading="lazy"
+          className="size-full object-cover transition group-hover:scale-[1.03]"
+        />
       </button>
       {busy && (
         <span className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
@@ -87,7 +116,13 @@ export function PhotosPanel() {
   const filter = query ? orientation : "all";
   const photos = useInfiniteQuery({
     queryKey: qk.photos(query, filter),
-    queryFn: ({ pageParam }) => api.library.photos({ q: query || undefined, page: pageParam, orientation: filter === "all" ? undefined : filter, locale }),
+    queryFn: ({ pageParam }) =>
+      api.library.photos({
+        q: query || undefined,
+        page: pageParam,
+        orientation: filter === "all" ? undefined : filter,
+        locale,
+      }),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.hasMore && last.page < 50 ? last.page + 1 : undefined),
     enabled: capabilities.data?.photos === true,
@@ -96,9 +131,13 @@ export function PhotosPanel() {
   });
 
   if (capabilities.isPending) {
-    return <Loader2 className="mx-auto mt-8 size-5 animate-spin text-muted-foreground" aria-hidden="true" />;
+    return <Loader2 className="text-muted-foreground mx-auto mt-8 size-5 animate-spin" aria-hidden="true" />;
   }
-  if (!capabilities.data?.photos || (photos.error instanceof ApiError && photos.error.code === "NOT_AVAILABLE")) return <Unavailable />;
+  if (
+    !capabilities.data?.photos ||
+    (photos.error instanceof ApiError && photos.error.code === "NOT_AVAILABLE")
+  )
+    return <Unavailable />;
 
   const add = async (photo: LibraryPhoto) => {
     setAdding(photo.id);
@@ -128,7 +167,10 @@ export function PhotosPanel() {
   return (
     <div className="grid gap-3">
       <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <Search
+          className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
+          aria-hidden="true"
+        />
         <Input
           type="search"
           value={input}
@@ -143,7 +185,12 @@ export function PhotosPanel() {
           className="pr-8 pl-8"
         />
         {input && (
-          <button type="button" onClick={() => setInput("")} className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground" aria-label={t("clear")}>
+          <button
+            type="button"
+            onClick={() => setInput("")}
+            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5"
+            aria-label={t("clear")}
+          >
             <X className="size-3.5" />
           </button>
         )}
@@ -158,7 +205,12 @@ export function PhotosPanel() {
               role="radio"
               aria-checked={orientation === o}
               onClick={() => setOrientation(o)}
-              className={cn("rounded-full border px-2.5 py-0.5 text-[11px] transition", orientation === o ? "border-primary bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:border-primary/50")}
+              className={cn(
+                "rounded-full border px-2.5 py-0.5 text-[11px] transition",
+                orientation === o
+                  ? "border-primary bg-primary/10 text-primary font-medium"
+                  : "text-muted-foreground hover:border-primary/50",
+              )}
             >
               {t(`orientations.${o}`)}
             </button>
@@ -167,7 +219,12 @@ export function PhotosPanel() {
       ) : (
         <div className="flex flex-wrap gap-1">
           {(t.raw("suggestions") as string[]).map((word) => (
-            <button key={word} type="button" onClick={() => setInput(word)} className="rounded-full border px-2 py-0.5 text-[11px] text-muted-foreground transition hover:border-primary hover:text-foreground">
+            <button
+              key={word}
+              type="button"
+              onClick={() => setInput(word)}
+              className="text-muted-foreground hover:border-primary hover:text-foreground rounded-full border px-2 py-0.5 text-[11px] transition"
+            >
               {word}
             </button>
           ))}
@@ -179,11 +236,15 @@ export function PhotosPanel() {
       {photos.isPending ? (
         <div className="grid grid-cols-2 gap-1.5" aria-busy="true">
           {Array.from({ length: 8 }, (_, i) => (
-            <div key={i} className="animate-pulse rounded-lg bg-muted" style={{ aspectRatio: i % 3 ? "3 / 4" : "4 / 3" }} />
+            <div
+              key={i}
+              className="bg-muted animate-pulse rounded-lg"
+              style={{ aspectRatio: i % 3 ? "3 / 4" : "4 / 3" }}
+            />
           ))}
         </div>
       ) : photos.isError ? (
-        <div className="grid justify-items-center gap-2 py-6 text-center text-xs text-muted-foreground">
+        <div className="text-muted-foreground grid justify-items-center gap-2 py-6 text-center text-xs">
           {t("error")}
           <Button size="sm" variant="outline" onClick={() => photos.refetch()}>
             <RotateCw />
@@ -191,20 +252,31 @@ export function PhotosPanel() {
           </Button>
         </div>
       ) : unique.length === 0 ? (
-        <p className="py-6 text-center text-xs text-muted-foreground">{t("empty")}</p>
+        <p className="text-muted-foreground py-6 text-center text-xs">{t("empty")}</p>
       ) : (
         <>
           <div className="grid grid-cols-2 items-start gap-1.5">
             {columns.map((column, index) => (
               <div key={index} className="grid gap-1.5">
                 {column.map((photo) => (
-                  <PhotoTile key={photo.id} photo={photo} busy={adding === photo.id} disabled={adding !== null} onAdd={() => add(photo)} />
+                  <PhotoTile
+                    key={photo.id}
+                    photo={photo}
+                    busy={adding === photo.id}
+                    disabled={adding !== null}
+                    onAdd={() => add(photo)}
+                  />
                 ))}
               </div>
             ))}
           </div>
           {photos.hasNextPage && (
-            <Button variant="outline" size="sm" onClick={() => photos.fetchNextPage()} disabled={photos.isFetchingNextPage}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => photos.fetchNextPage()}
+              disabled={photos.isFetchingNextPage}
+            >
               {photos.isFetchingNextPage && <Loader2 className="animate-spin" />}
               {t("more")}
             </Button>
@@ -212,8 +284,13 @@ export function PhotosPanel() {
         </>
       )}
 
-      <p className="text-[11px] leading-relaxed text-muted-foreground">
-        <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground hover:underline">
+      <p className="text-muted-foreground text-[11px] leading-relaxed">
+        <a
+          href="https://www.pexels.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-foreground font-medium hover:underline"
+        >
           {t("provided")}
         </a>
         {" · "}

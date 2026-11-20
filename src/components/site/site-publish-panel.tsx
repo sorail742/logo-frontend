@@ -3,12 +3,30 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useFormatter, useTranslations } from "next-intl";
-import { Copy, Download, ExternalLink, FileArchive, Globe, Loader2, MessageCircle, Rocket, Trash2, WifiOff } from "lucide-react";
+import {
+  Copy,
+  Download,
+  ExternalLink,
+  FileArchive,
+  Globe,
+  Loader2,
+  MessageCircle,
+  Rocket,
+  Trash2,
+  WifiOff,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ButtonLink } from "@/components/common/button-link";
 import { Field } from "@/components/common/field";
@@ -114,7 +132,9 @@ export function SitePublishPanel({
         <CardContent className="grid gap-3">
           <Field label={t("slugLabel")} hint={t("slugHint")} htmlFor="site-slug">
             <div className="flex items-center gap-2">
-              <span className="hidden shrink-0 text-sm text-muted-foreground sm:inline">{website.url.replace(/\/[^/]*$/, "/")}</span>
+              <span className="text-muted-foreground hidden shrink-0 text-sm sm:inline">
+                {website.url.replace(/\/[^/]*$/, "/")}
+              </span>
               <Input
                 id="site-slug"
                 value={slug}
@@ -126,12 +146,18 @@ export function SitePublishPanel({
             </div>
           </Field>
           {canEdit && slug !== website.slug && (
-            <Button type="button" variant="outline" size="sm" disabled={!slugValid || saveSlug.isPending} onClick={() => saveSlug.mutate()}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!slugValid || saveSlug.isPending}
+              onClick={() => saveSlug.mutate()}
+            >
               {t("saveSlug")}
             </Button>
           )}
           {website.dirty && <p className="text-xs text-amber-700 dark:text-amber-400">{t("dirtyHint")}</p>}
-          {demo && <p className="text-xs text-muted-foreground">{t("mockNotice")}</p>}
+          {demo && <p className="text-muted-foreground text-xs">{t("mockNotice")}</p>}
           <div className="flex flex-wrap gap-2">
             {canEdit && (!website.published || website.dirty) && (
               <Button type="button" disabled={publishing} onClick={publish}>
@@ -145,7 +171,12 @@ export function SitePublishPanel({
               </Button>
             )}
             {canEdit && website.published && (
-              <Button type="button" variant="ghost" disabled={unpublish.isPending} onClick={() => unpublish.mutate()}>
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={unpublish.isPending}
+                onClick={() => unpublish.mutate()}
+              >
                 <WifiOff /> {t("unpublish")}
               </Button>
             )}
@@ -173,7 +204,7 @@ export function SitePublishPanel({
                 <Copy /> {t("copy")}
               </Button>
               <a
-                className="inline-flex h-7 items-center gap-1 rounded-lg border px-2.5 text-[0.8rem] hover:bg-muted"
+                className="hover:bg-muted inline-flex h-7 items-center gap-1 rounded-lg border px-2.5 text-[0.8rem]"
                 href={`https://wa.me/?text=${encodeURIComponent(t("shareText", { url: website.url }))}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -208,13 +239,18 @@ export function SitePublishPanel({
           <CardContent className="flex flex-wrap items-center gap-2">
             {website.free ? (
               <>
-                <p className="text-sm text-muted-foreground">{t("exportFree")}</p>
+                <p className="text-muted-foreground text-sm">{t("exportFree")}</p>
                 <ButtonLink href="/app/facturation" size="sm" variant="outline">
                   {t("upgrade")}
                 </ButtonLink>
               </>
             ) : (
-              <Button type="button" variant="outline" disabled={exportZip.isPending} onClick={() => exportZip.mutate()}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={exportZip.isPending}
+                onClick={() => exportZip.mutate()}
+              >
                 {exportZip.isPending ? <Loader2 className="animate-spin" /> : <Globe />} {t("export")}
               </Button>
             )}
@@ -245,7 +281,12 @@ export function SitePublishPanel({
             <Button type="button" variant="outline" onClick={() => setConfirming(false)}>
               {t("cancel")}
             </Button>
-            <Button type="button" variant="destructive" disabled={remove.isPending} onClick={() => remove.mutate()}>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={remove.isPending}
+              onClick={() => remove.mutate()}
+            >
               {t("delete")}
             </Button>
           </DialogFooter>

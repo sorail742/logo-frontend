@@ -20,7 +20,11 @@ import { ComingSoon } from "@/components/common/coming-soon";
 function toCsv(payments: Payment[]) {
   const header = ["id", "date", "espace", "moyen", "montant_gnf", "statut", "offre"];
   const escape = (value: string) => `"${value.replace(/"/g, '""')}"`;
-  const rows = payments.map((p) => [p.id, p.createdAt, p.workspaceName ?? "", p.provider, String(p.amountGnf), p.status, p.planCode ?? ""].map(escape).join(";"));
+  const rows = payments.map((p) =>
+    [p.id, p.createdAt, p.workspaceName ?? "", p.provider, String(p.amountGnf), p.status, p.planCode ?? ""]
+      .map(escape)
+      .join(";"),
+  );
   return [header.join(";"), ...rows].join("\n");
 }
 
@@ -49,12 +53,17 @@ function AdminPaymentsContent() {
 
   return (
     <div className="grid gap-4">
-      <Button variant="outline" className="justify-self-end" onClick={() => downloadBlob(new Blob(["﻿", toCsv(payments)], { type: "text/csv" }), "paiements.csv")} disabled={!payments.length}>
+      <Button
+        variant="outline"
+        className="justify-self-end"
+        onClick={() => downloadBlob(new Blob(["﻿", toCsv(payments)], { type: "text/csv" }), "paiements.csv")}
+        disabled={!payments.length}
+      >
         <Download />
         {t("exportCsv")}
       </Button>
       {payments.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">{t("empty")}</p>
+        <p className="text-muted-foreground py-10 text-center text-sm">{t("empty")}</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border">
           <Table>
@@ -71,16 +80,34 @@ function AdminPaymentsContent() {
             <TableBody>
               {payments.map((payment) => (
                 <TableRow key={payment.id}>
-                  <TableCell className="whitespace-nowrap">{format.dateTime(new Date(payment.createdAt), { dateStyle: "short", timeStyle: "short" })}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {format.dateTime(new Date(payment.createdAt), { dateStyle: "short", timeStyle: "short" })}
+                  </TableCell>
                   <TableCell>{payment.workspaceName}</TableCell>
                   <TableCell>{tb(payment.provider)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatGnf(payment.amountGnf, locale)}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {formatGnf(payment.amountGnf, locale)}
+                  </TableCell>
                   <TableCell>
-                    <Badge variant={payment.status === "SUCCEEDED" ? "default" : payment.status === "FAILED" ? "destructive" : "secondary"}>{payment.status}</Badge>
+                    <Badge
+                      variant={
+                        payment.status === "SUCCEEDED"
+                          ? "default"
+                          : payment.status === "FAILED"
+                            ? "destructive"
+                            : "secondary"
+                      }
+                    >
+                      {payment.status}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     {canRefund && payment.status === "SUCCEEDED" && (
-                      <Button variant="ghost" size="sm" onClick={() => window.confirm(t("refundConfirm")) && refund.mutate(payment.id)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.confirm(t("refundConfirm")) && refund.mutate(payment.id)}
+                      >
                         {t("refund")}
                       </Button>
                     )}

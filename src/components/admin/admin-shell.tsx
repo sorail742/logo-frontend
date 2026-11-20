@@ -35,7 +35,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
   if (!isInternalRole(user.role)) {
     return (
       <div className="p-10">
-        <EmptyState icon={ShieldAlert} title={t("denied")} action={<ButtonLink href="/app">{t("backToApp")}</ButtonLink>} />
+        <EmptyState
+          icon={ShieldAlert}
+          title={t("denied")}
+          action={<ButtonLink href="/app">{t("backToApp")}</ButtonLink>}
+        />
       </div>
     );
   }
@@ -43,13 +47,19 @@ export function AdminShell({ children }: { children: ReactNode }) {
   if (!user.totpEnabled) {
     return (
       <div className="p-10">
-        <EmptyState icon={ShieldAlert} title={t("require2fa")} action={<ButtonLink href="/app/profil">{t("enable2fa")}</ButtonLink>} />
+        <EmptyState
+          icon={ShieldAlert}
+          title={t("require2fa")}
+          action={<ButtonLink href="/app/profil">{t("enable2fa")}</ButtonLink>}
+        />
       </div>
     );
   }
 
   const sections = SECTIONS.filter((s) => canAccessAdmin(user.role, s.id));
-  const current = [...sections].reverse().find((s) => (s.path === "/admin" ? pathname === "/admin" : pathname.startsWith(s.path)));
+  const current = [...sections]
+    .reverse()
+    .find((s) => (s.path === "/admin" ? pathname === "/admin" : pathname.startsWith(s.path)));
   const allowed = current ? canAccessAdmin(user.role, current.id) : true;
 
   return (
@@ -57,8 +67,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <MockBanner />
       <header className="flex h-14 items-center gap-3 border-b px-4">
         <PlatformLogo />
-        <span className="rounded-md bg-foreground px-2 py-0.5 text-xs font-medium text-background">{t("title")}</span>
-        <Link href="/app" className="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <span className="bg-foreground text-background rounded-md px-2 py-0.5 text-xs font-medium">
+          {t("title")}
+        </span>
+        <Link
+          href="/app"
+          className="text-muted-foreground hover:text-foreground ml-auto inline-flex items-center gap-1 text-sm"
+        >
           <ArrowLeft className="size-4" aria-hidden="true" />
           {t("backToApp")}
         </Link>
@@ -72,7 +87,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 aria-current={current?.id === section.id ? "page" : undefined}
                 className={cn(
                   "-mb-px block border-b-2 px-3 py-2.5 text-sm",
-                  current?.id === section.id ? "border-primary font-medium" : "border-transparent text-muted-foreground hover:text-foreground",
+                  current?.id === section.id
+                    ? "border-primary font-medium"
+                    : "text-muted-foreground hover:text-foreground border-transparent",
                 )}
               >
                 {t(`nav.${section.id}`)}
@@ -82,7 +99,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </ul>
       </nav>
       <main id="contenu" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
-        <p className="mb-4 text-xs text-muted-foreground">{t("audited")}</p>
+        <p className="text-muted-foreground mb-4 text-xs">{t("audited")}</p>
         {allowed ? children : <EmptyState icon={ShieldAlert} title={t("denied")} />}
       </main>
     </div>

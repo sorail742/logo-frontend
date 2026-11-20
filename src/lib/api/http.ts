@@ -27,7 +27,12 @@ const FEATURES: Record<ApiFeature, boolean> = {
 
 /** Action d'un module pas encore servi par l'API. */
 function unavailable(): never {
-  throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Cette fonction arrive avec une prochaine version de la plateforme.");
+  throw problem(
+    501,
+    "Bientôt disponible",
+    "NOT_AVAILABLE",
+    "Cette fonction arrive avec une prochaine version de la plateforme.",
+  );
 }
 
 /** Lecture d'un module pas encore servi : liste vide plutôt qu'une erreur à l'écran. */
@@ -75,7 +80,12 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     method: options.method ?? "GET",
     headers,
     credentials: "include",
-    body: options.body === undefined ? undefined : isForm ? (options.body as FormData) : JSON.stringify(options.body),
+    body:
+      options.body === undefined
+        ? undefined
+        : isForm
+          ? (options.body as FormData)
+          : JSON.stringify(options.body),
   });
 
   if (response.status === 401 && options.auth !== false && options.retry !== false) {
@@ -100,14 +110,16 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
 const get = <T>(path: string) => request<T>(path);
 /** Liste paginée par curseur (§13.1) : première page de 100 éléments. */
-const items = async <T>(path: string) => (await request<{ items: T[] }>(`${path}${path.includes("?") ? "&" : "?"}limit=100`)).items;
+const items = async <T>(path: string) =>
+  (await request<{ items: T[] }>(`${path}${path.includes("?") ? "&" : "?"}limit=100`)).items;
 const post = <T>(path: string, body?: unknown, idempotencyKey?: string) =>
   request<T>(path, { method: "POST", body: body ?? {}, idempotencyKey });
 const patch = <T>(path: string, body: unknown) => request<T>(path, { method: "PATCH", body });
 const put = <T>(path: string, body: unknown) => request<T>(path, { method: "PUT", body });
 const del = <T>(path: string) => request<T>(path, { method: "DELETE" });
 /** Route publique : ni jeton d'accès ni tentative de rafraîchissement. */
-const publicPost = <T>(path: string, body: unknown) => request<T>(path, { method: "POST", body, auth: false });
+const publicPost = <T>(path: string, body: unknown) =>
+  request<T>(path, { method: "POST", body, auth: false });
 
 /** Session ouverte : le jeton d'accès reste en mémoire. */
 function keep(session: Session) {
@@ -117,7 +129,11 @@ function keep(session: Session) {
 
 /** Progression affichée : l'API publie des états, pas de pourcentage. */
 function progressOf(status: JobStatus) {
-  return status === "SUCCEEDED" || status === "FAILED" || status === "CANCELED" ? 100 : status === "RUNNING" ? 50 : 5;
+  return status === "SUCCEEDED" || status === "FAILED" || status === "CANCELED"
+    ? 100
+    : status === "RUNNING"
+      ? 50
+      : 5;
 }
 
 /** Offre telle que l'API la renvoie (montants en chaîne, droits en objet). */
@@ -208,7 +224,8 @@ export const httpClient: ApiClient = {
       await post("/auth/logout").catch(() => undefined);
       tokenStore.set(null);
     },
-    google: async (idToken, totpCode) => keep(await publicPost<Session>("/auth/google", { idToken, totpCode })),
+    google: async (idToken, totpCode) =>
+      keep(await publicPost<Session>("/auth/google", { idToken, totpCode })),
     verifyEmail: (token) => publicPost("/auth/email/verify", { token }),
     requestOtp: (phone) => publicPost("/auth/otp/request", { phone }),
     verifyOtp: async (phone, code) => keep(await publicPost<Session>("/auth/otp/verify", { phone, code })),
@@ -217,7 +234,10 @@ export const httpClient: ApiClient = {
     setup2fa: () => post("/auth/2fa/setup"),
     // L'activation ouvre une session marquée 2FA : le nouveau jeton remplace l'ancien.
     verify2fa: async (code) => {
-      const { backupCodes, ...session } = await post<Session & { backupCodes: string[] }>("/auth/2fa/verify", { code });
+      const { backupCodes, ...session } = await post<Session & { backupCodes: string[] }>(
+        "/auth/2fa/verify",
+        { code },
+      );
       keep(session);
       return { backupCodes };
     },
@@ -230,7 +250,9 @@ export const httpClient: ApiClient = {
     // L'API renvoie les données en JSON : elles sont proposées au téléchargement telles quelles.
     exportData: async () => {
       const data = await get<unknown>("/me/export");
-      return { url: URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })) };
+      return {
+        url: URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })),
+      };
     },
   },
 
@@ -249,7 +271,9 @@ export const httpClient: ApiClient = {
 
   projects: {
     list: (wid, filters = {}) =>
-      items(`/workspaces/${wid}/projects${qs({ q: filters.q, type: filters.entityType, status: filters.status, trash: filters.trash })}`),
+      items(
+        `/workspaces/${wid}/projects${qs({ q: filters.q, type: filters.entityType, status: filters.status, trash: filters.trash })}`,
+      ),
     create: (wid, input) => post(`/workspaces/${wid}/projects`, input),
     get: (pid) => get(`/projects/${pid}`),
     update: (pid, body) => patch(`/projects/${pid}`, body),
@@ -264,7 +288,9 @@ export const httpClient: ApiClient = {
     generate: (pid, input, key) => post(`/projects/${pid}/names/generate`, input, key),
     list: (pid) => get(`/projects/${pid}/names`),
     update: (nid, body) => patch(`/names/${nid}`, body),
-    check: async (nid) => (await post<{ checks: Awaited<ReturnType<ApiClient["names"]["check"]>> }>(`/names/${nid}/checks`)).checks,
+    check: async (nid) =>
+      (await post<{ checks: Awaited<ReturnType<ApiClient["names"]["check"]>> }>(`/names/${nid}/checks`))
+        .checks,
     vote: (nid, value) => post(`/names/${nid}/votes`, { value }),
     choose: (pid, nameId) => post(`/projects/${pid}/chosen-name`, { nameId }),
     tryPublic: (input) => publicPost("/public/names/try", input),
@@ -306,7 +332,10 @@ export const httpClient: ApiClient = {
     share: (kid, input) => post(`/brand-kits/${kid}/share`, input),
     // Mot de passe en en-tête : il n'apparaît ni dans l'URL ni dans les journaux.
     publicKit: (token, password) =>
-      request(`/public/kits/${encodeURIComponent(token)}`, { auth: false, headers: password ? { "X-Kit-Password": password } : {} }),
+      request(`/public/kits/${encodeURIComponent(token)}`, {
+        auth: false,
+        headers: password ? { "X-Kit-Password": password } : {},
+      }),
   },
 
   studio: {
@@ -333,14 +362,31 @@ export const httpClient: ApiClient = {
     // Champs attendus seulement : les identifiants locaux de l'éditeur sont remplacés par l'API.
     saveElements: (did, elements) =>
       put(`/apparel-designs/${did}/elements`, {
-        elements: elements.map(({ zoneKey, kind, content, widthMm, heightMm, offsetXMm, offsetYMm, rotationDeg, zIndex }) => ({ zoneKey, kind, content, widthMm, heightMm, offsetXMm, offsetYMm, rotationDeg, zIndex })),
+        elements: elements.map(
+          ({ zoneKey, kind, content, widthMm, heightMm, offsetXMm, offsetYMm, rotationDeg, zIndex }) => ({
+            zoneKey,
+            kind,
+            content,
+            widthMm,
+            heightMm,
+            offsetXMm,
+            offsetYMm,
+            rotationDeg,
+            zIndex,
+          }),
+        ),
       }),
     check: (did, input) => post(`/apparel-designs/${did}/check`, input ?? {}),
     importRoster: (did, csv, name) => post(`/apparel-designs/${did}/roster/import`, { csv, name }),
     proof: (did) => post(`/apparel-designs/${did}/proof`, {}),
     revokeProof: (did) => post(`/apparel-designs/${did}/proof`, { revoke: true }),
     publicProof: (token) => request(`/public/proofs/${encodeURIComponent(token)}`, { auth: false }),
-    approveProof: (token, approverName) => request(`/public/proofs/${encodeURIComponent(token)}/approve`, { method: "POST", body: { approverName }, auth: false }),
+    approveProof: (token, approverName) =>
+      request(`/public/proofs/${encodeURIComponent(token)}/approve`, {
+        method: "POST",
+        body: { approverName },
+        auth: false,
+      }),
     productionExport: (did, input, key) => post(`/apparel-designs/${did}/production-export`, input, key),
   },
 
@@ -369,7 +415,10 @@ export const httpClient: ApiClient = {
   },
 
   comments: {
-    list: (pid, filter) => get(`/projects/${pid}/comments${filter ? `?targetType=${filter.targetType}&targetId=${filter.targetId}` : ""}`),
+    list: (pid, filter) =>
+      get(
+        `/projects/${pid}/comments${filter ? `?targetType=${filter.targetType}&targetId=${filter.targetId}` : ""}`,
+      ),
     create: (pid, input) => post(`/projects/${pid}/comments`, input),
     resolve: (cid, resolved) => patch(`/comments/${cid}`, { resolved }),
     remove: (cid) => del(`/comments/${cid}`),
@@ -381,7 +430,10 @@ export const httpClient: ApiClient = {
   },
 
   billing: {
-    plans: async () => (await request<ApiPlan[]>("/plans", { auth: false })).map(toPlan).filter((plan): plan is Plan => plan !== null),
+    plans: async () =>
+      (await request<ApiPlan[]>("/plans", { auth: false }))
+        .map(toPlan)
+        .filter((plan): plan is Plan => plan !== null),
     credits: (wid) => get(`/workspaces/${wid}/credits`),
     ledger: (wid) => items(`/workspaces/${wid}/ledger`),
     // Phase 6 : paiements, codes promo, justificatifs et factures.
@@ -396,14 +448,20 @@ export const httpClient: ApiClient = {
   library: {
     fonts: () => get("/library/fonts"),
     capabilities: () => get("/library/capabilities"),
-    photos: ({ q, page, orientation, locale }) => get(`/library/photos${qs({ q, page, orientation, locale })}`),
-    photoFile: (id) => request<Blob>(`/library/photos/${encodeURIComponent(id)}/file`, { blob: true, headers: { Accept: "image/*" } }),
+    photos: ({ q, page, orientation, locale }) =>
+      get(`/library/photos${qs({ q, page, orientation, locale })}`),
+    photoFile: (id) =>
+      request<Blob>(`/library/photos/${encodeURIComponent(id)}/file`, {
+        blob: true,
+        headers: { Accept: "image/*" },
+      }),
   },
 
   admin: {
     stats: () => get("/admin/stats"),
     users: (q) => items(`/admin/users${qs({ q })}`),
-    updateUser: (uid, { suspended, reset2fa }) => patch(`/admin/users/${uid}`, { suspended, resetTwoFactor: reset2fa }),
+    updateUser: (uid, { suspended, reset2fa }) =>
+      patch(`/admin/users/${uid}`, { suspended, resetTwoFactor: reset2fa }),
     adjustCredits: (input) => post("/admin/credits/adjust", input),
     requestCredits: (input) => post("/admin/credits/requests", input),
     creditRequests: (status) => get(`/admin/credits/requests${qs({ status })}`),
@@ -411,7 +469,8 @@ export const httpClient: ApiClient = {
     payments: none,
     refund: unavailable,
     moderation: () => get("/admin/moderation"),
-    review: (id, decision, note) => patch(`/admin/signatures/${id}/review`, { decision, note: note || undefined }),
+    review: (id, decision, note) =>
+      patch(`/admin/signatures/${id}/review`, { decision, note: note || undefined }),
     auditLogs: () => items("/admin/audit-logs"),
   },
 };

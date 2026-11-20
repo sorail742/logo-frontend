@@ -33,13 +33,33 @@ function TextBlock({ item, label }: { item: BrandText; label: string }) {
           {label}
         </label>
         <div className="flex items-center gap-1">
-          <span className={cn("text-[11px] tabular-nums", over ? "font-medium text-destructive" : "text-muted-foreground")}>{t("count", { count: value.length, limit: item.limit })}</span>
-          <Button variant="ghost" size="icon" className="size-7" onClick={copy} aria-label={`${t("copy")} — ${label}`} title={t("copy")}>
+          <span
+            className={cn(
+              "text-[11px] tabular-nums",
+              over ? "text-destructive font-medium" : "text-muted-foreground",
+            )}
+          >
+            {t("count", { count: value.length, limit: item.limit })}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            onClick={copy}
+            aria-label={`${t("copy")} — ${label}`}
+            title={t("copy")}
+          >
             {copied ? <Check /> : <Copy />}
           </Button>
         </div>
       </div>
-      <Textarea id={id} value={value} onChange={(e) => setValue(e.target.value)} rows={item.id === "linkedin" || item.id === "hashtags" ? 2 : 4} className="text-sm" />
+      <Textarea
+        id={id}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        rows={item.id === "linkedin" || item.id === "hashtags" ? 2 : 4}
+        className="text-sm"
+      />
     </div>
   );
 }

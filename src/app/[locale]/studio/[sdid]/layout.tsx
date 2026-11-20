@@ -6,5 +6,11 @@ export const metadata: Metadata = { title: "Studio", robots: { index: false, fol
 // Éditeur client plein écran (session, document) : rendu à la demande, sous Suspense.
 // La langue est déjà fixée par la mise en page [locale].
 export default function StudioLayout({ children }: Readonly<{ children: ReactNode }>) {
-  return <Suspense fallback={<output className="flex min-h-svh items-center justify-center bg-muted" aria-busy="true" />}>{children}</Suspense>;
+  return (
+    <Suspense
+      fallback={<output className="bg-muted flex min-h-svh items-center justify-center" aria-busy="true" />}
+    >
+      {children}
+    </Suspense>
+  );
 }

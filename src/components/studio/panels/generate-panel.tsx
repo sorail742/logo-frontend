@@ -38,8 +38,8 @@ function StylePreview({ style, palette }: { style: Style; palette: string[] }) {
   }, [style, palette]);
   if (!src) {
     return (
-      <span className="flex size-full items-center justify-center bg-gradient-to-br from-primary/20 to-amber-300/30">
-        <Sparkles className="size-5 text-primary" aria-hidden="true" />
+      <span className="from-primary/20 flex size-full items-center justify-center bg-gradient-to-br to-amber-300/30">
+        <Sparkles className="text-primary size-5" aria-hidden="true" />
       </span>
     );
   }
@@ -64,9 +64,14 @@ export function GeneratePanel() {
   const generate = async () => {
     setBusy(true);
     try {
-      const { jobId } = await api.studio.generateImages(projectId, { prompt: prompt.trim(), style, aspect, palette: useBrand ? palette : undefined }, crypto.randomUUID());
+      const { jobId } = await api.studio.generateImages(
+        projectId,
+        { prompt: prompt.trim(), style, aspect, palette: useBrand ? palette : undefined },
+        crypto.randomUUID(),
+      );
       const job = await waitForJob(jobId, 60_000);
-      if (job.status !== "SUCCEEDED" || !job.result?.images?.length) throw new Error(job.error ?? t("failed"));
+      if (job.status !== "SUCCEEDED" || !job.result?.images?.length)
+        throw new Error(job.error ?? t("failed"));
       setResults(job.result.images);
       setDemo(Boolean(job.result.demo));
     } catch (error) {
@@ -109,7 +114,12 @@ export function GeneratePanel() {
         />
         <div className="flex flex-wrap gap-1">
           {(t.raw("ideas") as string[]).map((idea) => (
-            <button key={idea} type="button" onClick={() => setPrompt(idea)} className="rounded-full border px-2 py-0.5 text-[11px] text-muted-foreground transition hover:border-primary hover:text-foreground">
+            <button
+              key={idea}
+              type="button"
+              onClick={() => setPrompt(idea)}
+              className="text-muted-foreground hover:border-primary hover:text-foreground rounded-full border px-2 py-0.5 text-[11px] transition"
+            >
               {idea}
             </button>
           ))}
@@ -125,7 +135,12 @@ export function GeneratePanel() {
               type="button"
               onClick={() => setStyle(s)}
               aria-pressed={style === s}
-              className={cn("grid gap-1 rounded-lg p-1 text-center text-[10px] transition", style === s ? "bg-primary/10 font-semibold text-primary ring-2 ring-primary" : "hover:bg-muted")}
+              className={cn(
+                "grid gap-1 rounded-lg p-1 text-center text-[10px] transition",
+                style === s
+                  ? "bg-primary/10 text-primary ring-primary font-semibold ring-2"
+                  : "hover:bg-muted",
+              )}
             >
               <span className="block aspect-square overflow-hidden rounded-md border">
                 <StylePreview style={s} palette={palette} />
@@ -136,9 +151,23 @@ export function GeneratePanel() {
         </div>
       </fieldset>
 
-      <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-0.5 text-xs" role="radiogroup" aria-label={t("format")}>
+      <div
+        className="bg-muted grid grid-cols-3 gap-1 rounded-lg p-0.5 text-xs"
+        role="radiogroup"
+        aria-label={t("format")}
+      >
         {ASPECTS.map((a) => (
-          <button key={a} type="button" role="radio" aria-checked={aspect === a} onClick={() => setAspect(a)} className={cn("rounded-md py-1.5 transition", aspect === a ? "bg-background font-medium shadow-sm" : "text-muted-foreground")}>
+          <button
+            key={a}
+            type="button"
+            role="radio"
+            aria-checked={aspect === a}
+            onClick={() => setAspect(a)}
+            className={cn(
+              "rounded-md py-1.5 transition",
+              aspect === a ? "bg-background font-medium shadow-sm" : "text-muted-foreground",
+            )}
+          >
             {t(`aspects.${a}`)}
           </button>
         ))}
@@ -149,7 +178,11 @@ export function GeneratePanel() {
           {t("brandColors")}
           <span className="flex -space-x-1" aria-hidden="true">
             {palette.slice(0, 4).map((c) => (
-              <span key={c} className="size-3.5 rounded-full ring-2 ring-background" style={{ background: c }} />
+              <span
+                key={c}
+                className="ring-background size-3.5 rounded-full ring-2"
+                style={{ background: c }}
+              />
             ))}
           </span>
         </span>
@@ -169,14 +202,34 @@ export function GeneratePanel() {
           <h3 className="text-xs font-semibold">{t("results")}</h3>
           <div className="grid grid-cols-2 gap-2">
             {results.map((image, index) => (
-              <div key={image.url} className="group relative overflow-hidden rounded-lg border bg-muted transition hover:border-primary" style={{ aspectRatio: `${image.width} / ${image.height}` }}>
+              <div
+                key={image.url}
+                className="group bg-muted hover:border-primary relative overflow-hidden rounded-lg border transition"
+                style={{ aspectRatio: `${image.width} / ${image.height}` }}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element -- image générée (URL signée) */}
-                <img src={image.url} alt={t("result", { index: index + 1 })} className="size-full object-cover" />
+                <img
+                  src={image.url}
+                  alt={t("result", { index: index + 1 })}
+                  className="size-full object-cover"
+                />
                 <div className="absolute inset-x-0 bottom-0 flex gap-1 bg-gradient-to-t from-black/70 to-transparent p-1.5 pt-6 opacity-0 transition group-focus-within:opacity-100 group-hover:opacity-100">
-                  <Button size="xs" variant="secondary" className="flex-1" onClick={() => add(index)} disabled={adding !== null}>
+                  <Button
+                    size="xs"
+                    variant="secondary"
+                    className="flex-1"
+                    onClick={() => add(index)}
+                    disabled={adding !== null}
+                  >
                     {adding === index ? t("adding") : t("add")}
                   </Button>
-                  <Button size="xs" variant="secondary" className="flex-1" onClick={() => add(index, true)} disabled={adding !== null}>
+                  <Button
+                    size="xs"
+                    variant="secondary"
+                    className="flex-1"
+                    onClick={() => add(index, true)}
+                    disabled={adding !== null}
+                  >
                     {t("background")}
                   </Button>
                 </div>
@@ -184,7 +237,7 @@ export function GeneratePanel() {
             ))}
           </div>
           {demo && (
-            <p className="flex gap-1.5 rounded-lg bg-muted/70 p-2 text-[11px] leading-relaxed text-muted-foreground">
+            <p className="bg-muted/70 text-muted-foreground flex gap-1.5 rounded-lg p-2 text-[11px] leading-relaxed">
               <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
               {t("demo")}
             </p>

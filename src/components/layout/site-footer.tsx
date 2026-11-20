@@ -5,11 +5,11 @@ import { PlatformLogo } from "@/components/brand/platform-logo";
 export function SiteFooter() {
   const t = useTranslations("common");
   return (
-    <footer className="mt-auto border-t bg-muted/40">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-[2fr_1fr_1fr]">
+    <footer className="border-border/70 bg-muted/35 mt-auto border-t">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-[2fr_1fr_1fr] sm:px-6">
         <div>
           <PlatformLogo />
-          <p className="mt-3 max-w-sm text-sm text-muted-foreground">{t("footer.tagline")}</p>
+          <p className="text-muted-foreground mt-3 max-w-sm text-sm">{t("footer.tagline")}</p>
         </div>
         <nav className="grid content-start gap-2 text-sm" aria-label={t("nav.tools")}>
           <span className="font-medium">{t("nav.tools")}</span>
@@ -36,7 +36,9 @@ export function SiteFooter() {
           </a>
         </nav>
       </div>
-      <p className="border-t py-4 text-center text-xs text-muted-foreground">{t("footer.rights", { year: 2026 })}</p>
+      <p className="text-muted-foreground border-t py-4 text-center text-xs">
+        {t("footer.rights", { year: 2026 })}
+      </p>
     </footer>
   );
 }

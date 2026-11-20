@@ -82,5 +82,7 @@ export async function buildZip(entries: ZipEntry[]): Promise<Blob> {
   end.setUint32(12, centralSize, true);
   end.setUint32(16, offset, true);
 
-  return new Blob([...chunks, ...central, new Uint8Array(end.buffer)] as BlobPart[], { type: "application/zip" });
+  return new Blob([...chunks, ...central, new Uint8Array(end.buffer)] as BlobPart[], {
+    type: "application/zip",
+  });
 }

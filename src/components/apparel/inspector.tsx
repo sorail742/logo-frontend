@@ -3,16 +3,28 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { AlertTriangle, CheckCircle2, CircleAlert, Loader2, ShieldCheck, Upload, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  CircleAlert,
+  Clock,
+  Coins,
+  Loader2,
+  Pipette,
+  ShieldCheck,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import { NativeSelect } from "@/components/common/native-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Section } from "@/components/studio/fields";
-import { ColorField } from "@/components/studio/paint-picker";
 import { useApiErrorToast } from "@/hooks/use-api-error";
 import { api } from "@/lib/api";
-import { GARMENT_COLORS } from "@/lib/apparel/defaults";
-import { checkElements } from "@/lib/apparel/rules";
+import { COLOR_FAMILIES, PRESET_GARMENT_COLORS, findColorName } from "@/lib/apparel/colors-data";
+import { PRINT_TECHNIQUES_META, checkTechniqueCompatibility } from "@/lib/apparel/techniques-data";
+import { checkElements, type SportLeague } from "@/lib/apparel/rules";
 import {
   TECHNIQUES,
   type ApparelCheck,
@@ -26,17 +38,17 @@ import { useApparelEditor } from "./editor";
 import { ElementInspector } from "./element-inspector";
 import { RosterDialog } from "./roster-dialog";
 
-// Panneau de droite : réglages de l'élément sélectionné, sinon ceux de la tenue (technique,
-// tissu, règlement, effectif) ; contrôles de conformité en direct et contrôle complet de l'API.
-
 function DesignSettings() {
   const t = useTranslations("apparel");
   const onError = useApiErrorToast();
   const queryClient = useQueryClient();
-  const { canEdit, applyDesign, brandColors } = useApparelEditor();
+  const { canEdit, applyDesign, brandColors, template } = useApparelEditor();
   const design = useApparel((s) => s.design)!;
   const [name, setName] = useState<string | null>(null);
   const [roster, setRoster] = useState(false);
+  const [showColorPickerPopover, setShowColorPickerPopover] = useState(false);
+  const [customHex, setCustomHex] = useState(design.garmentColor);
+
   const presets = useQuery({
     queryKey: qk.apparelPresets,
     queryFn: () => api.apparel.rulePresets(),
@@ -60,11 +72,34 @@ function DesignSettings() {
     if (value && value !== design.name) update.mutate({ name: value.slice(0, 120) });
   };
 
+  const handleEyeDropper = async () => {
+    try {
+      const EyeDropper = (
+        window as Window & {
+          EyeDropper?: new () => { open(): Promise<{ sRGBHex: string }> };
+        }
+      ).EyeDropper;
+      if (!EyeDropper) return;
+      const eyeDropper = new EyeDropper();
+      const res = await eyeDropper.open();
+      if (res?.sRGBHex) {
+        update.mutate({ garmentColor: res.sRGBHex });
+        setCustomHex(res.sRGBHex);
+      }
+    } catch {
+      // User cancelled
+    }
+  };
+
+  const currentColorName = findColorName(design.garmentColor);
+  const popularColors = PRESET_GARMENT_COLORS.slice(0, 12);
+
   return (
     <>
-      <Section title={t("settings.design")}>
+      {/* 1. Titre & Nom */}
+      <Section title="Tenue textile">
         <label className="text-muted-foreground grid gap-1 text-xs">
-          {t("settings.name")}
+          Nom de la tenue
           <Input
             value={name ?? design.name}
             onChange={(e) => setName(e.target.value)}
@@ -72,116 +107,226 @@ function DesignSettings() {
             onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
             maxLength={120}
             disabled={!canEdit}
+            className="h-8 text-xs font-semibold"
           />
         </label>
-        <p className="text-muted-foreground text-xs">
-          {t("settings.support", { name: design.template.name })}
-        </p>
+        <div className="text-muted-foreground flex items-center justify-between pt-1 text-xs">
+          <span>
+            Support : <strong>{design.template.name}</strong>
+          </span>
+          <span className="text-[11px]">{template.zones.length} zones</span>
+        </div>
       </Section>
-      <Section title={t("settings.technique")}>
-        <NativeSelect
-          value={design.technique}
-          onChange={(e) => update.mutate({ technique: e.target.value as ApparelDesignInput["technique"] })}
-          disabled={!canEdit}
-          aria-label={t("settings.technique")}
-        >
-          {TECHNIQUES.map((tech) => (
-            <option key={tech} value={tech}>
-              {t(`techniques.${tech}.name`)}
-            </option>
-          ))}
-        </NativeSelect>
-        <p className="text-muted-foreground text-[11px]">{t(`techniques.${design.technique}.hint`)}</p>
-      </Section>
-      <Section title={t("settings.fabric")}>
-        <fieldset className="grid grid-cols-9 gap-1">
-          <legend className="sr-only">{t("settings.fabric")}</legend>
-          {GARMENT_COLORS.map((color) => (
-            <button
-              key={color}
-              type="button"
-              disabled={!canEdit}
-              aria-pressed={design.garmentColor.toLowerCase() === color}
-              aria-label={color}
-              title={color}
-              onClick={() => update.mutate({ garmentColor: color })}
-              className={cn(
-                "aspect-square rounded-full border shadow-xs transition hover:scale-110",
-                design.garmentColor.toLowerCase() === color &&
-                  "ring-primary ring-offset-background ring-2 ring-offset-2",
-              )}
-              style={{ background: color }}
-            />
-          ))}
-        </fieldset>
-        {canEdit && (
-          <ColorField
-            value={design.garmentColor}
-            onChange={(color, final) =>
-              final
-                ? update.mutate({ garmentColor: color })
-                : useApparel.getState().setDesign({ garmentColor: color })
-            }
-          />
-        )}
-        {brandColors.length > 0 && canEdit && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground text-[11px]">{t("settings.brandColors")}</span>
-            {brandColors.map((color) => (
-              <button
-                key={color}
-                type="button"
-                onClick={() => update.mutate({ garmentColor: color })}
-                className="size-5 rounded-full border shadow-xs"
-                style={{ background: color }}
-                aria-label={color}
-                title={color}
+
+      {/* 2. Couleur du tissu (Compact & Pro) */}
+      <Section title="Couleur du tissu">
+        <div className="space-y-2">
+          {/* Active color header with Pipette */}
+          <div className="border-border/80 bg-muted/30 flex items-center justify-between rounded-lg border p-2">
+            <div className="flex items-center gap-2">
+              <span
+                className="ring-border/80 size-5 rounded-full border-2 border-white shadow-xs ring-1"
+                style={{ backgroundColor: design.garmentColor }}
               />
-            ))}
+              <span className="text-foreground text-xs font-bold">{currentColorName}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {typeof window !== "undefined" && "EyeDropper" in window && (
+                <button
+                  type="button"
+                  onClick={handleEyeDropper}
+                  title="Prélever à l'écran (Pipette)"
+                  className="border-border/70 text-muted-foreground hover:bg-muted flex size-7 items-center justify-center rounded-md border transition"
+                >
+                  <Pipette className="size-3.5" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowColorPickerPopover((prev) => !prev)}
+                className="border-border/70 text-foreground hover:bg-muted rounded-md border px-2 py-1 text-[11px] font-semibold"
+              >
+                {showColorPickerPopover ? "Fermer" : "Plus..."}
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Color Popover if opened */}
+          {showColorPickerPopover && (
+            <div className="border-border/80 bg-card animate-in fade-in-0 space-y-2.5 rounded-xl border p-3 shadow-md duration-150">
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={design.garmentColor}
+                  onChange={(e) => {
+                    setCustomHex(e.target.value);
+                    useApparel.getState().setDesign({ garmentColor: e.target.value });
+                  }}
+                  onBlur={() => update.mutate({ garmentColor: customHex })}
+                  className="size-8 cursor-pointer rounded-lg border-0 bg-transparent p-0"
+                />
+                <Input
+                  value={customHex}
+                  onChange={(e) => {
+                    setCustomHex(e.target.value);
+                    if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+                      update.mutate({ garmentColor: e.target.value });
+                    }
+                  }}
+                  placeholder="#000000"
+                  className="h-8 font-mono text-xs uppercase"
+                  maxLength={7}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Brand Colors if available */}
+          {brandColors.length > 0 && canEdit && (
+            <div className="space-y-1 pt-1">
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                <Sparkles className="size-3" />
+                Couleurs de marque :
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {brandColors.map((color) => {
+                  const active = design.garmentColor.toLowerCase() === color.toLowerCase();
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => update.mutate({ garmentColor: color })}
+                      className={cn(
+                        "size-6 rounded-full border shadow-2xs transition hover:scale-110",
+                        active && "scale-105 ring-2 ring-[#0B6B4F] ring-offset-1",
+                      )}
+                      style={{ background: color }}
+                      aria-label={color}
+                      title={`Couleur marque: ${color}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Popular Swatches */}
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {popularColors.map((c) => {
+              const active = design.garmentColor.toLowerCase() === c.hex.toLowerCase();
+              return (
+                <button
+                  key={c.hex}
+                  type="button"
+                  disabled={!canEdit}
+                  onClick={() => update.mutate({ garmentColor: c.hex })}
+                  className={cn(
+                    "size-6 rounded-full border shadow-2xs transition hover:scale-110",
+                    active && "scale-105 ring-2 ring-[#0B6B4F] ring-offset-1",
+                  )}
+                  style={{ background: c.hex }}
+                  aria-label={c.nameFr}
+                  title={c.nameFr}
+                />
+              );
+            })}
+          </div>
+        </div>
       </Section>
-      <Section title={t("settings.rules")} defaultOpen={Boolean(design.rulePresetId)}>
+
+      {/* 3. Technique d'impression */}
+      <Section title="Technique de marquage">
+        <div className="space-y-2">
+          <NativeSelect
+            value={design.technique}
+            onChange={(e) => update.mutate({ technique: e.target.value as ApparelDesignInput["technique"] })}
+            disabled={!canEdit}
+            className="h-9 text-xs font-semibold"
+          >
+            {TECHNIQUES.map((tech) => {
+              const meta = PRINT_TECHNIQUES_META[tech];
+              const { compatible } = checkTechniqueCompatibility(
+                tech,
+                design.template.category,
+                design.garmentColor,
+              );
+              return (
+                <option key={tech} value={tech} disabled={!compatible}>
+                  {meta?.name ?? tech} {!compatible ? "(Incompatible)" : ""}
+                </option>
+              );
+            })}
+          </NativeSelect>
+
+          {/* Quick summary of the selected technique */}
+          {PRINT_TECHNIQUES_META[design.technique] && (
+            <div className="bg-muted/40 text-muted-foreground space-y-1 rounded-lg p-2.5 text-xs">
+              <p className="text-[11px] leading-tight">{PRINT_TECHNIQUES_META[design.technique].summary}</p>
+              <div className="text-foreground border-border/40 flex items-center justify-between border-t pt-1 text-[10px] font-medium">
+                <span className="flex items-center gap-1">
+                  <Clock className="text-muted-foreground size-3" />
+                  {PRINT_TECHNIQUES_META[design.technique].turnaroundDays}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Coins className="text-muted-foreground size-3" />
+                  Tarif : {PRINT_TECHNIQUES_META[design.technique].priceTier}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </Section>
+
+      {/* 4. Règlements sportifs */}
+      <Section title="Règlement & Homologation" defaultOpen={Boolean(design.rulePresetId)}>
         <NativeSelect
           value={design.rulePresetId ?? ""}
           onChange={(e) => update.mutate({ rulePresetId: e.target.value || null })}
           disabled={!canEdit}
-          aria-label={t("settings.rules")}
+          className="h-8 text-xs"
         >
-          <option value="">{t("settings.noRules")}</option>
+          <option value="">Aucun règlement imposé</option>
           {presets.data?.presets.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}
         </NativeSelect>
-        {presets.data && <p className="text-muted-foreground text-[11px]">{presets.data.disclaimer}</p>}
-      </Section>
-      <Section title={t("roster.title")} defaultOpen={Boolean(design.roster)}>
-        {design.roster ? (
-          <p className="flex items-center gap-2 text-xs">
-            <Users className="text-primary size-4" aria-hidden="true" />
-            {t("roster.summary", {
-              name: design.roster.name,
-              players: design.roster.entries.length,
-              garments: design.roster.entries.reduce((n, e) => n + e.quantity, 0),
-            })}
+        {design.rulePreset && (
+          <p className="text-muted-foreground pt-1 text-[11px]">
+            Contrôle automatique des cotes de sponsors et numéros selon les normes de la ligue.
           </p>
-        ) : (
-          <p className="text-muted-foreground text-xs">{t("roster.empty")}</p>
         )}
+      </Section>
+
+      {/* 5. Effectif & Personnalisation joueurs */}
+      <Section title="Effectif de l'équipe">
+        <p className="text-muted-foreground text-xs">
+          Roster avec noms de joueurs, numéros de maillots et répartition des tailles.
+        </p>
         {canEdit && (
-          <Button size="sm" variant="outline" onClick={() => setRoster(true)}>
-            <Upload /> {t("roster.import")}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setRoster(true)}
+            className="w-full text-xs font-semibold"
+          >
+            <Users className="size-3.5" />
+            Gérer l&apos;effectif ({design.roster?.entries?.length ?? 0} joueurs)
           </Button>
         )}
       </Section>
+
       {roster && <RosterDialog onClose={() => setRoster(false)} />}
     </>
   );
 }
 
-function IssueList({ issues, onSelect }: Readonly<{ issues: ApparelIssue[]; onSelect(issue: ApparelIssue): void }>) {
+function IssueList({
+  issues,
+  onSelect,
+}: Readonly<{ issues: ApparelIssue[]; onSelect(issue: ApparelIssue): void }>) {
   return (
     <ul className="grid gap-1.5">
       {issues.map((issue) => {
@@ -219,20 +364,28 @@ function ChecksPanel() {
   const design = useApparel((s) => s.design)!;
   const elements = useApparel((s) => s.elements);
   const [report, setReport] = useState<ApparelCheck | null>(null);
-  const live = useMemo(
-    () => checkElements(template.zones, elements, design.technique, design.garmentColor),
-    [template.zones, elements, design.technique, design.garmentColor],
-  );
+
+  const live = useMemo(() => {
+    const code = design.rulePreset?.code?.toUpperCase() ?? "";
+    let league: SportLeague = "NONE";
+    if (code.includes("FOOTBALL") || code.includes("UEFA") || code.includes("FIFA")) league = "UEFA";
+    else if (code.includes("FFF")) league = "FFF";
+    else if (code.includes("FIBA") || code.includes("BASKET")) league = "FIBA";
+    else if (code.includes("NBA")) league = "NBA";
+    return checkElements(template.zones, elements, design.technique, design.garmentColor, league);
+  }, [template.zones, elements, design.technique, design.garmentColor, design.rulePreset?.code]);
+
   const errors = live.filter((i) => i.severity === "error");
   const warnings = live.filter((i) => i.severity === "warning");
-  const screens = useMemo(() => new Set(elements.flatMap((el) => el.content.colors ?? [])).size, [elements]);
+
+  // Calculate live score (out of 100)
+  const auditScore = Math.max(0, 100 - errors.length * 25 - warnings.length * 8);
 
   const full = useMutation({
     mutationFn: async () => {
       await flush();
       return api.apparel.check(design.id);
     },
-    // Les anomalies désignent les éléments enregistrés : ramenées aux identifiants de l'éditeur.
     onSuccess: (result) => {
       const local = (issues: ApparelIssue[]) =>
         issues.map((i) => ({ ...i, elementId: localId(i.elementId) }));
@@ -241,7 +394,6 @@ function ChecksPanel() {
     onError,
   });
 
-  /** Anomalie d'un élément : vue et sélection de l'élément. */
   const reveal = (issue: ApparelIssue) => {
     const state = useApparel.getState();
     const el = issue.elementId ? state.elements.find((e) => e.id === issue.elementId) : undefined;
@@ -252,10 +404,29 @@ function ChecksPanel() {
   };
 
   return (
-    <Section title={t("title")}>
+    <Section title="Contrôles & Conformité BAT">
+      {/* Score gauge banner */}
+      <div className="border-border/80 bg-muted/30 flex items-center justify-between rounded-xl border p-2.5">
+        <div>
+          <span className="text-muted-foreground block text-[11px]">Score d&apos;homologation :</span>
+          <span
+            className={cn(
+              "text-sm font-extrabold",
+              auditScore >= 90 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600",
+            )}
+          >
+            {auditScore}/100 {auditScore >= 90 ? "· Conforme" : "· À vérifier"}
+          </span>
+        </div>
+        <div className="flex size-9 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+          <ShieldCheck className="size-5" />
+        </div>
+      </div>
+
       {live.length === 0 ? (
         <p className="flex items-center gap-2 rounded-lg bg-emerald-500/10 p-2 text-xs text-emerald-700 dark:text-emerald-400">
-          <CheckCircle2 className="size-4" aria-hidden="true" /> {elements.length ? t("ok") : t("empty")}
+          <CheckCircle2 className="size-4" aria-hidden="true" />{" "}
+          {elements.length ? "Tous les contrôles sont au vert" : "Prêt à accueillir vos éléments"}
         </p>
       ) : (
         <>
@@ -265,14 +436,24 @@ function ChecksPanel() {
           <IssueList issues={[...errors, ...warnings]} onSelect={reveal} />
         </>
       )}
-      {design.technique === "SCREEN_PRINT" && screens > 0 && (
-        <p className="text-muted-foreground text-xs">{t("screens", { count: screens })}</p>
-      )}
+
       {canEdit && (
-        <Button size="sm" variant="outline" onClick={() => full.mutate()} disabled={full.isPending}>
-          {full.isPending ? <Loader2 className="animate-spin" /> : <ShieldCheck />} {t("full")}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => full.mutate()}
+          disabled={full.isPending}
+          className="w-full text-xs"
+        >
+          {full.isPending ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <ShieldCheck className="size-3.5" />
+          )}
+          Vérification approfondie atelier
         </Button>
       )}
+
       {report && (
         <div className="grid gap-2 rounded-lg border p-2.5">
           <p
@@ -288,7 +469,6 @@ function ChecksPanel() {
           {report.errors.length + report.warnings.length > 0 && (
             <IssueList issues={[...report.errors, ...report.warnings]} onSelect={reveal} />
           )}
-          {report.disclaimer && <p className="text-muted-foreground text-[11px]">{report.disclaimer}</p>}
         </div>
       )}
     </Section>
@@ -298,7 +478,7 @@ function ChecksPanel() {
 export function Inspector() {
   const el = useApparel((s) => s.elements.find((e) => e.id === s.selection));
   return (
-    <div>
+    <div className="space-y-3 p-1">
       {el ? <ElementInspector el={el} /> : <DesignSettings />}
       <ChecksPanel />
     </div>

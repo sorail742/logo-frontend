@@ -51,20 +51,27 @@ function LogosContent() {
 
   const generate = useMutation({
     mutationFn: (input: Partial<LogoGenerationInput>) =>
-      api.logos.generate(pid, { type, style, engine, palette: customPalette ?? undefined, ...input }, newIdempotencyKey()),
+      api.logos.generate(
+        pid,
+        { type, style, engine, palette: customPalette ?? undefined, ...input },
+        newIdempotencyKey(),
+      ),
     onSuccess: ({ jobId }) => setJobId(jobId),
     onError,
   });
   const favorite = useMutation({
     mutationFn: (logo: Logo) => api.logos.update(logo.id, { isFavorite: !logo.isFavorite }),
     onSuccess: (updated) => {
-      queryClient.setQueryData<Logo[]>(qk.logos(pid), (list) => list?.map((l) => (l.id === updated.id ? updated : l)));
+      queryClient.setQueryData<Logo[]>(qk.logos(pid), (list) =>
+        list?.map((l) => (l.id === updated.id ? updated : l)),
+      );
       queryClient.invalidateQueries({ queryKey: qk.project(pid) });
     },
     onError,
   });
   const importLogo = useMutation({
-    mutationFn: (input: { svg?: string; pngDataUrl?: string; palette: string[] }) => api.logos.importLogo(pid, input),
+    mutationFn: (input: { svg?: string; pngDataUrl?: string; palette: string[] }) =>
+      api.logos.importLogo(pid, input),
     onSuccess: () => {
       toast.success(t("imported"));
       setImportOpen(false);
@@ -76,7 +83,8 @@ function LogosContent() {
 
   const canEdit = can("generation.run");
   const busy = generate.isPending || job.running;
-  const cost = engine === "IMAGE_VECTORIZE" ? CREDIT_COSTS.LOGOS_IMAGE_VECTORIZE : CREDIT_COSTS.LOGOS_SVG_COMPOSER;
+  const cost =
+    engine === "IMAGE_VECTORIZE" ? CREDIT_COSTS.LOGOS_IMAGE_VECTORIZE : CREDIT_COSTS.LOGOS_SVG_COMPOSER;
 
   return (
     <>
@@ -103,7 +111,7 @@ function LogosContent() {
       )}
 
       {canEdit && (
-        <Card className="mb-6">
+        <Card className="border-border/80 mb-6 rounded-2xl border shadow-xs">
           <CardHeader>
             <CardTitle>{t("params")}</CardTitle>
           </CardHeader>
@@ -112,8 +120,20 @@ function LogosContent() {
               <legend className="mb-2 text-sm font-medium">{t("type")}</legend>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {LOGO_TYPES.map((value) => (
-                  <label key={value} className={cn("cursor-pointer rounded-lg border px-3 py-2 text-sm has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50", type === value ? "border-primary bg-accent font-medium" : "hover:bg-muted")}>
-                    <input type="radio" name="type" className="sr-only" checked={type === value} onChange={() => setType(value)} />
+                  <label
+                    key={value}
+                    className={cn(
+                      "has-[:focus-visible]:ring-ring/50 cursor-pointer rounded-lg border px-3 py-2 text-sm has-[:focus-visible]:ring-3",
+                      type === value ? "border-primary bg-accent font-medium" : "hover:bg-muted",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="type"
+                      className="sr-only"
+                      checked={type === value}
+                      onChange={() => setType(value)}
+                    />
                     {t(`types.${value}`)}
                   </label>
                 ))}
@@ -123,7 +143,18 @@ function LogosContent() {
               <legend className="mb-2 text-sm font-medium">{t("style")}</legend>
               <div className="flex flex-wrap gap-2">
                 {LOGO_STYLES.map((value) => (
-                  <button key={value} type="button" aria-pressed={style === value} onClick={() => setStyle(value)} className={cn("rounded-full border px-3 py-1 text-sm", style === value ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted")}>
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={style === value}
+                    onClick={() => setStyle(value)}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-sm",
+                      style === value
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "hover:bg-muted",
+                    )}
+                  >
                     {t(`styles.${value}`)}
                   </button>
                 ))}
@@ -132,11 +163,23 @@ function LogosContent() {
             <fieldset className="grid gap-2">
               <legend className="mb-2 text-sm font-medium">{t("palette")}</legend>
               <label className="flex items-center gap-2 text-sm">
-                <input type="radio" name="palette" className="size-4 accent-[var(--primary)]" checked={!customPalette} onChange={() => setCustomPalette(null)} />
+                <input
+                  type="radio"
+                  name="palette"
+                  className="size-4 accent-[var(--primary)]"
+                  checked={!customPalette}
+                  onChange={() => setCustomPalette(null)}
+                />
                 {t("paletteAuto")}
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <input type="radio" name="palette" className="size-4 accent-[var(--primary)]" checked={Boolean(customPalette)} onChange={() => setCustomPalette(["#0f766e", "#f59e0b"])} />
+                <input
+                  type="radio"
+                  name="palette"
+                  className="size-4 accent-[var(--primary)]"
+                  checked={Boolean(customPalette)}
+                  onChange={() => setCustomPalette(["#0f766e", "#f59e0b"])}
+                />
                 {t("paletteCustom")}
               </label>
               {customPalette && (
@@ -146,20 +189,30 @@ function LogosContent() {
                       <input
                         type="color"
                         value={hex}
-                        onChange={(e) => setCustomPalette((list) => list!.map((c, i) => (i === index ? e.target.value : c)))}
+                        onChange={(e) =>
+                          setCustomPalette((list) => list!.map((c, i) => (i === index ? e.target.value : c)))
+                        }
                         className="size-7 cursor-pointer rounded border-0 bg-transparent"
                         aria-label={`${t("palette")} ${index + 1}`}
                       />
                       <span className="font-mono text-xs">{hex.toUpperCase()}</span>
                       {customPalette.length > 2 && (
-                        <button type="button" onClick={() => setCustomPalette((list) => list!.filter((_, i) => i !== index))} aria-label="×">
+                        <button
+                          type="button"
+                          onClick={() => setCustomPalette((list) => list!.filter((_, i) => i !== index))}
+                          aria-label="×"
+                        >
                           <X className="size-3.5" />
                         </button>
                       )}
                     </span>
                   ))}
                   {customPalette.length < 4 && (
-                    <Button variant="ghost" size="sm" onClick={() => setCustomPalette((list) => [...list!, "#111827"])}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCustomPalette((list) => [...list!, "#111827"])}
+                    >
                       <Plus />
                       {t("addColor")}
                     </Button>
@@ -171,20 +224,43 @@ function LogosContent() {
               <legend className="mb-2 text-sm font-medium">{t("engine")}</legend>
               <div className="grid gap-2 sm:grid-cols-2">
                 {(["SVG_COMPOSER", "IMAGE_VECTORIZE"] as const).map((value) => (
-                  <label key={value} className={cn("flex cursor-pointer items-start justify-between gap-3 rounded-lg border p-3 has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50", engine === value ? "border-primary bg-accent" : "hover:bg-muted")}>
-                    <input type="radio" name="engine" className="sr-only" checked={engine === value} onChange={() => setEngine(value)} />
+                  <label
+                    key={value}
+                    className={cn(
+                      "has-[:focus-visible]:ring-ring/50 flex cursor-pointer items-start justify-between gap-3 rounded-lg border p-3 has-[:focus-visible]:ring-3",
+                      engine === value ? "border-primary bg-accent" : "hover:bg-muted",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="engine"
+                      className="sr-only"
+                      checked={engine === value}
+                      onChange={() => setEngine(value)}
+                    />
                     <span>
                       <span className="block text-sm font-medium">{t(`engines.${value}`)}</span>
-                      <span className="block text-xs text-muted-foreground">{t(`engines.${value}Body`)}</span>
+                      <span className="text-muted-foreground block text-xs">{t(`engines.${value}Body`)}</span>
                     </span>
-                    <CreditCost cost={value === "IMAGE_VECTORIZE" ? CREDIT_COSTS.LOGOS_IMAGE_VECTORIZE : CREDIT_COSTS.LOGOS_SVG_COMPOSER} />
+                    <CreditCost
+                      cost={
+                        value === "IMAGE_VECTORIZE"
+                          ? CREDIT_COSTS.LOGOS_IMAGE_VECTORIZE
+                          : CREDIT_COSTS.LOGOS_SVG_COMPOSER
+                      }
+                    />
                   </label>
                 ))}
               </div>
             </fieldset>
             <div className="flex items-center justify-end gap-3">
               <CreditCost cost={cost} />
-              <Button size="lg" onClick={() => generate.mutate({})} disabled={busy}>
+              <Button
+                size="lg"
+                onClick={() => generate.mutate({})}
+                disabled={busy}
+                className="h-11 rounded-xl px-6 font-semibold shadow-xs transition-all hover:shadow-md"
+              >
                 <Sparkles />
                 {t("generate")}
               </Button>
@@ -209,7 +285,15 @@ function LogosContent() {
                 generate.mutate({
                   feedback: RELAUNCH_FEEDBACK[kind],
                   referenceLogoId: logo.id,
-                  palette: kind === "sameColors" ? [logo.current.spec.colors.primary, logo.current.spec.colors.secondary, logo.current.spec.colors.text, logo.current.spec.colors.background] : customPalette ?? undefined,
+                  palette:
+                    kind === "sameColors"
+                      ? [
+                          logo.current.spec.colors.primary,
+                          logo.current.spec.colors.secondary,
+                          logo.current.spec.colors.text,
+                          logo.current.spec.colors.background,
+                        ]
+                      : (customPalette ?? undefined),
                 })
               }
             />
@@ -217,7 +301,12 @@ function LogosContent() {
         </div>
       )}
 
-      <ImportLogoDialog open={importOpen} onOpenChange={setImportOpen} onImport={(input) => importLogo.mutate(input)} busy={importLogo.isPending} />
+      <ImportLogoDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImport={(input) => importLogo.mutate(input)}
+        busy={importLogo.isPending}
+      />
     </>
   );
 }

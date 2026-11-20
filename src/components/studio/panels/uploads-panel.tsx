@@ -17,7 +17,8 @@ export function UploadsPanel() {
   const doc = useStudio((s) => s.doc);
   const used = useMemo(() => {
     const seen = new Map<string, ImageElement>();
-    for (const page of doc?.pages ?? []) for (const el of page.elements) if (el.type === "image" && !seen.has(el.src)) seen.set(el.src, el);
+    for (const page of doc?.pages ?? [])
+      for (const el of page.elements) if (el.type === "image" && !seen.has(el.src)) seen.set(el.src, el);
     return [...seen.values()];
   }, [doc]);
 
@@ -26,11 +27,11 @@ export function UploadsPanel() {
       <button
         type="button"
         onClick={() => pickImages(null)}
-        className="grid place-items-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition hover:border-primary hover:bg-muted"
+        className="hover:border-primary hover:bg-muted grid place-items-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition"
       >
-        <ImageUp className="size-7 text-primary" aria-hidden="true" />
+        <ImageUp className="text-primary size-7" aria-hidden="true" />
         <span className="text-sm font-medium">{t("import")}</span>
-        <span className="text-[11px] leading-relaxed text-muted-foreground">{t("help")}</span>
+        <span className="text-muted-foreground text-[11px] leading-relaxed">{t("help")}</span>
       </button>
       <Button variant="outline" size="sm" onClick={() => pickImages(null)}>
         {t("browse")}
@@ -43,8 +44,12 @@ export function UploadsPanel() {
               <button
                 key={img.id}
                 type="button"
-                onClick={() => placeImages([{ src: img.src, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight }])}
-                className="aspect-square overflow-hidden rounded-lg border bg-muted transition hover:border-primary"
+                onClick={() =>
+                  placeImages([
+                    { src: img.src, naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight },
+                  ])
+                }
+                className="bg-muted hover:border-primary aspect-square overflow-hidden rounded-lg border transition"
                 title={t("reuse")}
                 aria-label={t("reuse")}
               >
@@ -55,7 +60,7 @@ export function UploadsPanel() {
           </div>
         </section>
       )}
-      <p className="text-[11px] leading-relaxed text-muted-foreground">{t("rights")}</p>
+      <p className="text-muted-foreground text-[11px] leading-relaxed">{t("rights")}</p>
     </div>
   );
 }

@@ -217,7 +217,10 @@ export interface ApiClient {
     remove(wid: string, confirm: string): Promise<void>;
     members(wid: string): Promise<Member[]>;
     invitations(wid: string): Promise<Invitation[]>;
-    invite(wid: string, input: { email?: string; role: WorkspaceRole; asLink?: boolean }): Promise<Invitation>;
+    invite(
+      wid: string,
+      input: { email?: string; role: WorkspaceRole; asLink?: boolean },
+    ): Promise<Invitation>;
     updateMember(wid: string, uid: string, role: WorkspaceRole): Promise<void>;
     removeMember(wid: string, uid: string): Promise<void>;
     acceptInvitation(token: string): Promise<Workspace>;
@@ -225,7 +228,10 @@ export interface ApiClient {
 
   projects: {
     list(wid: string, filters?: ProjectFilters): Promise<Project[]>;
-    create(wid: string, input: { title: string; entityType: EntityType; existingName?: string }): Promise<Project>;
+    create(
+      wid: string,
+      input: { title: string; entityType: EntityType; existingName?: string },
+    ): Promise<Project>;
     get(pid: string): Promise<Project>;
     update(pid: string, patch: Partial<Pick<Project, "title" | "status" | "entityType">>): Promise<Project>;
     remove(pid: string): Promise<void>;
@@ -242,7 +248,9 @@ export interface ApiClient {
     check(nid: string): Promise<AvailabilityCheck[]>;
     vote(nid: string, value: -1 | 1): Promise<NameSuggestion>;
     choose(pid: string, nid: string): Promise<Project>;
-    tryPublic(input: PublicNameTryInput): Promise<{ names: Pick<NameSuggestion, "value" | "meaning" | "style">[]; remaining: number }>;
+    tryPublic(
+      input: PublicNameTryInput,
+    ): Promise<{ names: Pick<NameSuggestion, "value" | "meaning" | "style">[]; remaining: number }>;
   };
 
   logos: {
@@ -256,13 +264,21 @@ export interface ApiClient {
     /** Export serveur de la dernière version enregistrée (ZIP), suivi comme une tâche. */
     requestExport(
       lid: string,
-      input: { formats: ("svg" | "pdf" | "png" | "jpg")[]; sizes?: number[]; iconPack: boolean; social?: boolean },
+      input: {
+        formats: ("svg" | "pdf" | "png" | "jpg")[];
+        sizes?: number[];
+        iconPack: boolean;
+        social?: boolean;
+      },
     ): Promise<JobAccepted & { restricted?: boolean }>;
     /**
      * Déclinaisons (couleur, noir, blanc, icône, dispositions) de la dernière version ;
      * `transparent` : version blanche sans fond, pour la poser sur une création.
      */
-    variants(lid: string, options?: { transparent?: boolean }): Promise<{ versionId: string; variants: LogoVariantFile[] }>;
+    variants(
+      lid: string,
+      options?: { transparent?: boolean },
+    ): Promise<{ versionId: string; variants: LogoVariantFile[] }>;
   };
 
   slogans: {
@@ -273,8 +289,14 @@ export interface ApiClient {
 
   signatures: {
     list(pid: string): Promise<Signature[]>;
-    create(pid: string, input: { kind: SignatureKind; templateId?: string; data: Signature["data"]; attested?: boolean }): Promise<Signature>;
-    update(sid: string, patch: { templateId?: string; data?: Signature["data"]; attested?: boolean }): Promise<Signature>;
+    create(
+      pid: string,
+      input: { kind: SignatureKind; templateId?: string; data: Signature["data"]; attested?: boolean },
+    ): Promise<Signature>;
+    update(
+      sid: string,
+      patch: { templateId?: string; data?: Signature["data"]; attested?: boolean },
+    ): Promise<Signature>;
     html(sid: string): Promise<{ html: string; text: string }>;
     fileUrl(sid: string): Promise<{ url: string; expiresAt: string }>;
     batch(pid: string, csv: string, templateId: string): Promise<{ count: number; jobId: string }>;
@@ -288,7 +310,10 @@ export interface ApiClient {
     generateGuide(kid: string, idempotencyKey: string): Promise<JobAccepted>;
     /** `restricted` : offre gratuite, archive réduite à des PNG 512 px filigranés. */
     generateZip(kid: string): Promise<JobAccepted & { restricted?: boolean }>;
-    share(kid: string, input: { enabled: boolean; password?: string; expiresAt?: string | null }): Promise<BrandKit>;
+    share(
+      kid: string,
+      input: { enabled: boolean; password?: string; expiresAt?: string | null },
+    ): Promise<BrandKit>;
     publicKit(token: string, password?: string): Promise<PublicKit>;
   };
 
@@ -297,7 +322,10 @@ export interface ApiClient {
     create(pid: string, input: StudioDesignInput): Promise<StudioDesign>;
     get(sdid: string): Promise<StudioDesign>;
     /** Sauvegarde (automatique) : nom, document, aperçu. */
-    save(sdid: string, patch: Partial<Pick<StudioDesignInput, "name" | "doc" | "thumbnail">>): Promise<StudioDesignSummary>;
+    save(
+      sdid: string,
+      patch: Partial<Pick<StudioDesignInput, "name" | "doc" | "thumbnail">>,
+    ): Promise<StudioDesignSummary>;
     duplicate(sdid: string): Promise<StudioDesign>;
     remove(sdid: string): Promise<void>;
     /** PDF d'impression ou SVG vectorisé produit par le worker (lien dans le résultat de la tâche). */
@@ -305,7 +333,11 @@ export interface ApiClient {
     /** Lot de 4 images (1 crédit), produit par le worker ; URL dans le résultat de la tâche. */
     generateImages(pid: string, input: StudioImagesInput, idempotencyKey: string): Promise<JobAccepted>;
     /** Détourage par IA (1 crédit) : masque PNG en niveaux de gris, blanc = sujet conservé. */
-    cutout(pid: string, input: { image: string }, idempotencyKey: string): Promise<{ mask: string; costCredits: number }>;
+    cutout(
+      pid: string,
+      input: { image: string },
+      idempotencyKey: string,
+    ): Promise<{ mask: string; costCredits: number }>;
   };
 
   /** Textile (Module 5) : t-shirts, polos, maillots ; BAT validé par le client sans compte. */
@@ -325,14 +357,25 @@ export interface ApiClient {
     /** Contrôle complet : zones, technique, règlement sportif, effectif. */
     check(did: string, input?: { printShopId?: string }): Promise<ApparelCheck>;
     /** Effectif importé d'un CSV (nom, nom_imprime, numero, taille, poste, quantite). */
-    importRoster(did: string, csv: string, name?: string): Promise<{ roster: ApparelRoster; summary: RosterSummary }>;
+    importRoster(
+      did: string,
+      csv: string,
+      name?: string,
+    ): Promise<{ roster: ApparelRoster; summary: RosterSummary }>;
     /** Lien de BAT à envoyer au client (422 tant que des erreurs subsistent). */
     proof(did: string): Promise<{ token: string; url: string }>;
     revokeProof(did: string): Promise<{ revoked: true }>;
     publicProof(token: string): Promise<PublicProof>;
-    approveProof(token: string, approverName: string): Promise<{ status: ApparelStatus; approvedAt: string | null }>;
+    approveProof(
+      token: string,
+      approverName: string,
+    ): Promise<{ status: ApparelStatus; approvedAt: string | null }>;
     /** Pack atelier : fichiers du support d'impression, un par joueur, fiche technique (tâche). */
-    productionExport(did: string, input: ProductionExportInput, idempotencyKey?: string): Promise<{ jobId: string; costCredits: number }>;
+    productionExport(
+      did: string,
+      input: ProductionExportInput,
+      idempotencyKey?: string,
+    ): Promise<{ jobId: string; costCredits: number }>;
   };
 
   websites: {
@@ -341,14 +384,20 @@ export interface ApiClient {
     /** Site de départ tiré du projet (nom, brief, slogan, logo, signature e-mail). 400 NO_LOGO sans logo. */
     create(pid: string): Promise<Website>;
     /** Sauvegarde (automatique) : contenu, adresse publique, logo affiché. */
-    update(webid: string, patch: { content?: SiteContent; slug?: string; logoId?: string | null }): Promise<Website>;
+    update(
+      webid: string,
+      patch: { content?: SiteContent; slug?: string; logoId?: string | null },
+    ): Promise<Website>;
     /** Logo et symbole pour l'aperçu de l'éditeur. */
     brand(webid: string): Promise<WebsiteBrand>;
     /** Publication ou republication des modifications. */
     publish(webid: string): Promise<Website>;
     unpublish(webid: string): Promise<Website>;
     remove(webid: string): Promise<void>;
-    addMedia(webid: string, input: { dataUrl: string; alt?: string }): Promise<Pick<WebsiteMedia, "id" | "url" | "alt">>;
+    addMedia(
+      webid: string,
+      input: { dataUrl: string; alt?: string },
+    ): Promise<Pick<WebsiteMedia, "id" | "url" | "alt">>;
     /** Retire aussi l'image des sections qui l'utilisent. */
     removeMedia(webid: string, mid: string): Promise<Website>;
     messages(webid: string): Promise<WebsiteMessage[]>;
@@ -368,7 +417,13 @@ export interface ApiClient {
     list(pid: string, filter?: { targetType: Comment["targetType"]; targetId: string }): Promise<Comment[]>;
     create(
       pid: string,
-      input: { targetType: Comment["targetType"]; targetId: string; body: string; anchor?: CommentAnchor; parentId?: string },
+      input: {
+        targetType: Comment["targetType"];
+        targetId: string;
+        body: string;
+        anchor?: CommentAnchor;
+        parentId?: string;
+      },
     ): Promise<Comment>;
     /** Fil résolu ou rouvert (premier message) : son auteur, un éditeur ou un propriétaire. */
     resolve(cid: string, resolved: boolean): Promise<Comment>;
@@ -397,7 +452,12 @@ export interface ApiClient {
     fonts(): Promise<LibraryFont[]>;
     capabilities(): Promise<LibraryCapabilities>;
     /** Banque de photos : 501 NOT_AVAILABLE si elle n'est pas activée. */
-    photos(input: { q?: string; page?: number; orientation?: PhotoOrientation; locale?: string }): Promise<PhotoPage>;
+    photos(input: {
+      q?: string;
+      page?: number;
+      orientation?: PhotoOrientation;
+      locale?: string;
+    }): Promise<PhotoPage>;
     photoFile(id: string): Promise<Blob>;
   };
 

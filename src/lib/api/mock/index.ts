@@ -25,8 +25,14 @@ import { DEFAULT_SPEC, LOGO_VARIANTS, renderLogoSvg } from "@/lib/render/logo";
 import { hashSeed, renderArtwork, styleFromPrompt } from "@/lib/render/artwork";
 import type { StudioDesign } from "@/lib/studio/types";
 import { DEFAULT_TEMPLATES } from "@/lib/apparel/defaults";
-import { checkElements } from "@/lib/apparel/rules";
-import type { ApparelDesign, ApparelIssue, ApparelTemplate, RosterEntry, RulePreset } from "@/lib/apparel/types";
+import { checkElements, type SportLeague } from "@/lib/apparel/rules";
+import type {
+  ApparelDesign,
+  ApparelIssue,
+  ApparelTemplate,
+  RosterEntry,
+  RulePreset,
+} from "@/lib/apparel/types";
 import { slugify } from "@/lib/format";
 import { brandAssets } from "@/lib/render/logo-assets";
 import { resolveFontVars } from "@/lib/render/export";
@@ -97,7 +103,8 @@ const PLATFORM_RANK: Record<PlatformRole, number> = { USER: 0, SUPPORT: 1, ADMIN
 /** Équivalent du RolesGuard : rôle plateforme minimal. */
 function requirePlatform(minimum: PlatformRole) {
   const user = currentUser();
-  if (PLATFORM_RANK[user.role] < PLATFORM_RANK[minimum]) throw problem(403, "Droits insuffisants", "FORBIDDEN");
+  if (PLATFORM_RANK[user.role] < PLATFORM_RANK[minimum])
+    throw problem(403, "Droits insuffisants", "FORBIDDEN");
   return user;
 }
 
@@ -133,7 +140,12 @@ function saveStudioDesigns(designs: StudioDesign[]) {
     studioCache = designs;
   } catch {
     studioCache = null;
-    throw problem(413, "Création trop lourde", "PAYLOAD_TOO_LARGE", "Le stockage du navigateur est plein : réduisez le nombre ou la taille des images.");
+    throw problem(
+      413,
+      "Création trop lourde",
+      "PAYLOAD_TOO_LARGE",
+      "Le stockage du navigateur est plein : réduisez le nombre ou la taille des images.",
+    );
   }
 }
 
@@ -148,11 +160,14 @@ const NAME_NOT_FOUND = "Nom introuvable";
 
 // Textile : tenues rangées à part (images intégrées), sous une clé dédiée du navigateur.
 const APPAREL_KEY = "identite:mock-apparel:v1";
-const RULES_DISCLAIMER = "Les préréglages reprennent les principales règles connues ; le règlement officiel de la compétition fait foi.";
+const RULES_DISCLAIMER =
+  "Les préréglages reprennent les principales règles connues ; le règlement officiel de la compétition fait foi.";
 const MOCK_PRESETS: RulePreset[] = [
   { id: "rp-football-men", code: "FOOTBALL_MEN", name: "Football hommes (FIFA, UEFA)" },
   { id: "rp-football-women", code: "FOOTBALL_WOMEN", name: "Football femmes (FIFA, UEFA)" },
   { id: "rp-fiba", code: "FIBA", name: "Basket (FIBA)" },
+  { id: "rp-fff", code: "FFF", name: "Football France (FFF)" },
+  { id: "rp-nba", code: "NBA", name: "Basketball (NBA)" },
   { id: "rp-free", code: "FREE", name: "Libre (t-shirt, loisir)" },
 ];
 let apparelCache: ApparelDesign[] | null = null;
@@ -173,7 +188,12 @@ function saveApparel(designs: ApparelDesign[]) {
     apparelCache = designs;
   } catch {
     apparelCache = null;
-    throw problem(413, "Tenue trop lourde", "PAYLOAD_TOO_LARGE", "Le stockage du navigateur est plein : réduisez le nombre ou la taille des images.");
+    throw problem(
+      413,
+      "Tenue trop lourde",
+      "PAYLOAD_TOO_LARGE",
+      "Le stockage du navigateur est plein : réduisez le nombre ou la taille des images.",
+    );
   }
 }
 
@@ -191,7 +211,8 @@ function apparelTemplate(tid: string): ApparelTemplate {
 
 /** Une tenue modifiée après l'envoi du BAT doit être revalidée. */
 function unlockApparel(design: ApparelDesign) {
-  if (design.status === "PROOF_SENT" || design.status === "APPROVED") Object.assign(design, { status: "DRAFT", approvedAt: null, proofToken: null });
+  if (design.status === "PROOF_SENT" || design.status === "APPROVED")
+    Object.assign(design, { status: "DRAFT", approvedAt: null, proofToken: null });
   design.updatedAt = now();
 }
 
@@ -200,19 +221,53 @@ function rosterIssues(entries: RosterEntry[], sizes: string[]): ApparelIssue[] {
   const issues: ApparelIssue[] = [];
   const seen = new Set<string>();
   for (const e of entries) {
-    if (e.number && seen.has(e.number)) issues.push({ code: "DUPLICATE_NUMBER", severity: "error", message: `Numéro ${e.number} attribué deux fois` });
+    if (e.number && seen.has(e.number))
+      issues.push({
+        code: "DUPLICATE_NUMBER",
+        severity: "error",
+        message: `Numéro ${e.number} attribué deux fois`,
+      });
     if (e.number) seen.add(e.number);
-    if (!sizes.includes(e.size)) issues.push({ code: "UNKNOWN_SIZE", severity: "error", message: `Taille ${e.size} indisponible pour ${e.displayName}` });
+    if (!sizes.includes(e.size))
+      issues.push({
+        code: "UNKNOWN_SIZE",
+        severity: "error",
+        message: `Taille ${e.size} indisponible pour ${e.displayName}`,
+      });
   }
   return issues;
 }
 
 function apparelCheck(design: ApparelDesign) {
   const template = apparelTemplate(design.templateId);
-  const issues = checkElements(template.zones, design.elements, design.technique, design.garmentColor);
-  if (design.roster) issues.push(...rosterIssues(design.roster.entries, template.sizes.map((s) => s.label)));
+  const code = design.rulePreset?.code?.toUpperCase() ?? "";
+  let league: SportLeague = "NONE";
+  if (code.includes("FOOTBALL") || code.includes("UEFA") || code.includes("FIFA")) league = "UEFA";
+  else if (code.includes("FFF")) league = "FFF";
+  else if (code.includes("FIBA") || code.includes("BASKET")) league = "FIBA";
+  else if (code.includes("NBA")) league = "NBA";
+  const issues = checkElements(
+    template.zones,
+    design.elements,
+    design.technique,
+    design.garmentColor,
+    league,
+  );
+  if (design.roster)
+    issues.push(
+      ...rosterIssues(
+        design.roster.entries,
+        template.sizes.map((s) => s.label),
+      ),
+    );
   const errors = issues.filter((i) => i.severity === "error");
-  return { ok: errors.length === 0, errors, warnings: issues.filter((i) => i.severity === "warning"), disclaimer: design.rulePresetId ? RULES_DISCLAIMER : undefined, referenceSize: "M" };
+  return {
+    ok: errors.length === 0,
+    errors,
+    warnings: issues.filter((i) => i.severity === "warning"),
+    disclaimer: design.rulePresetId ? RULES_DISCLAIMER : undefined,
+    referenceSize: "M",
+  };
 }
 
 /** CSV d'effectif (virgule ou point-virgule) : nom, nom_imprime, numero, taille, poste, quantite. */
@@ -221,20 +276,37 @@ function parseRoster(csv: string): RosterEntry[] {
   const separator = (lines[0] ?? "").includes(";") ? ";" : ",";
   const header = (lines[0] ?? "").split(separator).map((h) => h.trim().toLowerCase());
   const missing = ["nom", "numero", "taille"].filter((c) => !header.includes(c));
-  if (!lines.length || missing.length) throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Colonnes manquantes : ${missing.join(", ") || "nom, numero, taille"}`);
+  if (!lines.length || missing.length)
+    throw problem(
+      422,
+      ROSTER_INVALID,
+      "UNPROCESSABLE",
+      `Colonnes manquantes : ${missing.join(", ") || "nom, numero, taille"}`,
+    );
   return lines.slice(1).map((line, i) => {
     const cells = line.split(separator).map((c) => c.trim());
     const get = (key: string) => cells[header.indexOf(key)] ?? "";
     const quantity = get("quantite") ? Number(get("quantite")) : 1;
     if (!get("nom")) throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Ligne ${i + 2} : nom manquant`);
-    if (!Number.isInteger(quantity) || quantity < 1) throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Ligne ${i + 2} : quantité invalide`);
-    return { playerName: get("nom"), displayName: get("nom_imprime") || get("nom").toUpperCase(), number: get("numero") || null, size: get("taille").toUpperCase(), quantity, role: get("poste") || null };
+    if (!Number.isInteger(quantity) || quantity < 1)
+      throw problem(422, ROSTER_INVALID, "UNPROCESSABLE", `Ligne ${i + 2} : quantité invalide`);
+    return {
+      playerName: get("nom"),
+      displayName: get("nom_imprime") || get("nom").toUpperCase(),
+      number: get("numero") || null,
+      size: get("taille").toUpperCase(),
+      quantity,
+      role: get("poste") || null,
+    };
   });
 }
 
 // Sites web : rangés à part (images téléversées en data URL), sous une clé dédiée du navigateur.
 const SITES_KEY = "identite:mock-sites:v1";
-type MockSite = Omit<Website, "dirty" | "url" | "formUrl" | "assetsUrl" | "unreadMessages" | "displayedLogoId" | "free"> & {
+type MockSite = Omit<
+  Website,
+  "dirty" | "url" | "formUrl" | "assetsUrl" | "unreadMessages" | "displayedLogoId" | "free"
+> & {
   messages: WebsiteMessage[];
 };
 let sitesCache: MockSite[] | null = null;
@@ -255,7 +327,12 @@ function saveMockSites(sites: MockSite[]) {
     sitesCache = sites;
   } catch {
     sitesCache = null;
-    throw problem(413, "Site trop lourd", "PAYLOAD_TOO_LARGE", "Le stockage du navigateur est plein : retirez des images du site.");
+    throw problem(
+      413,
+      "Site trop lourd",
+      "PAYLOAD_TOO_LARGE",
+      "Le stockage du navigateur est plein : retirez des images du site.",
+    );
   }
 }
 
@@ -294,7 +371,16 @@ function siteDto(site: MockSite): Website {
 function toLogo(logo: ReturnType<typeof db>["logos"][number]): Logo {
   const { jobId: _jobId, ...rest } = logo;
   const current = latestVersion(logo.id);
-  return { ...rest, current: { id: current.id, number: current.number, label: current.label, spec: current.spec, createdAt: current.createdAt } };
+  return {
+    ...rest,
+    current: {
+      id: current.id,
+      number: current.number,
+      label: current.label,
+      spec: current.spec,
+      createdAt: current.createdAt,
+    },
+  };
 }
 
 function toName(name: ReturnType<typeof db>["names"][number]): NameSuggestion {
@@ -319,9 +405,13 @@ function toProject(project: DbProject): Project {
       brief: Boolean(project.brief),
       name: Boolean(chosen),
       logo: logos.length > 0,
-      signatures: data.signatures.some((s) => s.projectId === project.id) || data.slogans.some((s) => s.projectId === project.id && s.isChosen),
+      signatures:
+        data.signatures.some((s) => s.projectId === project.id) ||
+        data.slogans.some((s) => s.projectId === project.id && s.isChosen),
       kit: data.brandKits.some((k) => k.projectId === project.id),
-      site: typeof window !== "undefined" && mockSites().some((site) => site.projectId === project.id && site.published),
+      site:
+        typeof window !== "undefined" &&
+        mockSites().some((site) => site.projectId === project.id && site.published),
     },
     previewSpec: favorite ? latestVersion(favorite.id).spec : null,
   };
@@ -338,7 +428,13 @@ function projectName(project: DbProject) {
 
 // ─── Tâches de génération ───
 
-function startJob(project: DbProject, kind: JobKind, cost: number, input: Record<string, unknown>, idempotencyKey: string) {
+function startJob(
+  project: DbProject,
+  kind: JobKind,
+  cost: number,
+  input: Record<string, unknown>,
+  idempotencyKey: string,
+) {
   const data = db();
   const existing = data.jobs.find((j) => j.input.idempotencyKey === idempotencyKey);
   if (existing) return existing; // Idempotency-Key : même requête, même tâche
@@ -347,9 +443,14 @@ function startJob(project: DbProject, kind: JobKind, cost: number, input: Record
   if (workspace.creditBalance < cost) throw problem(402, "Crédits insuffisants", "INSUFFICIENT_CREDITS");
 
   if (workspace.planCode === "FREE" && (kind === "NAMES" || kind === "LOGOS")) {
-    const usage = data.freeUsage[workspace.id]?.day === today() ? data.freeUsage[workspace.id]! : { day: today(), names: 0, logos: 0 };
-    if (kind === "NAMES" && usage.names >= FREE_QUOTAS.nameBatchesPerDay) throw problem(429, "Quota gratuit atteint : 3 lots de noms par jour", "FREE_QUOTA");
-    if (kind === "LOGOS" && usage.logos >= FREE_QUOTAS.logoBatchesPerDay) throw problem(429, "Quota gratuit atteint : 1 lot de logos par jour", "FREE_QUOTA");
+    const usage =
+      data.freeUsage[workspace.id]?.day === today()
+        ? data.freeUsage[workspace.id]!
+        : { day: today(), names: 0, logos: 0 };
+    if (kind === "NAMES" && usage.names >= FREE_QUOTAS.nameBatchesPerDay)
+      throw problem(429, "Quota gratuit atteint : 3 lots de noms par jour", "FREE_QUOTA");
+    if (kind === "LOGOS" && usage.logos >= FREE_QUOTAS.logoBatchesPerDay)
+      throw problem(429, "Quota gratuit atteint : 1 lot de logos par jour", "FREE_QUOTA");
     if (kind === "NAMES") usage.names += 1;
     else usage.logos += 1;
     data.freeUsage[workspace.id] = usage;
@@ -372,7 +473,8 @@ function startJob(project: DbProject, kind: JobKind, cost: number, input: Record
     willFail: typeof input.feedback === "string" && input.feedback.includes("__echec__"),
   };
   // Débit au lancement, dans la même transaction que la création de la tâche (§11.4)
-  if (cost > 0) writeLedger(workspace.id, -cost, "GENERATION", `${kind} — ${projectName(project)}`, { jobId: job.id });
+  if (cost > 0)
+    writeLedger(workspace.id, -cost, "GENERATION", `${kind} — ${projectName(project)}`, { jobId: job.id });
   data.jobs.unshift(job);
   if (project.status === "DRAFT") project.status = "IN_PROGRESS";
   save();
@@ -390,14 +492,17 @@ function materialize(job: DbJob) {
     job.status = "FAILED";
     job.error = "Le fournisseur IA n'a pas répondu après 3 tentatives.";
     // Remboursement automatique (PAY-05)
-    if (job.costCredits > 0) writeLedger(job.workspaceId, job.costCredits, "REFUND", `Échec ${job.kind}`, { jobId: job.id });
+    if (job.costCredits > 0)
+      writeLedger(job.workspaceId, job.costCredits, "REFUND", `Échec ${job.kind}`, { jobId: job.id });
     save();
     return;
   }
 
   const seed = Date.parse(job.createdAt) % 100000;
   if (job.kind === "NAMES") {
-    const existing = new Set(data.names.filter((n) => n.projectId === project.id).map((n) => n.value.toLowerCase()));
+    const existing = new Set(
+      data.names.filter((n) => n.projectId === project.id).map((n) => n.value.toLowerCase()),
+    );
     const reference = data.names.find((n) => n.id === job.input.referenceNameId)?.value;
     const names = generateNames({
       brief: project.brief,
@@ -409,7 +514,17 @@ function materialize(job: DbJob) {
       seed,
     });
     for (const name of names) {
-      data.names.unshift({ ...name, id: id("nm"), projectId: project.id, jobId: job.id, isFavorite: false, isRejected: false, votes: {}, checks: [], createdAt: now() });
+      data.names.unshift({
+        ...name,
+        id: id("nm"),
+        projectId: project.id,
+        jobId: job.id,
+        isFavorite: false,
+        isRejected: false,
+        votes: {},
+        checks: [],
+        createdAt: now(),
+      });
     }
     logActivity(project.id, `a généré ${names.length} noms`);
   }
@@ -417,10 +532,17 @@ function materialize(job: DbJob) {
   if (job.kind === "LOGOS") {
     const chosen = data.names.find((n) => n.id === project.chosenNameId);
     const slogan = data.slogans.find((s) => s.projectId === project.id && s.isChosen)?.text;
-    const reference = typeof job.input.referenceLogoId === "string" ? latestVersion(job.input.referenceLogoId)?.spec : undefined;
+    const reference =
+      typeof job.input.referenceLogoId === "string"
+        ? latestVersion(job.input.referenceLogoId)?.spec
+        : undefined;
     const specs = generateLogoSpecs({
       text: chosen?.value ?? project.title,
-      tagline: slogan ?? (chosen?.acronym && chosen.meaning.startsWith("Sigle") ? chosen.meaning.replace(/^Sigle de « (.*) »\.$/, "$1") : ""),
+      tagline:
+        slogan ??
+        (chosen?.acronym && chosen.meaning.startsWith("Sigle")
+          ? chosen.meaning.replace(/^Sigle de « (.*) »\.$/, "$1")
+          : ""),
       type: job.input.type as Logo["type"],
       style: job.input.style as Logo["style"],
       palette: job.input.palette as string[] | undefined,
@@ -442,13 +564,22 @@ function materialize(job: DbJob) {
         isExclusive: false,
         createdAt: now(),
       });
-      data.logoVersions.push({ id: id("lv"), logoId, number: 1, label: "Proposition", spec, createdAt: now() });
+      data.logoVersions.push({
+        id: id("lv"),
+        logoId,
+        number: 1,
+        label: "Proposition",
+        spec,
+        createdAt: now(),
+      });
     }
     logActivity(project.id, `a généré ${specs.length} logos`);
   }
 
   if (job.kind === "SLOGANS") {
-    const exclude = new Set(data.slogans.filter((s) => s.projectId === project.id).map((s) => s.text.toLowerCase()));
+    const exclude = new Set(
+      data.slogans.filter((s) => s.projectId === project.id).map((s) => s.text.toLowerCase()),
+    );
     const texts = generateSlogans({
       name: projectName(project),
       brief: project.brief,
@@ -460,7 +591,16 @@ function materialize(job: DbJob) {
       seed,
     });
     for (const text of texts) {
-      data.slogans.unshift({ id: id("sl"), projectId: project.id, text, kind: (job.input.kind as never) ?? "SLOGAN", tone: job.input.tone as never, isFavorite: false, isChosen: false, createdAt: now() });
+      data.slogans.unshift({
+        id: id("sl"),
+        projectId: project.id,
+        text,
+        kind: (job.input.kind as never) ?? "SLOGAN",
+        tone: job.input.tone as never,
+        isFavorite: false,
+        isChosen: false,
+        createdAt: now(),
+      });
     }
     logActivity(project.id, `a généré ${texts.length} propositions de signature`);
   }
@@ -485,7 +625,12 @@ function materialize(job: DbJob) {
   job.progress = 100;
   const workspace = data.workspaces.find((w) => w.id === job.workspaceId);
   if (workspace && workspace.creditBalance <= LOW_CREDITS_THRESHOLD && data.currentUserId) {
-    notify(data.currentUserId, { type: "LOW_CREDITS", title: "Crédits bas", body: `Il reste ${workspace.creditBalance} crédits dans ${workspace.name}.`, href: "/app/facturation" });
+    notify(data.currentUserId, {
+      type: "LOW_CREDITS",
+      title: "Crédits bas",
+      body: `Il reste ${workspace.creditBalance} crédits dans ${workspace.name}.`,
+      href: "/app/facturation",
+    });
   }
   save();
 }
@@ -546,19 +691,44 @@ function kitToDto(kit: ReturnType<typeof db>["brandKits"][number]): BrandKit {
 
 export const mockClient: ApiClient = {
   mode: "mock",
-  isAvailable: (feature) => feature !== "googleLogin" && feature !== "studioExport" && feature !== "productionPack",
+  isAvailable: (feature) =>
+    feature !== "googleLogin" && feature !== "studioExport" && feature !== "productionPack",
 
   auth: {
     async register({ fullName, email, password }) {
       await wait();
       const data = db();
-      if (data.users.some((u) => u.email.toLowerCase() === email.toLowerCase())) throw problem(409, "Un compte existe déjà avec cet e-mail", "EMAIL_TAKEN");
-      if (password.length < 8) throw problem(400, "Le mot de passe doit contenir au moins 8 caractères", "WEAK_PASSWORD");
+      if (data.users.some((u) => u.email.toLowerCase() === email.toLowerCase()))
+        throw problem(409, "Un compte existe déjà avec cet e-mail", "EMAIL_TAKEN");
+      if (password.length < 8)
+        throw problem(400, "Le mot de passe doit contenir au moins 8 caractères", "WEAK_PASSWORD");
       const userId = id("u");
       const workspaceId = id("w");
-      data.users.push({ id: userId, email, phone: null, password, fullName, avatarUrl: null, locale: "fr", country: "GN", role: "USER", emailVerifiedAt: null, totpEnabled: false, suspendedAt: null, createdAt: now() });
+      data.users.push({
+        id: userId,
+        email,
+        phone: null,
+        password,
+        fullName,
+        avatarUrl: null,
+        locale: "fr",
+        country: "GN",
+        role: "USER",
+        emailVerifiedAt: null,
+        totpEnabled: false,
+        suspendedAt: null,
+        createdAt: now(),
+      });
       // Espace personnel créé à l'inscription (PRJ-01)
-      data.workspaces.push({ id: workspaceId, name: `Espace de ${fullName.split(" ")[0]}`, slug: workspaceId, kind: "PERSONAL", creditBalance: 0, planCode: "FREE", renewsAt: null });
+      data.workspaces.push({
+        id: workspaceId,
+        name: `Espace de ${fullName.split(" ")[0]}`,
+        slug: workspaceId,
+        kind: "PERSONAL",
+        creditBalance: 0,
+        planCode: "FREE",
+        renewsAt: null,
+      });
       data.memberships.push({ userId, workspaceId, role: "OWNER", joinedAt: now() });
       writeLedger(workspaceId, 10, "PROMO", "Crédits de bienvenue");
       return session(userId);
@@ -566,7 +736,8 @@ export const mockClient: ApiClient = {
     async login({ email, password }) {
       await wait(300);
       const user = db().users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (!user || user.password !== password) throw problem(401, "E-mail ou mot de passe incorrect", "INVALID_CREDENTIALS");
+      if (!user || user.password !== password)
+        throw problem(401, "E-mail ou mot de passe incorrect", "INVALID_CREDENTIALS");
       if (user.suspendedAt) throw problem(403, "Ce compte est suspendu", "SUSPENDED");
       return session(user.id);
     },
@@ -604,7 +775,10 @@ export const mockClient: ApiClient = {
     async setup2fa() {
       await wait();
       const secret = "JBSWY3DPEHPK3PXP";
-      return { secret, otpauthUrl: `otpauth://totp/Identite:${currentUser().email}?secret=${secret}&issuer=Identite` };
+      return {
+        secret,
+        otpauthUrl: `otpauth://totp/Identite:${currentUser().email}?secret=${secret}&issuer=Identite`,
+      };
     },
     async verify2fa(code) {
       await wait();
@@ -637,7 +811,16 @@ export const mockClient: ApiClient = {
     async exportData() {
       const data = db();
       const user = currentUser();
-      const blob = new Blob([JSON.stringify({ user: toUser(user), memberships: data.memberships.filter((m) => m.userId === user.id) }, null, 2)], { type: "application/json" });
+      const blob = new Blob(
+        [
+          JSON.stringify(
+            { user: toUser(user), memberships: data.memberships.filter((m) => m.userId === user.id) },
+            null,
+            2,
+          ),
+        ],
+        { type: "application/json" },
+      );
       return { url: URL.createObjectURL(blob) };
     },
   },
@@ -656,7 +839,15 @@ export const mockClient: ApiClient = {
       await wait();
       const user = currentUser();
       const data = db();
-      const workspace = { id: id("w"), name, slug: name.toLowerCase().replace(/\W+/g, "-"), kind: "ORGANIZATION" as const, creditBalance: 0, planCode: "FREE" as const, renewsAt: null };
+      const workspace = {
+        id: id("w"),
+        name,
+        slug: name.toLowerCase().replace(/\W+/g, "-"),
+        kind: "ORGANIZATION" as const,
+        creditBalance: 0,
+        planCode: "FREE" as const,
+        renewsAt: null,
+      };
       data.workspaces.push(workspace);
       data.memberships.push({ userId: user.id, workspaceId: workspace.id, role: "OWNER", joinedAt: now() });
       save();
@@ -676,10 +867,13 @@ export const mockClient: ApiClient = {
       requireRole(wid, "OWNER");
       const data = db();
       const workspace = data.workspaces.find((w) => w.id === wid)!;
-      if (workspace.kind === "PERSONAL") throw problem(400, "L’espace personnel disparaît avec le compte", "VALIDATION");
-      if (confirm.trim() !== workspace.name) throw problem(400, "Saisissez le nom exact de l’espace pour confirmer", "VALIDATION");
+      if (workspace.kind === "PERSONAL")
+        throw problem(400, "L’espace personnel disparaît avec le compte", "VALIDATION");
+      if (confirm.trim() !== workspace.name)
+        throw problem(400, "Saisissez le nom exact de l’espace pour confirmer", "VALIDATION");
       workspace.deletedAt = now();
-      for (const project of data.projects) if (project.workspaceId === wid && !project.deletedAt) project.deletedAt = now();
+      for (const project of data.projects)
+        if (project.workspaceId === wid && !project.deletedAt) project.deletedAt = now();
       data.invitations = data.invitations.filter((i) => i.workspaceId !== wid);
       audit("workspace.delete", "Workspace", wid);
       save();
@@ -691,21 +885,42 @@ export const mockClient: ApiClient = {
         .filter((m) => m.workspaceId === wid)
         .map((m) => {
           const user = data.users.find((u) => u.id === m.userId);
-          return { userId: m.userId, fullName: user?.fullName ?? "—", email: user?.email ?? null, role: m.role, joinedAt: m.joinedAt };
+          return {
+            userId: m.userId,
+            fullName: user?.fullName ?? "—",
+            email: user?.email ?? null,
+            role: m.role,
+            joinedAt: m.joinedAt,
+          };
         });
     },
     async invitations(wid) {
       requireRole(wid, "OWNER");
-      return db().invitations.filter((i) => i.workspaceId === wid).map(({ token, ...rest }) => ({ ...rest, link: `/invitation/${token}` }));
+      return db()
+        .invitations.filter((i) => i.workspaceId === wid)
+        .map(({ token, ...rest }) => ({ ...rest, link: `/invitation/${token}` }));
     },
     async invite(wid, { email, role, asLink }) {
       await wait();
       requireRole(wid, "OWNER");
       const token = id("inv");
-      const invitation = { id: id("i"), workspaceId: wid, email: asLink ? "lien d'invitation" : email ?? "", role, token, expiresAt: new Date(Date.now() + 7 * 864e5).toISOString() };
+      const invitation = {
+        id: id("i"),
+        workspaceId: wid,
+        email: asLink ? "lien d'invitation" : (email ?? ""),
+        role,
+        token,
+        expiresAt: new Date(Date.now() + 7 * 864e5).toISOString(),
+      };
       db().invitations.push(invitation);
       save();
-      return { id: invitation.id, email: invitation.email, role, expiresAt: invitation.expiresAt, link: `/invitation/${token}` };
+      return {
+        id: invitation.id,
+        email: invitation.email,
+        role,
+        expiresAt: invitation.expiresAt,
+        link: `/invitation/${token}`,
+      };
     },
     async updateMember(wid, uid, role) {
       requireRole(wid, "OWNER");
@@ -717,12 +932,14 @@ export const mockClient: ApiClient = {
       // Retrait par un propriétaire, ou départ volontaire de n'importe quel membre.
       const role = requireRole(wid, "VIEWER");
       const user = currentUser();
-      if (uid !== user.id && role !== "OWNER") throw problem(403, "Seul un propriétaire peut retirer un autre membre", "FORBIDDEN");
+      if (uid !== user.id && role !== "OWNER")
+        throw problem(403, "Seul un propriétaire peut retirer un autre membre", "FORBIDDEN");
       const data = db();
       const member = data.memberships.find((m) => m.workspaceId === wid && m.userId === uid);
       if (!member) throw problem(404, "Membre introuvable", "NOT_FOUND");
       const owners = data.memberships.filter((m) => m.workspaceId === wid && m.role === "OWNER").length;
-      if (member.role === "OWNER" && owners <= 1) throw problem(409, "L’espace doit garder au moins un propriétaire", "CONFLICT");
+      if (member.role === "OWNER" && owners <= 1)
+        throw problem(409, "L’espace doit garder au moins un propriétaire", "CONFLICT");
       data.memberships = data.memberships.filter((m) => m !== member);
       save();
     },
@@ -731,13 +948,22 @@ export const mockClient: ApiClient = {
       const user = currentUser();
       const data = db();
       const invitation = data.invitations.find((i) => i.token === token);
-      if (!invitation || Date.parse(invitation.expiresAt) < Date.now()) throw problem(410, "Invitation expirée ou invalide", "INVITATION_EXPIRED");
+      if (!invitation || Date.parse(invitation.expiresAt) < Date.now())
+        throw problem(410, "Invitation expirée ou invalide", "INVITATION_EXPIRED");
       if (!data.memberships.some((m) => m.userId === user.id && m.workspaceId === invitation.workspaceId)) {
-        data.memberships.push({ userId: user.id, workspaceId: invitation.workspaceId, role: invitation.role, joinedAt: now() });
+        data.memberships.push({
+          userId: user.id,
+          workspaceId: invitation.workspaceId,
+          role: invitation.role,
+          joinedAt: now(),
+        });
       }
       data.invitations = data.invitations.filter((i) => i.id !== invitation.id);
       save();
-      return toWorkspace(data.workspaces.find((w) => w.id === invitation.workspaceId)!, invitation.role);
+      return toWorkspace(
+        data.workspaces.find((w) => w.id === invitation.workspaceId)!,
+        invitation.role,
+      );
     },
   },
 
@@ -749,7 +975,9 @@ export const mockClient: ApiClient = {
       const q = filters.q?.toLowerCase().trim();
       return db()
         .projects.filter((p) => p.workspaceId === wid)
-        .filter((p) => (filters.trash ? p.deletedAt && Date.now() - Date.parse(p.deletedAt) < 30 * 864e5 : !p.deletedAt))
+        .filter((p) =>
+          filters.trash ? p.deletedAt && Date.now() - Date.parse(p.deletedAt) < 30 * 864e5 : !p.deletedAt,
+        )
         .filter((p) => !filters.entityType || p.entityType === filters.entityType)
         .filter((p) => !filters.status || p.status === filters.status)
         .filter((p) => !q || p.title.toLowerCase().includes(q) || projectName(p).toLowerCase().includes(q))
@@ -760,12 +988,38 @@ export const mockClient: ApiClient = {
       await wait();
       requireRole(wid, "EDITOR");
       const data = db();
-      const project: DbProject = { id: id("p"), workspaceId: wid, entityType, status: "DRAFT", title, chosenNameId: null, brief: null, createdAt: now(), updatedAt: now(), deletedAt: null };
+      const project: DbProject = {
+        id: id("p"),
+        workspaceId: wid,
+        entityType,
+        status: "DRAFT",
+        title,
+        chosenNameId: null,
+        brief: null,
+        createdAt: now(),
+        updatedAt: now(),
+        deletedAt: null,
+      };
       data.projects.push(project);
       if (existingName?.trim()) {
         // Parcours « J'ai déjà un nom »
         const nameId = id("nm");
-        data.names.push({ id: nameId, projectId: project.id, jobId: null, value: existingName.trim(), acronym: null, meaning: "Nom saisi par l'utilisateur", style: "PROPER", pronunciation: null, score: null, isFavorite: true, isRejected: false, votes: {}, checks: [], createdAt: now() });
+        data.names.push({
+          id: nameId,
+          projectId: project.id,
+          jobId: null,
+          value: existingName.trim(),
+          acronym: null,
+          meaning: "Nom saisi par l'utilisateur",
+          style: "PROPER",
+          pronunciation: null,
+          score: null,
+          isFavorite: true,
+          isRejected: false,
+          votes: {},
+          checks: [],
+          createdAt: now(),
+        });
         project.chosenNameId = nameId;
         project.status = "IN_PROGRESS";
       }
@@ -804,7 +1058,15 @@ export const mockClient: ApiClient = {
       await wait();
       const source = projectOr404(pid);
       requireRole(source.workspaceId, "EDITOR");
-      const copy: DbProject = { ...structuredClone(source), id: id("p"), title: `${source.title} (copie)`, chosenNameId: null, status: "DRAFT", createdAt: now(), updatedAt: now() };
+      const copy: DbProject = {
+        ...structuredClone(source),
+        id: id("p"),
+        title: `${source.title} (copie)`,
+        chosenNameId: null,
+        status: "DRAFT",
+        createdAt: now(),
+        updatedAt: now(),
+      };
       db().projects.push(copy);
       save();
       return toProject(copy);
@@ -813,7 +1075,8 @@ export const mockClient: ApiClient = {
       await wait();
       const project = projectOr404(pid);
       requireRole(project.workspaceId, "EDITOR");
-      if (brief.mission.length > 500) throw problem(400, "La mission est limitée à 500 caractères", "VALIDATION");
+      if (brief.mission.length > 500)
+        throw problem(400, "La mission est limitée à 500 caractères", "VALIDATION");
       project.brief = brief;
       project.updatedAt = now();
       if (project.status === "DRAFT") project.status = "IN_PROGRESS";
@@ -822,7 +1085,9 @@ export const mockClient: ApiClient = {
       return toProject(project);
     },
     async activity(pid) {
-      return db().activity.filter((a) => a.projectId === pid).slice(0, 30);
+      return db()
+        .activity.filter((a) => a.projectId === pid)
+        .slice(0, 30);
     },
   },
 
@@ -837,7 +1102,9 @@ export const mockClient: ApiClient = {
       await wait(100);
       const project = projectOr404(pid);
       requireRole(project.workspaceId, "VIEWER");
-      return db().names.filter((n) => n.projectId === pid).map(toName);
+      return db()
+        .names.filter((n) => n.projectId === pid)
+        .map(toName);
     },
     async update(nid, patch) {
       const name = db().names.find((n) => n.id === nid);
@@ -856,7 +1123,9 @@ export const mockClient: ApiClient = {
       // Cache 24 h (NOM-25)
       const fresh = name.checks[0] && Date.now() - Date.parse(name.checks[0].checkedAt) < 864e5;
       if (!fresh) {
-        const others = data.projects.filter((p) => p.chosenNameId && p.id !== name.projectId).map((p) => projectName(p));
+        const others = data.projects
+          .filter((p) => p.chosenNameId && p.id !== name.projectId)
+          .map((p) => projectName(p));
         name.checks = availabilityChecks(name.value, others);
         const domainsFree = name.checks.filter((c) => c.kind === "DOMAIN" && c.status === "AVAILABLE").length;
         name.score = Math.min(99, Math.round((name.score ?? 60) * 0.8 + domainsFree * 3.4));
@@ -886,8 +1155,20 @@ export const mockClient: ApiClient = {
       name.isFavorite = true;
       // Changer de nom final crée une nouvelle version du kit (NOM-33)
       if (hadName && data.brandKits.some((k) => k.projectId === pid)) {
-        const last = data.brandKits.filter((k) => k.projectId === pid).sort((a, b) => b.version - a.version)[0]!;
-        data.brandKits.push({ ...last, id: id("kit"), version: last.version + 1, name: name.value, restoredFrom: null, shareToken: null, guideReady: false, zipReady: false, createdAt: now() });
+        const last = data.brandKits
+          .filter((k) => k.projectId === pid)
+          .sort((a, b) => b.version - a.version)[0]!;
+        data.brandKits.push({
+          ...last,
+          id: id("kit"),
+          version: last.version + 1,
+          name: name.value,
+          restoredFrom: null,
+          shareToken: null,
+          guideReady: false,
+          zipReady: false,
+          createdAt: now(),
+        });
       }
       logActivity(pid, `a retenu le nom « ${name.value} »`);
       save();
@@ -897,17 +1178,36 @@ export const mockClient: ApiClient = {
       await wait(700);
       const data = db();
       if (data.publicTries.day !== today()) data.publicTries = { day: today(), count: 0 };
-      if (data.publicTries.count >= FREE_QUOTAS.publicTriesPerDay) throw problem(429, "Vous avez utilisé vos 3 essais du jour. Créez un compte gratuit pour continuer.", "TRY_LIMIT");
+      if (data.publicTries.count >= FREE_QUOTAS.publicTriesPerDay)
+        throw problem(
+          429,
+          "Vous avez utilisé vos 3 essais du jour. Créez un compte gratuit pour continuer.",
+          "TRY_LIMIT",
+        );
       data.publicTries.count += 1;
       save();
       const names = generateNames({
-        brief: { sector: input.sector, mission: "", values: input.keywords, audience: "", languages: ["fr"], nameStyles: [], maxLength: 16, mustInclude: input.keywords, mustAvoid: [], tone: "" },
+        brief: {
+          sector: input.sector,
+          mission: "",
+          values: input.keywords,
+          audience: "",
+          languages: ["fr"],
+          nameStyles: [],
+          maxLength: 16,
+          mustInclude: input.keywords,
+          mustAvoid: [],
+          tone: "",
+        },
         title: input.sector,
         entityType: input.entityType,
         exclude: new Set(),
         seed: Date.now() % 100000,
       });
-      return { names: names.map(({ value, meaning, style }) => ({ value, meaning, style })), remaining: FREE_QUOTAS.publicTriesPerDay - data.publicTries.count };
+      return {
+        names: names.map(({ value, meaning, style }) => ({ value, meaning, style })),
+        remaining: FREE_QUOTAS.publicTriesPerDay - data.publicTries.count,
+      };
     },
   },
 
@@ -916,7 +1216,10 @@ export const mockClient: ApiClient = {
       await wait();
       const project = projectOr404(pid);
       requireRole(project.workspaceId, "EDITOR");
-      const cost = input.engine === "IMAGE_VECTORIZE" ? CREDIT_COSTS.LOGOS_IMAGE_VECTORIZE : CREDIT_COSTS.LOGOS_SVG_COMPOSER;
+      const cost =
+        input.engine === "IMAGE_VECTORIZE"
+          ? CREDIT_COSTS.LOGOS_IMAGE_VECTORIZE
+          : CREDIT_COSTS.LOGOS_SVG_COMPOSER;
       return { jobId: startJob(project, "LOGOS", cost, { ...input }, key).id };
     },
     async importLogo(pid, { palette }) {
@@ -926,13 +1229,27 @@ export const mockClient: ApiClient = {
       const data = db();
       const logoId = id("lg");
       const [primary = "#111827", secondary = "#6b7280", text = "#111827"] = palette;
-      data.logos.unshift({ id: logoId, projectId: pid, jobId: null, type: "ICON_TEXT", engine: "UPLOAD", style: "MODERN", isFavorite: true, isExclusive: false, createdAt: now() });
+      data.logos.unshift({
+        id: logoId,
+        projectId: pid,
+        jobId: null,
+        type: "ICON_TEXT",
+        engine: "UPLOAD",
+        style: "MODERN",
+        isFavorite: true,
+        isExclusive: false,
+        createdAt: now(),
+      });
       data.logoVersions.push({
         id: id("lv"),
         logoId,
         number: 1,
         label: "Logo importé",
-        spec: { ...DEFAULT_SPEC, text: projectName(project), colors: { primary, secondary, text, background: "#ffffff" } },
+        spec: {
+          ...DEFAULT_SPEC,
+          text: projectName(project),
+          colors: { primary, secondary, text, background: "#ffffff" },
+        },
         createdAt: now(),
       });
       logActivity(pid, "a importé un logo existant");
@@ -943,7 +1260,9 @@ export const mockClient: ApiClient = {
       await wait(100);
       const project = projectOr404(pid);
       requireRole(project.workspaceId, "VIEWER");
-      return db().logos.filter((l) => l.projectId === pid).map(toLogo);
+      return db()
+        .logos.filter((l) => l.projectId === pid)
+        .map(toLogo);
     },
     async get(lid) {
       const logo = db().logos.find((l) => l.id === lid);
@@ -992,7 +1311,11 @@ export const mockClient: ApiClient = {
           id: def.id,
           file: `logo-${def.id}.svg`,
           dark: def.dark,
-          svg: renderLogoSvg(version.spec, { variant: def.variant, layout: def.layout, withBackground: false }).svg,
+          svg: renderLogoSvg(version.spec, {
+            variant: def.variant,
+            layout: def.layout,
+            withBackground: false,
+          }).svg,
         })),
       };
     },
@@ -1035,7 +1358,12 @@ export const mockClient: ApiClient = {
       const design = studioDesign(sdid);
       requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
       if (patch.name) design.name = patch.name.trim();
-      if (patch.doc) Object.assign(design, { doc: patch.doc, width: Math.round(patch.doc.width), height: Math.round(patch.doc.height) });
+      if (patch.doc)
+        Object.assign(design, {
+          doc: patch.doc,
+          width: Math.round(patch.doc.width),
+          height: Math.round(patch.doc.height),
+        });
       if (patch.thumbnail) design.thumbnail = patch.thumbnail;
       design.updatedAt = now();
       saveStudioDesigns(studioDesigns());
@@ -1045,7 +1373,13 @@ export const mockClient: ApiClient = {
     async duplicate(sdid) {
       const source = studioDesign(sdid);
       requireRole(projectOr404(source.projectId).workspaceId, "EDITOR");
-      const copy: StudioDesign = { ...structuredClone(source), id: id("sd"), name: `${source.name} (copie)`.slice(0, 120), createdAt: now(), updatedAt: now() };
+      const copy: StudioDesign = {
+        ...structuredClone(source),
+        id: id("sd"),
+        name: `${source.name} (copie)`.slice(0, 120),
+        createdAt: now(),
+        updatedAt: now(),
+      };
       saveStudioDesigns([copy, ...studioDesigns()]);
       return structuredClone(copy);
     },
@@ -1055,10 +1389,20 @@ export const mockClient: ApiClient = {
       saveStudioDesigns(studioDesigns().filter((d) => d.id !== sdid));
     },
     async requestExport() {
-      throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Le PDF d'impression est produit par le serveur de la plateforme.");
+      throw problem(
+        501,
+        "Bientôt disponible",
+        "NOT_AVAILABLE",
+        "Le PDF d'impression est produit par le serveur de la plateforme.",
+      );
     },
     async cutout() {
-      throw problem(501, "Détourage IA non activé", "NOT_AVAILABLE", "Le détourage par IA est fourni par le serveur de la plateforme : utilisez le fond uni, la baguette ou les pinceaux.");
+      throw problem(
+        501,
+        "Détourage IA non activé",
+        "NOT_AVAILABLE",
+        "Le détourage par IA est fourni par le serveur de la plateforme : utilisez le fond uni, la baguette ou les pinceaux.",
+      );
     },
     async generateImages(pid, input, key) {
       await wait();
@@ -1100,7 +1444,10 @@ export const mockClient: ApiClient = {
       const data = db();
       const slogan = data.slogans.find((s) => s.id === sid)!;
       requireRole(projectOr404(slogan.projectId).workspaceId, "EDITOR");
-      if (patch.isChosen) data.slogans.filter((s) => s.projectId === slogan.projectId && s.kind === slogan.kind).forEach((s) => (s.isChosen = false));
+      if (patch.isChosen)
+        data.slogans
+          .filter((s) => s.projectId === slogan.projectId && s.kind === slogan.kind)
+          .forEach((s) => (s.isChosen = false));
       Object.assign(slogan, patch);
       save();
       return slogan;
@@ -1116,16 +1463,28 @@ export const mockClient: ApiClient = {
       const project = projectOr404(pid);
       requireRole(project.workspaceId, "EDITOR");
       const data = db();
-      if (input.kind !== "EMAIL" && !input.attested) throw problem(400, "Vous devez certifier être habilité à représenter la structure", "ATTESTATION_REQUIRED");
+      if (input.kind !== "EMAIL" && !input.attested)
+        throw problem(
+          400,
+          "Vous devez certifier être habilité à représenter la structure",
+          "ATTESTATION_REQUIRED",
+        );
       let status: "ACTIVE" | "PENDING_REVIEW" = "ACTIVE";
       if (input.kind === "STAMP") {
         const stamp = input.data as StampData;
-        if (findOfficialTerms(stamp.ringText, stamp.bottomText, stamp.centerText).length) status = "PENDING_REVIEW";
+        if (findOfficialTerms(stamp.ringText, stamp.bottomText, stamp.centerText).length)
+          status = "PENDING_REVIEW";
       }
       if (input.kind !== "EMAIL") {
         const workspace = data.workspaces.find((w) => w.id === project.workspaceId)!;
-        if (workspace.creditBalance < CREDIT_COSTS.HANDWRITTEN_OR_STAMP) throw problem(402, "Crédits insuffisants", "INSUFFICIENT_CREDITS");
-        writeLedger(workspace.id, -CREDIT_COSTS.HANDWRITTEN_OR_STAMP, "GENERATION", input.kind === "STAMP" ? "Cachet" : "Paraphe");
+        if (workspace.creditBalance < CREDIT_COSTS.HANDWRITTEN_OR_STAMP)
+          throw problem(402, "Crédits insuffisants", "INSUFFICIENT_CREDITS");
+        writeLedger(
+          workspace.id,
+          -CREDIT_COSTS.HANDWRITTEN_OR_STAMP,
+          "GENERATION",
+          input.kind === "STAMP" ? "Cachet" : "Paraphe",
+        );
       }
       const signature = {
         id: id("sg"),
@@ -1149,12 +1508,19 @@ export const mockClient: ApiClient = {
       const signature = db().signatures.find((s) => s.id === sid)!;
       requireRole(projectOr404(signature.projectId).workspaceId, "EDITOR");
       const { attested, ...rest } = patch;
-      if (signature.kind !== "EMAIL" && !attested) throw problem(400, "Vous devez certifier être habilité à représenter la structure", "ATTESTATION_REQUIRED");
+      if (signature.kind !== "EMAIL" && !attested)
+        throw problem(
+          400,
+          "Vous devez certifier être habilité à représenter la structure",
+          "ATTESTATION_REQUIRED",
+        );
       Object.assign(signature, rest);
       if (attested) signature.attestedAt = now();
       if (signature.kind === "STAMP") {
         const stamp = signature.data as StampData;
-        signature.status = findOfficialTerms(stamp.ringText, stamp.bottomText, stamp.centerText).length ? "PENDING_REVIEW" : "ACTIVE";
+        signature.status = findOfficialTerms(stamp.ringText, stamp.bottomText, stamp.centerText).length
+          ? "PENDING_REVIEW"
+          : "ACTIVE";
       }
       save();
       return signature;
@@ -1184,7 +1550,8 @@ export const mockClient: ApiClient = {
       const data = db();
       const logos = data.logos.filter((l) => l.projectId === pid);
       const logo = logos.find((l) => l.isFavorite) ?? logos[0];
-      const version = Math.max(0, ...data.brandKits.filter((k) => k.projectId === pid).map((k) => k.version)) + 1;
+      const version =
+        Math.max(0, ...data.brandKits.filter((k) => k.projectId === pid).map((k) => k.version)) + 1;
       const kit = {
         id: id("kit"),
         projectId: pid,
@@ -1201,7 +1568,8 @@ export const mockClient: ApiClient = {
         createdAt: now(),
       };
       data.brandKits.push(kit);
-      if (logo) logo.isExclusive = data.workspaces.find((w) => w.id === project.workspaceId)?.planCode !== "FREE";
+      if (logo)
+        logo.isExclusive = data.workspaces.find((w) => w.id === project.workspaceId)?.planCode !== "FREE";
       logActivity(pid, `a assemblé le kit v${version}`);
       save();
       return kitToDto(kit);
@@ -1211,8 +1579,19 @@ export const mockClient: ApiClient = {
       const data = db();
       const source = data.brandKits.find((k) => k.id === kid)!;
       requireRole(projectOr404(source.projectId).workspaceId, "EDITOR");
-      const version = Math.max(...data.brandKits.filter((k) => k.projectId === source.projectId).map((k) => k.version)) + 1;
-      const kit = { ...source, id: id("kit"), version, restoredFrom: source.version, shareToken: null, sharePassword: null, shareExpiresAt: null, zipReady: false, createdAt: now() };
+      const version =
+        Math.max(...data.brandKits.filter((k) => k.projectId === source.projectId).map((k) => k.version)) + 1;
+      const kit = {
+        ...source,
+        id: id("kit"),
+        version,
+        restoredFrom: source.version,
+        shareToken: null,
+        sharePassword: null,
+        shareExpiresAt: null,
+        zipReady: false,
+        createdAt: now(),
+      };
       data.brandKits.push(kit);
       logActivity(source.projectId, `a restauré le kit v${source.version} (nouvelle version v${version})`);
       save();
@@ -1222,7 +1601,15 @@ export const mockClient: ApiClient = {
       const kit = db().brandKits.find((k) => k.id === kid)!;
       const project = projectOr404(kit.projectId);
       requireRole(project.workspaceId, "EDITOR");
-      return { jobId: startJob(project, "BRAND_GUIDE", kit.guideReady ? 0 : CREDIT_COSTS.BRAND_GUIDE_PDF, { kitId: kid }, idempotencyKey).id };
+      return {
+        jobId: startJob(
+          project,
+          "BRAND_GUIDE",
+          kit.guideReady ? 0 : CREDIT_COSTS.BRAND_GUIDE_PDF,
+          { kitId: kid },
+          idempotencyKey,
+        ).id,
+      };
     },
     async generateZip(kid) {
       const kit = db().brandKits.find((k) => k.id === kid)!;
@@ -1236,7 +1623,7 @@ export const mockClient: ApiClient = {
       requireRole(projectOr404(kit.projectId).workspaceId, "EDITOR");
       kit.shareToken = enabled ? id("share").replace(/-/g, "").slice(0, 24) : null;
       kit.sharePassword = enabled && password ? password : null;
-      kit.shareExpiresAt = enabled ? expiresAt ?? null : null;
+      kit.shareExpiresAt = enabled ? (expiresAt ?? null) : null;
       save();
       return kitToDto(kit);
     },
@@ -1244,11 +1631,19 @@ export const mockClient: ApiClient = {
       await wait();
       const data = db();
       const kit = data.brandKits.find((k) => k.shareToken === token);
-      if (!kit || (kit.shareExpiresAt && Date.parse(kit.shareExpiresAt) < Date.now())) throw problem(404, "Ce lien de partage n'existe pas ou a expiré", "NOT_FOUND");
-      if (kit.sharePassword && kit.sharePassword !== password) throw problem(401, "Mot de passe requis", "PASSWORD_REQUIRED");
+      if (!kit || (kit.shareExpiresAt && Date.parse(kit.shareExpiresAt) < Date.now()))
+        throw problem(404, "Ce lien de partage n'existe pas ou a expiré", "NOT_FOUND");
+      if (kit.sharePassword && kit.sharePassword !== password)
+        throw problem(401, "Mot de passe requis", "PASSWORD_REQUIRED");
       const project = projectOr404(kit.projectId);
       const name = data.names.find((n) => n.id === project.chosenNameId);
-      const dto: PublicKit = { ...kitToDto(kit), projectName: projectName(project), acronym: name?.acronym ?? null, meaning: name?.meaning ?? null, entityType: project.entityType };
+      const dto: PublicKit = {
+        ...kitToDto(kit),
+        projectName: projectName(project),
+        acronym: name?.acronym ?? null,
+        meaning: name?.meaning ?? null,
+        entityType: project.entityType,
+      };
       return dto;
     },
   },
@@ -1353,8 +1748,14 @@ export const mockClient: ApiClient = {
       requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
       const keys = new Set(apparelTemplate(design.templateId).zones.map((z) => z.key));
       const unknown = [...new Set(elements.filter((e) => !keys.has(e.zoneKey)).map((e) => e.zoneKey))];
-      if (unknown.length) throw problem(400, `Zones absentes de ce support : ${unknown.join(", ")}`, "BAD_REQUEST");
-      design.elements = elements.map((e, i) => ({ ...structuredClone(e), id: id("el"), rotationDeg: e.rotationDeg ?? 0, zIndex: e.zIndex ?? i }));
+      if (unknown.length)
+        throw problem(400, `Zones absentes de ce support : ${unknown.join(", ")}`, "BAD_REQUEST");
+      design.elements = elements.map((e, i) => ({
+        ...structuredClone(e),
+        id: id("el"),
+        rotationDeg: e.rotationDeg ?? 0,
+        zIndex: e.zIndex ?? i,
+      }));
       unlockApparel(design);
       saveApparel(apparelDesigns());
       return structuredClone(design);
@@ -1369,23 +1770,48 @@ export const mockClient: ApiClient = {
       const design = apparelDesign(did);
       requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
       const entries = parseRoster(csv);
-      const issues = rosterIssues(entries, apparelTemplate(design.templateId).sizes.map((s) => s.label));
-      if (issues.length) throw new ApiError({ status: 422, title: "Effectif non conforme", detail: issues[0]!.message, code: "UNPROCESSABLE", issues });
+      const issues = rosterIssues(
+        entries,
+        apparelTemplate(design.templateId).sizes.map((s) => s.label),
+      );
+      if (issues.length)
+        throw new ApiError({
+          status: 422,
+          title: "Effectif non conforme",
+          detail: issues[0]!.message,
+          code: "UNPROCESSABLE",
+          issues,
+        });
       const rosterName = name?.trim() ?? "";
       design.roster = { name: rosterName.length > 0 ? rosterName : "Effectif", entries };
       unlockApparel(design);
       saveApparel(apparelDesigns());
       const bySize: Record<string, number> = {};
       for (const e of entries) bySize[e.size] = (bySize[e.size] ?? 0) + e.quantity;
-      return { roster: structuredClone(design.roster), summary: { players: entries.length, garments: Object.values(bySize).reduce((a, b) => a + b, 0), bySize } };
+      return {
+        roster: structuredClone(design.roster),
+        summary: {
+          players: entries.length,
+          garments: Object.values(bySize).reduce((a, b) => a + b, 0),
+          bySize,
+        },
+      };
     },
     async proof(did) {
       await wait();
       const design = apparelDesign(did);
       requireRole(projectOr404(design.projectId).workspaceId, "EDITOR");
-      if (design.status === "APPROVED" || design.status === "IN_PRODUCTION") throw problem(409, "Cette tenue est déjà approuvée", "CONFLICT");
+      if (design.status === "APPROVED" || design.status === "IN_PRODUCTION")
+        throw problem(409, "Cette tenue est déjà approuvée", "CONFLICT");
       const report = apparelCheck(design);
-      if (!report.ok) throw new ApiError({ status: 422, title: "BAT refusé", detail: "Corrigez les erreurs avant d’envoyer le BAT", code: "UNPROCESSABLE", issues: report.errors });
+      if (!report.ok)
+        throw new ApiError({
+          status: 422,
+          title: "BAT refusé",
+          detail: "Corrigez les erreurs avant d’envoyer le BAT",
+          code: "UNPROCESSABLE",
+          issues: report.errors,
+        });
       design.proofToken ??= id().replace(/-/g, "").slice(0, 32);
       design.status = "PROOF_SENT";
       saveApparel(apparelDesigns());
@@ -1412,7 +1838,17 @@ export const mockClient: ApiClient = {
         approvedAt: design.approvedAt,
         template: { name: template.name, category: template.category, zones: template.zones },
         elements: design.elements,
-        roster: design.roster ? { name: design.roster.name, entries: design.roster.entries.map(({ displayName, number, size, quantity }) => ({ displayName, number, size, quantity })) } : null,
+        roster: design.roster
+          ? {
+              name: design.roster.name,
+              entries: design.roster.entries.map(({ displayName, number, size, quantity }) => ({
+                displayName,
+                number,
+                size,
+                quantity,
+              })),
+            }
+          : null,
       });
     },
     async approveProof(token) {
@@ -1420,13 +1856,19 @@ export const mockClient: ApiClient = {
       const design = apparelDesigns().find((d) => d.proofToken === token);
       if (!design) throw problem(404, "BAT introuvable ou révoqué", "NOT_FOUND");
       if (design.status === "APPROVED") return { status: design.status, approvedAt: design.approvedAt };
-      if (design.status !== "PROOF_SENT") throw problem(410, "Ce BAT n’est plus en attente d’approbation", "GONE");
+      if (design.status !== "PROOF_SENT")
+        throw problem(410, "Ce BAT n’est plus en attente d’approbation", "GONE");
       Object.assign(design, { status: "APPROVED", approvedAt: now() });
       saveApparel(apparelDesigns());
       return { status: design.status, approvedAt: design.approvedAt };
     },
     async productionExport() {
-      throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "Le pack atelier (planches de transfert, découpe, films) est produit par le serveur de la plateforme.");
+      throw problem(
+        501,
+        "Bientôt disponible",
+        "NOT_AVAILABLE",
+        "Le pack atelier (planches de transfert, découpe, films) est produit par le serveur de la plateforme.",
+      );
     },
   },
 
@@ -1440,13 +1882,17 @@ export const mockClient: ApiClient = {
       await wait();
       const project = projectOr404(pid);
       requireRole(project.workspaceId, "EDITOR");
-      if (mockSites().some((s) => s.projectId === pid)) throw problem(409, "Ce projet a déjà un site web", "SITE_EXISTS");
+      if (mockSites().some((s) => s.projectId === pid))
+        throw problem(409, "Ce projet a déjà un site web", "SITE_EXISTS");
       const logo = siteLogo(pid, null);
-      if (!logo) throw problem(400, "Créez d’abord un logo : le site reprend votre identité visuelle", "NO_LOGO");
+      if (!logo)
+        throw problem(400, "Créez d’abord un logo : le site reprend votre identité visuelle", "NO_LOGO");
       const data = db();
       const name = projectName(project);
-      const chosen = (kind: string) => data.slogans.find((s) => s.projectId === pid && s.isChosen && s.kind === kind)?.text ?? null;
-      const card = data.signatures.find((s) => s.projectId === pid && s.kind === "EMAIL")?.data as EmailSignatureData | undefined;
+      const chosen = (kind: string) =>
+        data.slogans.find((s) => s.projectId === pid && s.isChosen && s.kind === kind)?.text ?? null;
+      const card = data.signatures.find((s) => s.projectId === pid && s.kind === "EMAIL")?.data as
+        EmailSignatureData | undefined;
       const brief = project.brief;
       const content = defaultSiteContent({
         name,
@@ -1457,7 +1903,11 @@ export const mockClient: ApiClient = {
         audience: brief?.audience ?? null,
         language: brief?.languages?.[0] === "en" ? "en" : "fr",
         ...brandStyle(latestVersion(logo.id).spec),
-        contact: { phone: card?.phones.find(Boolean) ?? "", email: card?.email ?? "", address: card?.address ?? "" },
+        contact: {
+          phone: card?.phones.find(Boolean) ?? "",
+          email: card?.email ?? "",
+          address: card?.address ?? "",
+        },
         social: card ? socialsOf(card.socials) : {},
         icons: sectorIcons(brief?.sector ?? ""),
       });
@@ -1489,15 +1939,24 @@ export const mockClient: ApiClient = {
       requireRole(projectOr404(site.projectId).workspaceId, "EDITOR");
       if (input.content) {
         const owned = new Set(site.media.map((m) => m.id));
-        if (siteMediaIds(input.content).some((mid) => !owned.has(mid))) throw problem(400, "Image inconnue dans le contenu du site", "BAD_REQUEST");
+        if (siteMediaIds(input.content).some((mid) => !owned.has(mid)))
+          throw problem(400, "Image inconnue dans le contenu du site", "BAD_REQUEST");
         site.content = structuredClone(input.content);
       }
       if (input.slug !== undefined && input.slug !== site.slug) {
         const slug = input.slug.trim().toLowerCase();
-        if (!/^[a-z0-9](?:[a-z0-9-]{1,46}[a-z0-9])$/.test(slug) || ["admin", "api", "app", "site", "sites", "www", "aide", "support"].includes(slug)) {
-          throw problem(400, "Adresse invalide : 3 à 48 lettres minuscules, chiffres ou tirets", "SLUG_INVALID");
+        if (
+          !/^[a-z0-9](?:[a-z0-9-]{1,46}[a-z0-9])$/.test(slug) ||
+          ["admin", "api", "app", "site", "sites", "www", "aide", "support"].includes(slug)
+        ) {
+          throw problem(
+            400,
+            "Adresse invalide : 3 à 48 lettres minuscules, chiffres ou tirets",
+            "SLUG_INVALID",
+          );
         }
-        if (mockSites().some((s) => s.slug === slug && s.id !== webid)) throw problem(409, "Cette adresse est déjà prise", "SLUG_TAKEN");
+        if (mockSites().some((s) => s.slug === slug && s.id !== webid))
+          throw problem(409, "Cette adresse est déjà prise", "SLUG_TAKEN");
         site.slug = slug;
       }
       if (input.logoId !== undefined) site.logoId = input.logoId;
@@ -1555,7 +2014,13 @@ export const mockClient: ApiClient = {
       if (!match) throw problem(400, "Image JPEG, PNG ou WebP attendue", "BAD_REQUEST");
       const sizeBytes = Math.floor(((input.dataUrl.length - match[0].length) * 3) / 4);
       if (sizeBytes > 4 * 1024 * 1024) throw problem(400, "Image de 4 Mo au plus", "BAD_REQUEST");
-      const media = { id: id("media"), url: input.dataUrl, alt: input.alt?.trim() ?? "", mimeType: match[1]!, sizeBytes };
+      const media = {
+        id: id("media"),
+        url: input.dataUrl,
+        alt: input.alt?.trim() ?? "",
+        mimeType: match[1]!,
+        sizeBytes,
+      };
       site.media.push(media);
       saveMockSites(mockSites());
       return { id: media.id, url: media.url, alt: media.alt };
@@ -1567,8 +2032,13 @@ export const mockClient: ApiClient = {
       site.media = site.media.filter((m) => m.id !== mid);
       if (siteMediaIds(site.content).includes(mid)) {
         site.content.sections = site.content.sections.map((section) => {
-          if (section.type === "hero" && section.image?.kind === "media" && section.image.id === mid) return { ...section, image: null };
-          if (section.type === "gallery") return { ...section, images: section.images.filter((img) => img.kind !== "media" || img.id !== mid) };
+          if (section.type === "hero" && section.image?.kind === "media" && section.image.id === mid)
+            return { ...section, image: null };
+          if (section.type === "gallery")
+            return {
+              ...section,
+              images: section.images.filter((img) => img.kind !== "media" || img.id !== mid),
+            };
           return section;
         });
         site.updatedAt = now();
@@ -1597,7 +2067,12 @@ export const mockClient: ApiClient = {
       saveMockSites(mockSites());
     },
     async exportZip() {
-      throw problem(501, "Bientôt disponible", "NOT_AVAILABLE", "L’archive du site est produite par le serveur de la plateforme.");
+      throw problem(
+        501,
+        "Bientôt disponible",
+        "NOT_AVAILABLE",
+        "L’archive du site est produite par le serveur de la plateforme.",
+      );
     },
   },
 
@@ -1615,7 +2090,8 @@ export const mockClient: ApiClient = {
         if (!job) return clearInterval(timer);
         const event = jobState(job);
         onEvent(event);
-        if (event.status === "SUCCEEDED" || event.status === "FAILED" || event.status === "CANCELED") clearInterval(timer);
+        if (event.status === "SUCCEEDED" || event.status === "FAILED" || event.status === "CANCELED")
+          clearInterval(timer);
       }, 350);
       return () => clearInterval(timer);
     },
@@ -1623,13 +2099,19 @@ export const mockClient: ApiClient = {
 
   comments: {
     async list(pid, filter) {
-      return db().comments.filter((c) => c.projectId === pid && (!filter || (c.targetType === filter.targetType && c.targetId === filter.targetId)));
+      return db().comments.filter(
+        (c) =>
+          c.projectId === pid &&
+          (!filter || (c.targetType === filter.targetType && c.targetId === filter.targetId)),
+      );
     },
     async create(pid, input) {
       const user = currentUser();
       requireRole(projectOr404(pid).workspaceId, "VIEWER");
       const data = db();
-      const parent = input.parentId ? data.comments.find((c) => c.id === input.parentId && c.projectId === pid && !c.parentId) : null;
+      const parent = input.parentId
+        ? data.comments.find((c) => c.id === input.parentId && c.projectId === pid && !c.parentId)
+        : null;
       if (input.parentId && !parent) throw problem(400, "Ce fil de discussion n'existe pas sur cet élément");
       // Une réponse rouvre un fil résolu.
       if (parent) Object.assign(parent, { resolvedAt: null, resolvedById: null });
@@ -1657,7 +2139,10 @@ export const mockClient: ApiClient = {
       const comment = db().comments.find((c) => c.id === cid);
       if (!comment) throw problem(404, "Commentaire introuvable");
       if (comment.authorId !== user.id) requireRole(projectOr404(comment.projectId).workspaceId, "EDITOR");
-      Object.assign(comment, resolved ? { resolvedAt: now(), resolvedById: user.id } : { resolvedAt: null, resolvedById: null });
+      Object.assign(
+        comment,
+        resolved ? { resolvedAt: now(), resolvedById: user.id } : { resolvedAt: null, resolvedById: null },
+      );
       save();
       return comment;
     },
@@ -1704,7 +2189,11 @@ export const mockClient: ApiClient = {
       requireRole(wid, "OWNER");
       const data = db();
       const existing = data.payments.find((p) => p.id === key);
-      if (existing) return { paymentId: existing.id, status: existing.status === "REFUNDED" ? "SUCCEEDED" : existing.status };
+      if (existing)
+        return {
+          paymentId: existing.id,
+          status: existing.status === "REFUNDED" ? "SUCCEEDED" : existing.status,
+        };
       const plan = PLANS.find((p) => p.code === input.planCode);
       if (!plan || plan.priceGnf == null) throw problem(400, "Offre indisponible", "PLAN_UNAVAILABLE");
       if (input.provider !== "CARD" && !/^\+2246\d{8}$/.test((input.phone ?? "").replace(/\s/g, ""))) {
@@ -1727,7 +2216,10 @@ export const mockClient: ApiClient = {
       return {
         paymentId: key,
         status: "PENDING",
-        instructions: input.provider === "CARD" ? undefined : "Validez le paiement sur votre téléphone en composant #144# puis votre code secret Orange Money.",
+        instructions:
+          input.provider === "CARD"
+            ? undefined
+            : "Validez le paiement sur votre téléphone en composant #144# puis votre code secret Orange Money.",
         redirectUrl: undefined,
       };
     },
@@ -1743,10 +2235,31 @@ export const mockClient: ApiClient = {
           workspace.planCode = payment.planCode ?? workspace.planCode;
           const plan = PLANS.find((p) => p.code === payment.planCode);
           workspace.renewsAt = plan?.interval ? new Date(Date.now() + 30 * 864e5).toISOString() : null;
-          writeLedger(workspace.id, payment.creditsGranted, plan?.interval ? "SUBSCRIPTION_GRANT" : "PURCHASE", `Offre ${plan?.name}`, { paymentId });
+          writeLedger(
+            workspace.id,
+            payment.creditsGranted,
+            plan?.interval ? "SUBSCRIPTION_GRANT" : "PURCHASE",
+            `Offre ${plan?.name}`,
+            { paymentId },
+          );
           const sequence = String(data.invoices.length + 1).padStart(6, "0");
-          data.invoices.unshift({ id: id("inv"), workspaceId: workspace.id, paymentId, number: `FAC-${new Date().getFullYear()}-${sequence}`, amountGnf: payment.amountGnf, taxGnf: 0, issuedAt: now(), pdfUrl: null });
-          if (data.currentUserId) notify(data.currentUserId, { type: "PAYMENT", title: "Paiement confirmé", body: `${payment.creditsGranted} crédits ajoutés.`, href: "/app/facturation" });
+          data.invoices.unshift({
+            id: id("inv"),
+            workspaceId: workspace.id,
+            paymentId,
+            number: `FAC-${new Date().getFullYear()}-${sequence}`,
+            amountGnf: payment.amountGnf,
+            taxGnf: 0,
+            issuedAt: now(),
+            pdfUrl: null,
+          });
+          if (data.currentUserId)
+            notify(data.currentUserId, {
+              type: "PAYMENT",
+              title: "Paiement confirmé",
+              body: `${payment.creditsGranted} crédits ajoutés.`,
+              href: "/app/facturation",
+            });
         }
         save();
       }
@@ -1756,7 +2269,8 @@ export const mockClient: ApiClient = {
     async applyPromo(wid, code) {
       await wait();
       requireRole(wid, "OWNER");
-      if (code.trim().toUpperCase() !== "BIENVENUE") throw problem(400, "Code promo invalide", "INVALID_PROMO");
+      if (code.trim().toUpperCase() !== "BIENVENUE")
+        throw problem(400, "Code promo invalide", "INVALID_PROMO");
       writeLedger(wid, 10, "PROMO", "Code BIENVENUE");
       save();
       return { credits: 10 };
@@ -1782,7 +2296,13 @@ export const mockClient: ApiClient = {
 
   library: {
     async fonts() {
-      return FONTS.map((f) => ({ id: f.id, name: f.name, category: f.category, license: "OFL" as const, isActive: true }));
+      return FONTS.map((f) => ({
+        id: f.id,
+        name: f.name,
+        category: f.category,
+        license: "OFL" as const,
+        isActive: true,
+      }));
     },
     // Démonstration locale : visuels génératifs, pas de banque de photos (elle demande une clé côté serveur).
     async capabilities() {
@@ -1806,13 +2326,28 @@ export const mockClient: ApiClient = {
       const days = Array.from({ length: 14 }, (_, i) => {
         const date = new Date(Date.now() - (13 - i) * 864e5).toISOString().slice(0, 10);
         const r = (Math.sin(i * 1.7) + 1.4) / 2.4;
-        return { date, revenueGnf: Math.round(r * 1_800_000), aiCostUsd: Math.round(r * 900) / 100, generations: Math.round(r * 140) };
+        return {
+          date,
+          revenueGnf: Math.round(r * 1_800_000),
+          aiCostUsd: Math.round(r * 900) / 100,
+          generations: Math.round(r * 140),
+        };
       });
       const count = (kind: JobKind) => data.jobs.filter((j) => j.kind === kind).length;
       return {
         signups: data.users.length + 312,
         activeUsers: 187,
-        generations: { NAMES: count("NAMES") + 820, LOGOS: count("LOGOS") + 410, LOGO_EXPORT: count("LOGO_EXPORT") + 95, SLOGANS: count("SLOGANS") + 260, SIGNATURE: 140, BRAND_GUIDE: 52, EXPORT_ZIP: 61, DESIGN_EXPORT: count("DESIGN_EXPORT") + 38, STUDIO_IMAGES: count("STUDIO_IMAGES") + 74 },
+        generations: {
+          NAMES: count("NAMES") + 820,
+          LOGOS: count("LOGOS") + 410,
+          LOGO_EXPORT: count("LOGO_EXPORT") + 95,
+          SLOGANS: count("SLOGANS") + 260,
+          SIGNATURE: 140,
+          BRAND_GUIDE: 52,
+          EXPORT_ZIP: 61,
+          DESIGN_EXPORT: count("DESIGN_EXPORT") + 38,
+          STUDIO_IMAGES: count("STUDIO_IMAGES") + 74,
+        },
         conversionRate: 0.064,
         revenueGnf: days.reduce((s, d) => s + d.revenueGnf, 0),
         aiCostUsd: days.reduce((s, d) => s + d.aiCostUsd, 0),
@@ -1824,21 +2359,41 @@ export const mockClient: ApiClient = {
       const term = q?.toLowerCase() ?? "";
       const data = db();
       return data.users
-        .filter((u) => !term || u.fullName.toLowerCase().includes(term) || u.email.toLowerCase().includes(term))
-        .map((u) => ({ id: u.id, fullName: u.fullName, email: u.email, role: u.role, createdAt: u.createdAt, suspendedAt: u.suspendedAt, totpEnabled: u.totpEnabled, workspaces: data.memberships.filter((m) => m.userId === u.id).length }));
+        .filter(
+          (u) => !term || u.fullName.toLowerCase().includes(term) || u.email.toLowerCase().includes(term),
+        )
+        .map((u) => ({
+          id: u.id,
+          fullName: u.fullName,
+          email: u.email,
+          role: u.role,
+          createdAt: u.createdAt,
+          suspendedAt: u.suspendedAt,
+          totpEnabled: u.totpEnabled,
+          workspaces: data.memberships.filter((m) => m.userId === u.id).length,
+        }));
     },
     async updateUser(uid, patch) {
       const actor = requirePlatform("ADMIN");
       const data = db();
       const user = data.users.find((u) => u.id === uid)!;
-      if (uid === actor.id && patch.suspended) throw problem(403, "Action impossible sur votre propre compte", "FORBIDDEN");
+      if (uid === actor.id && patch.suspended)
+        throw problem(403, "Action impossible sur votre propre compte", "FORBIDDEN");
       // Hiérarchie : on n'agit que sur un rang inférieur au sien (le super admin agit sur tous).
-      if (uid !== actor.id && actor.role !== "SUPER_ADMIN" && PLATFORM_RANK[user.role] >= PLATFORM_RANK[actor.role]) {
+      if (
+        uid !== actor.id &&
+        actor.role !== "SUPER_ADMIN" &&
+        PLATFORM_RANK[user.role] >= PLATFORM_RANK[actor.role]
+      ) {
         throw problem(403, "Action impossible sur un compte de rang égal ou supérieur", "FORBIDDEN");
       }
       if (patch.suspended !== undefined) user.suspendedAt = patch.suspended ? now() : null;
       if (patch.reset2fa) user.totpEnabled = false;
-      audit(patch.reset2fa ? "user.reset_2fa" : patch.suspended ? "user.suspend" : "user.reactivate", "User", uid);
+      audit(
+        patch.reset2fa ? "user.reset_2fa" : patch.suspended ? "user.suspend" : "user.reactivate",
+        "User",
+        uid,
+      );
       save();
       return (await mockClient.admin.users()).find((u) => u.id === uid)!;
     },
@@ -1878,7 +2433,9 @@ export const mockClient: ApiClient = {
     },
     async creditRequests(status) {
       requirePlatform("SUPPORT");
-      return (db().creditRequests ?? []).filter((r) => !status || r.status === status).map(({ requestedById: _requester, ...dto }): CreditRequest => dto);
+      return (db().creditRequests ?? [])
+        .filter((r) => !status || r.status === status)
+        .map(({ requestedById: _requester, ...dto }): CreditRequest => dto);
     },
     async decideCreditRequest(requestId, approve, note) {
       const actor = requirePlatform("ADMIN");
@@ -1886,9 +2443,21 @@ export const mockClient: ApiClient = {
       const request = (data.creditRequests ?? []).find((r) => r.id === requestId);
       if (!request) throw problem(404, "Demande introuvable", "NOT_FOUND");
       if (request.status !== "PENDING") throw problem(409, "Cette demande a déjà été traitée", "CONFLICT");
-      if (request.requestedById === actor.id) throw problem(403, "Une demande est validée par un autre administrateur que son auteur", "FORBIDDEN");
-      if (approve) writeLedger(request.workspaceId, request.delta, "ADMIN_ADJUSTMENT", `Demande du support validée : ${request.reason}`);
-      Object.assign(request, { status: approve ? "APPROVED" : "REJECTED", decidedBy: actor.fullName, decisionNote: note ?? null, decidedAt: now() });
+      if (request.requestedById === actor.id)
+        throw problem(403, "Une demande est validée par un autre administrateur que son auteur", "FORBIDDEN");
+      if (approve)
+        writeLedger(
+          request.workspaceId,
+          request.delta,
+          "ADMIN_ADJUSTMENT",
+          `Demande du support validée : ${request.reason}`,
+        );
+      Object.assign(request, {
+        status: approve ? "APPROVED" : "REJECTED",
+        decidedBy: actor.fullName,
+        decisionNote: note ?? null,
+        decidedAt: now(),
+      });
       audit(approve ? "credits.request.approve" : "credits.request.reject", "Workspace", request.workspaceId);
       save();
       const { requestedById: _requester, ...dto } = request;
@@ -1897,15 +2466,23 @@ export const mockClient: ApiClient = {
     async payments() {
       requirePlatform("SUPPORT");
       const data = db();
-      return data.payments.map(({ workspaceId, creditsGranted: _c, resolveAt: _r, willFail: _f, ...rest }) => ({ ...rest, workspaceName: data.workspaces.find((w) => w.id === workspaceId)?.name }));
+      return data.payments.map(
+        ({ workspaceId, creditsGranted: _c, resolveAt: _r, willFail: _f, ...rest }) => ({
+          ...rest,
+          workspaceName: data.workspaces.find((w) => w.id === workspaceId)?.name,
+        }),
+      );
     },
     async refund(paymentId) {
       requirePlatform("ADMIN");
       const data = db();
       const payment = data.payments.find((p) => p.id === paymentId);
-      if (!payment || payment.status !== "SUCCEEDED") throw problem(400, "Seul un paiement réussi peut être remboursé");
+      if (!payment || payment.status !== "SUCCEEDED")
+        throw problem(400, "Seul un paiement réussi peut être remboursé");
       payment.status = "REFUNDED";
-      writeLedger(payment.workspaceId, -payment.creditsGranted, "REFUND", "Remboursement du paiement", { paymentId });
+      writeLedger(payment.workspaceId, -payment.creditsGranted, "REFUND", "Remboursement du paiement", {
+        paymentId,
+      });
       audit("payment.refund", "Payment", paymentId);
       save();
     },

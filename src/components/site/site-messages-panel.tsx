@@ -25,14 +25,18 @@ export function SiteMessagesPanel({ website }: { website: Website }) {
   const queryClient = useQueryClient();
   const onError = useApiErrorToast();
   const key = qk.websiteMessages(website.id);
-  const { data: messages, isLoading } = useQuery({ queryKey: key, queryFn: () => api.websites.messages(website.id) });
+  const { data: messages, isLoading } = useQuery({
+    queryKey: key,
+    queryFn: () => api.websites.messages(website.id),
+  });
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: key });
     queryClient.invalidateQueries({ queryKey: qk.website(website.projectId) });
   };
   const mark = useMutation({
-    mutationFn: ({ id, read }: { id: string; read: boolean }) => api.websites.markMessage(website.id, id, read),
+    mutationFn: ({ id, read }: { id: string; read: boolean }) =>
+      api.websites.markMessage(website.id, id, read),
     onSuccess: refresh,
     onError,
   });
@@ -59,7 +63,7 @@ export function SiteMessagesPanel({ website }: { website: Website }) {
                 <p className="font-medium">
                   {message.name} {!message.readAt && <Badge className="ml-1">{t("unread")}</Badge>}
                 </p>
-                <time className="text-xs text-muted-foreground" dateTime={message.createdAt}>
+                <time className="text-muted-foreground text-xs" dateTime={message.createdAt}>
                   {format.dateTime(new Date(message.createdAt), { dateStyle: "medium", timeStyle: "short" })}
                 </time>
               </div>

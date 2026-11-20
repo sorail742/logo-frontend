@@ -10,7 +10,7 @@ export default function AdminAuditPage() {
   const t = useTranslations("admin.audit");
   const format = useFormatter();
   const { data: entries = [] } = useQuery({ queryKey: qk.admin("audit"), queryFn: api.admin.auditLogs });
-  if (!entries.length) return <p className="py-10 text-center text-sm text-muted-foreground">{t("empty")}</p>;
+  if (!entries.length) return <p className="text-muted-foreground py-10 text-center text-sm">{t("empty")}</p>;
   return (
     <div className="overflow-x-auto rounded-xl border">
       <Table>
@@ -26,7 +26,9 @@ export default function AdminAuditPage() {
         <TableBody>
           {entries.map((entry) => (
             <TableRow key={entry.id}>
-              <TableCell className="whitespace-nowrap">{format.dateTime(new Date(entry.createdAt), { dateStyle: "short", timeStyle: "medium" })}</TableCell>
+              <TableCell className="whitespace-nowrap">
+                {format.dateTime(new Date(entry.createdAt), { dateStyle: "short", timeStyle: "medium" })}
+              </TableCell>
               <TableCell>{entry.actorName}</TableCell>
               <TableCell className="font-mono text-xs">{entry.action}</TableCell>
               <TableCell className="font-mono text-xs">

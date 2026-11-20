@@ -7,6 +7,15 @@ import type {
   PrintZone,
   ProductSize,
 } from "./types";
+import { checkSportsRegulations, type SportLeague } from "./sports-rules";
+
+export {
+  checkSportsRegulations,
+  getElementAreaCm2,
+  SPORT_LEAGUES,
+  type SportLeague,
+  type SportLeagueRule,
+} from "./sports-rules";
 
 // Contrôles de conformité d'une tenue, calculés en direct pendant l'édition. Même règles que
 // l'API (apparel-rules.ts), qui fait foi avant l'envoi du BAT et applique en plus les
@@ -181,12 +190,13 @@ function elementIssues(
   return issues;
 }
 
-/** Contrôle d'une tenue (sans règlement sportif ni effectif, vérifiés par l'API). */
+/** Contrôle d'une tenue (vérification physique atelier et règlements sportifs multi-ligues). */
 export function checkElements(
   zones: PrintZone[],
   elements: ApparelElement[],
   technique: PrintTechnique,
   garmentColor: string,
+  league: SportLeague = "NONE",
 ): ApparelIssue[] {
   const byKey = new Map(zones.map((z) => [z.key, z]));
   const used = new Set(elements.map((e) => e.zoneKey));
@@ -217,5 +227,10 @@ export function checkElements(
       severity: "warning",
       message: "DTG sur tissu foncé : sous-couche blanche nécessaire",
     });
+
+  if (league !== "NONE") {
+    issues.push(...checkSportsRegulations(elements, league));
+  }
+
   return issues;
 }

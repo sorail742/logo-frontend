@@ -35,15 +35,18 @@ export function TagInput({
     }
   };
   return (
-    <div className="flex min-h-8 flex-wrap items-center gap-1.5 rounded-lg border border-input px-1.5 py-1 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
+    <div className="border-input focus-within:border-ring focus-within:ring-ring/50 flex min-h-8 flex-wrap items-center gap-1.5 rounded-lg border px-1.5 py-1 focus-within:ring-3">
       {value.map((tag) => (
-        <span key={tag} className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-xs">
+        <span
+          key={tag}
+          className="bg-secondary inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs"
+        >
           {tag}
           <button
             type="button"
             onClick={() => onChange(value.filter((t) => t !== tag))}
             aria-label={`× ${tag}`}
-            className="rounded hover:text-destructive"
+            className="hover:text-destructive rounded"
           >
             <X className="size-3" />
           </button>

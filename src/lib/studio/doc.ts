@@ -27,7 +27,13 @@ export function createPage(background: Paint = solid("#ffffff")): DesignPage {
 }
 
 export function createDoc(format: Pick<DesignFormat, "width" | "height" | "print">): DesignDoc {
-  return { version: 1, width: format.width, height: format.height, print: format.print ?? null, pages: [createPage()] };
+  return {
+    version: 1,
+    width: format.width,
+    height: format.height,
+    print: format.print ?? null,
+    pages: [createPage()],
+  };
 }
 
 const base = { rotation: 0, opacity: 1 };
@@ -75,14 +81,50 @@ export function createShape(shape: ShapeKind, patch: Partial<ShapeElement> = {})
 }
 
 export function createIcon(iconId: string, node: IconNode, patch: Partial<IconElement> = {}): IconElement {
-  return { id: newId(), type: "icon", iconId, node, x: 0, y: 0, width: 160, height: 160, ...base, color: "#111827", strokeWidth: 2, ...patch };
+  return {
+    id: newId(),
+    type: "icon",
+    iconId,
+    node,
+    x: 0,
+    y: 0,
+    width: 160,
+    height: 160,
+    ...base,
+    color: "#111827",
+    strokeWidth: 2,
+    ...patch,
+  };
 }
 
-export function createImage(src: string, naturalWidth: number, naturalHeight: number, patch: Partial<ImageElement> = {}): ImageElement {
-  return { id: newId(), type: "image", src, naturalWidth, naturalHeight, x: 0, y: 0, width: naturalWidth, height: naturalHeight, ...base, fit: "cover", mask: "none", ...patch };
+export function createImage(
+  src: string,
+  naturalWidth: number,
+  naturalHeight: number,
+  patch: Partial<ImageElement> = {},
+): ImageElement {
+  return {
+    id: newId(),
+    type: "image",
+    src,
+    naturalWidth,
+    naturalHeight,
+    x: 0,
+    y: 0,
+    width: naturalWidth,
+    height: naturalHeight,
+    ...base,
+    fit: "cover",
+    mask: "none",
+    ...patch,
+  };
 }
 
-export function createSvg(svg: string, source: SvgElement["source"], patch: Partial<SvgElement> = {}): SvgElement {
+export function createSvg(
+  svg: string,
+  source: SvgElement["source"],
+  patch: Partial<SvgElement> = {},
+): SvgElement {
   return { id: newId(), type: "svg", svg, source, x: 0, y: 0, width: 300, height: 200, ...base, ...patch };
 }
 
@@ -100,8 +142,16 @@ export function mapPage(doc: DesignDoc, index: number, fn: (page: DesignPage) =>
   return { ...doc, pages: doc.pages.map((page, i) => (i === index ? fn(page) : page)) };
 }
 
-export function mapElements(doc: DesignDoc, pageIndex: number, ids: ReadonlySet<string>, fn: (el: DesignElement) => DesignElement): DesignDoc {
-  return mapPage(doc, pageIndex, (page) => ({ ...page, elements: page.elements.map((el) => (ids.has(el.id) ? fn(el) : el)) }));
+export function mapElements(
+  doc: DesignDoc,
+  pageIndex: number,
+  ids: ReadonlySet<string>,
+  fn: (el: DesignElement) => DesignElement,
+): DesignDoc {
+  return mapPage(doc, pageIndex, (page) => ({
+    ...page,
+    elements: page.elements.map((el) => (ids.has(el.id) ? fn(el) : el)),
+  }));
 }
 
 /**
@@ -118,13 +168,20 @@ export function scaleElement<T extends DesignElement>(el: T, s: number, sx = s, 
     y: el.y * sy + (el.height * sy - el.height * ky) / 2,
     width: el.width * kx,
     height: el.height * ky,
-    shadow: el.shadow ? { ...el.shadow, x: el.shadow.x * s, y: el.shadow.y * s, blur: el.shadow.blur * s } : el.shadow,
+    shadow: el.shadow
+      ? { ...el.shadow, x: el.shadow.x * s, y: el.shadow.y * s, blur: el.shadow.blur * s }
+      : el.shadow,
   };
   switch (scaled.type) {
     case "text":
       scaled.fontSize = scaled.fontSize * s;
       if (scaled.stroke) scaled.stroke = { ...scaled.stroke, width: scaled.stroke.width * s };
-      if (scaled.highlight) scaled.highlight = { ...scaled.highlight, padding: scaled.highlight.padding * s, radius: scaled.highlight.radius * s };
+      if (scaled.highlight)
+        scaled.highlight = {
+          ...scaled.highlight,
+          padding: scaled.highlight.padding * s,
+          radius: scaled.highlight.radius * s,
+        };
       break;
     case "shape":
       if (scaled.stroke) scaled.stroke = { ...scaled.stroke, width: scaled.stroke.width * s };
@@ -133,7 +190,8 @@ export function scaleElement<T extends DesignElement>(el: T, s: number, sx = s, 
     case "image":
       if (scaled.radius) scaled.radius = scaled.radius * s;
       if (scaled.filters?.blur) scaled.filters = { ...scaled.filters, blur: scaled.filters.blur * s };
-      if (scaled.adjust?.blur) scaled.adjust = { ...scaled.adjust, blur: Math.min(100, scaled.adjust.blur * s) };
+      if (scaled.adjust?.blur)
+        scaled.adjust = { ...scaled.adjust, blur: Math.min(100, scaled.adjust.blur * s) };
       if (scaled.outline) scaled.outline = { ...scaled.outline, width: scaled.outline.width * s };
       if (scaled.glow) scaled.glow = { ...scaled.glow, size: scaled.glow.size * s };
       break;
@@ -147,7 +205,8 @@ export function documentColors(doc: DesignDoc): string[] {
   const addPaint = (paint: Paint | undefined) => {
     if (!paint) return;
     if (paint.type === "solid") colors.add(paint.color.toLowerCase());
-    if (paint.type === "linear" || paint.type === "radial") paint.stops.forEach((s) => colors.add(s.color.toLowerCase()));
+    if (paint.type === "linear" || paint.type === "radial")
+      paint.stops.forEach((s) => colors.add(s.color.toLowerCase()));
   };
   for (const page of doc.pages) {
     addPaint(page.background);
@@ -163,6 +222,8 @@ export function documentColors(doc: DesignDoc): string[] {
 /** Polices utilisées (chargement avant mesure ou export). */
 export function documentFonts(doc: DesignDoc) {
   return doc.pages.flatMap((page) =>
-    page.elements.filter((el): el is TextElement => el.type === "text").map((el) => ({ fontId: el.fontId, fontWeight: el.fontWeight, text: el.text })),
+    page.elements
+      .filter((el): el is TextElement => el.type === "text")
+      .map((el) => ({ fontId: el.fontId, fontWeight: el.fontWeight, text: el.text })),
   );
 }

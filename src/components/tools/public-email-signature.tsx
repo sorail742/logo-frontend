@@ -17,12 +17,23 @@ export function PublicEmailSignature() {
   );
   return (
     <div className="grid gap-6">
-      <div className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-[1fr_auto]">
+      <div className="bg-card grid gap-4 rounded-xl border p-4 sm:grid-cols-[1fr_auto]">
         <Field label={t("organisation")} htmlFor="pub-org">
-          <Input id="pub-org" value={organisation} onChange={(e) => setOrganisation(e.target.value)} autoComplete="organization" />
+          <Input
+            id="pub-org"
+            value={organisation}
+            onChange={(e) => setOrganisation(e.target.value)}
+            autoComplete="organization"
+          />
         </Field>
         <Field label={t("color")} htmlFor="pub-color">
-          <input id="pub-color" type="color" value={primary} onChange={(e) => setPrimary(e.target.value)} className="h-8 w-16 cursor-pointer rounded border" />
+          <input
+            id="pub-color"
+            type="color"
+            value={primary}
+            onChange={(e) => setPrimary(e.target.value)}
+            className="h-8 w-16 cursor-pointer rounded border"
+          />
         </Field>
       </div>
       <EmailSignatureBuilder brand={brand} />

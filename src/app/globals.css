@@ -54,30 +54,30 @@
 :root {
   /* Polices de secours des logos (src/lib/render/fonts.ts) : latin étendu de Montserrat, N'Ko. */
   --logo-font-fallbacks: var(--font-montserrat-ext), var(--font-nko);
-  --background: oklch(1 0 0);
+  --background: oklch(0.985 0.006 92);
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  --card: oklch(0.995 0.003 92);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.47 0.1 168);
+  --primary: oklch(0.44 0.09 168);
   --primary-foreground: oklch(0.99 0.01 168);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.965 0.008 92);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  --muted: oklch(0.965 0.008 92);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.96 0.03 168);
+  --accent: oklch(0.955 0.018 168);
   --accent-foreground: oklch(0.3 0.07 168);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.91 0.008 92);
+  --input: oklch(0.91 0.008 92);
   --ring: oklch(0.6 0.1 168);
   --chart-1: oklch(0.55 0.11 168);
   --chart-2: oklch(0.75 0.15 75);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.75rem;
+  --radius: 0.875rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.47 0.1 168);
@@ -140,6 +140,52 @@
   }
 }
 @layer components {
+  .surface-elevated {
+    border: 1px solid color-mix(in oklch, var(--border) 84%, transparent);
+    background: color-mix(in oklch, var(--card) 96%, transparent);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.025),
+      0 10px 30px -20px rgba(15, 23, 42, 0.18);
+  }
+
+  .premium-panel {
+    border: 1px solid color-mix(in oklch, var(--border) 88%, transparent);
+    background: var(--card);
+    box-shadow: 0 12px 36px -28px rgba(15, 23, 42, 0.28);
+  }
+
+  .interactive-lift {
+    transition:
+      transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 180ms ease,
+      box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 180ms ease;
+  }
+
+  .interactive-lift:hover {
+    transform: translateY(-2px);
+  }
+
+  .skeleton-surface {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklch, var(--foreground) 5%, transparent),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-sweep {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+
   /* Damier pour visualiser la transparence des logos */
   .bg-checker {
     background-color: #fff;
@@ -147,11 +193,54 @@
       linear-gradient(45deg, #eee 25%, transparent 25%), linear-gradient(-45deg, #eee 25%, transparent 25%),
       linear-gradient(45deg, transparent 75%, #eee 75%), linear-gradient(-45deg, transparent 75%, #eee 75%);
     background-size: 16px 16px;
-    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    background-position:
+      0 0,
+      0 8px,
+      8px -8px,
+      -8px 0;
   }
   .svg-fit > svg {
     width: 100%;
     height: 100%;
+  }
+
+  /* Ombre de contact au sol 3D pour vêtement textile & maquettes */
+  .stage-floor-shadow {
+    position: absolute;
+    bottom: 5%;
+    left: 20%;
+    right: 20%;
+    height: 38px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(15, 23, 42, 0.25) 0%,
+      rgba(15, 23, 42, 0.08) 50%,
+      transparent 75%
+    );
+    filter: blur(8px);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Halo lumineux de studio pour le canevas textile & mockups */
+  .textile-spotlight {
+    background:
+      radial-gradient(
+        circle at 50% 25%,
+        rgba(13, 110, 95, 0.12) 0%,
+        rgba(13, 110, 95, 0.03) 45%,
+        transparent 70%
+      ),
+      radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.04) 0%, transparent 50%),
+      linear-gradient(180deg, #fafbfc 0%, #f1f5f9 100%);
+  }
+
+  /* Texture de studio pour aperçus haut de gamme (cachets, packaging) */
+  .studio-stage {
+    background-color: #fafbfc;
+    background-image: radial-gradient(rgba(13, 110, 95, 0.09) 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
   }
 }
 
@@ -159,4 +248,57 @@
   .no-print {
     display: none !important;
   }
+}
+
+/* Normalisation de tous les anciens effets 3D néon vers un langage premium discret. */
+.glow-card,
+.glow-card-3d,
+.glow-card-shimmer {
+  position: relative;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.025),
+    0 12px 32px -24px rgba(15, 23, 42, 0.22);
+  transform: none;
+  transition:
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 180ms ease,
+    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glow-card:hover,
+.glow-card-3d:hover,
+.glow-card-shimmer:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklch, var(--primary) 24%, var(--border));
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.03),
+    0 18px 38px -26px rgba(15, 23, 42, 0.28);
+}
+
+.glow-card::after,
+.glow-card::before,
+.glow-card-3d::after,
+.glow-card-3d::before,
+.glow-card-shimmer::after,
+.glow-card-shimmer::before {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Masquage de l'indicateur overlay dev en bas à gauche de l'écran pour dégager l'éditeur */
+nextjs-portal,
+div[data-nextjs-toast-wrapper],
+[data-nextjs-dev-tools-button],
+#__next-build-watcher {
+  display: none !important;
 }

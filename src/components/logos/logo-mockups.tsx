@@ -13,7 +13,10 @@ export function LogoMockups({ spec, compact = false }: { spec: LogoSpec; compact
     () => ({
       main: renderLogoSvg(spec).svg,
       white: renderLogoSvg(spec, { variant: "white", withBackground: false }).svg,
-      icon: renderLogoSvg({ ...spec, iconFrame: spec.iconFrame === "none" ? "circle" : spec.iconFrame }, { layout: "icon" }).svg,
+      icon: renderLogoSvg(
+        { ...spec, iconFrame: spec.iconFrame === "none" ? "circle" : spec.iconFrame },
+        { layout: "icon" },
+      ).svg,
     }),
     [spec],
   );
@@ -50,7 +53,10 @@ export function LogoMockups({ spec, compact = false }: { spec: LogoSpec; compact
     {
       id: "appIcon",
       node: (
-        <div className="flex aspect-square h-full items-center justify-center overflow-hidden rounded-[22%] shadow-sm ring-1 ring-black/10" style={{ background: spec.colors.background }}>
+        <div
+          className="flex aspect-square h-full items-center justify-center overflow-hidden rounded-[22%] shadow-sm ring-1 ring-black/10"
+          style={{ background: spec.colors.background }}
+        >
           <SvgView svg={svgs.icon} className="size-full" />
         </div>
       ),
@@ -58,11 +64,21 @@ export function LogoMockups({ spec, compact = false }: { spec: LogoSpec; compact
   ] as const;
 
   return (
-    <div className={compact ? "grid grid-cols-4 items-center gap-2" : "grid grid-cols-2 gap-3 sm:grid-cols-4"}>
+    <div
+      className={compact ? "grid grid-cols-4 items-center gap-2" : "grid grid-cols-2 gap-3 sm:grid-cols-4"}
+    >
       {items.map((item) => (
         <figure key={item.id} className="grid justify-items-center gap-1">
-          <div className={compact ? "flex h-12 w-full items-center justify-center" : "flex h-24 w-full items-center justify-center"}>{item.node}</div>
-          {!compact && <figcaption className="text-xs text-muted-foreground">{t(item.id)}</figcaption>}
+          <div
+            className={
+              compact
+                ? "flex h-12 w-full items-center justify-center"
+                : "flex h-24 w-full items-center justify-center"
+            }
+          >
+            {item.node}
+          </div>
+          {!compact && <figcaption className="text-muted-foreground text-xs">{t(item.id)}</figcaption>}
         </figure>
       ))}
     </div>

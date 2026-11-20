@@ -2,7 +2,11 @@ import type { LogoColors, LogoStyle, PaletteColor } from "@/lib/types";
 
 export function normalizeHex(hex: string) {
   let value = hex.trim().replace(/^#/, "");
-  if (value.length === 3) value = value.split("").map((c) => c + c).join("");
+  if (value.length === 3)
+    value = value
+      .split("")
+      .map((c) => c + c)
+      .join("");
   return /^[0-9a-f]{6}$/i.test(value) ? `#${value.toLowerCase()}` : "#000000";
 }
 
@@ -65,7 +69,12 @@ export function readableOn(background: string) {
 export function toPaletteColor(hex: string, role: string): PaletteColor {
   const [r, g, b] = hexToRgb(hex);
   const [c, m, y, k] = hexToCmyk(hex);
-  return { hex: normalizeHex(hex).toUpperCase(), rgb: `${r}, ${g}, ${b}`, cmyk: `${c}, ${m}, ${y}, ${k}`, role };
+  return {
+    hex: normalizeHex(hex).toUpperCase(),
+    rgb: `${r}, ${g}, ${b}`,
+    cmyk: `${c}, ${m}, ${y}, ${k}`,
+    role,
+  };
 }
 
 export function paletteFromColors(colors: LogoColors): PaletteColor[] {

@@ -89,6 +89,7 @@ function Geometry({
   editable: boolean;
 }>) {
   const t = useTranslations(INSPECTOR);
+  const { openImageStudio } = useApparelEditor();
   const update = (patch: Partial<EditorElement>, merge = "geometry") =>
     useApparel.getState().update(el.id, patch, { merge: `${merge}-${el.id}` });
   const ratio = el.widthMm / el.heightMm;
@@ -120,16 +121,14 @@ function Geometry({
     const content = isTextKind(el.kind)
       ? { ...el.content, ...textChecks(el.content, heightMm, widthMm) }
       : el.content;
-    useApparel
-      .getState()
-      .update(el.id, {
-        zoneKey: key,
-        widthMm,
-        heightMm,
-        offsetXMm: round((target.maxWidthMm - widthMm) / 2),
-        offsetYMm: round((target.maxHeightMm - heightMm) / 2),
-        content,
-      });
+    useApparel.getState().update(el.id, {
+      zoneKey: key,
+      widthMm,
+      heightMm,
+      offsetXMm: round((target.maxWidthMm - widthMm) / 2),
+      offsetYMm: round((target.maxHeightMm - heightMm) / 2),
+      content,
+    });
     useApparel.getState().setTargetZone(key);
   };
 
@@ -231,8 +230,13 @@ function Geometry({
   );
 }
 
-function TextSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone: PrintZone; editable: boolean }>) {
+function TextSettings({
+  el,
+  zone,
+  editable,
+}: Readonly<{ el: EditorElement; zone: PrintZone; editable: boolean }>) {
   const t = useTranslations(INSPECTOR);
+  const { openImageStudio } = useApparelEditor();
   const { brandColors } = useApparelEditor();
   const c = el.content;
   const font = getFont(c.fontId ?? "montserrat");
@@ -242,7 +246,9 @@ function TextSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone
     const content = { ...c, ...patch };
     // Police changée, ou lettres hors du latin de base (pular, N'Ko) : polices chargées avant la mesure.
     if (patch.fontId || patch.fontWeight || /[\u0100-\uFFFF]/u.test(patch.text ?? ""))
-      await ensureFonts([{ fontId: content.fontId ?? "montserrat", fontWeight: content.fontWeight ?? 700, text: content.text }]);
+      await ensureFonts([
+        { fontId: content.fontId ?? "montserrat", fontWeight: content.fontWeight ?? 700, text: content.text },
+      ]);
     useApparel
       .getState()
       .update(el.id, (current) => refitText(current, { ...current.content, ...patch }, zone), {
@@ -313,7 +319,10 @@ function TextSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone
       />
       <LetteringControls
         value={{
-          stroke: c.textOutline && c.textOutline.widthMm > 0 ? { color: c.textOutline.color, width: c.textOutline.widthMm } : null,
+          stroke:
+            c.textOutline && c.textOutline.widthMm > 0
+              ? { color: c.textOutline.color, width: c.textOutline.widthMm }
+              : null,
           effects: c.effects ?? null,
         }}
         onChange={({ stroke, effects }, key) =>
@@ -356,6 +365,7 @@ function TextSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone
 
 function LogoSettings({ el, editable }: Readonly<{ el: EditorElement; editable: boolean }>) {
   const t = useTranslations(INSPECTOR);
+  const { openImageStudio } = useApparelEditor();
   const ta = useTranslations("apparel.add");
   const { logos, brandColors } = useApparelEditor();
   const c = el.content;
@@ -428,8 +438,13 @@ function LogoSettings({ el, editable }: Readonly<{ el: EditorElement; editable: 
   );
 }
 
-function PhotoSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zone: PrintZone; editable: boolean }>) {
+function PhotoSettings({
+  el,
+  zone,
+  editable,
+}: Readonly<{ el: EditorElement; zone: PrintZone; editable: boolean }>) {
   const t = useTranslations(INSPECTOR);
+  const { openImageStudio } = useApparelEditor();
   const technique = useApparel((s) => s.design?.technique);
   const photo = el.content.photo!;
   const [inks, setInks] = useState(technique === "SCREEN_PRINT" ? 4 : 6);
@@ -459,17 +474,15 @@ function PhotoSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zon
     try {
       const studio = toStudioElement(el, zone, el.id) as ImageElement;
       const result = await separateInks(studio, photo, el, inks);
-      useApparel
-        .getState()
-        .update(el.id, {
-          content: {
-            ...el.content,
-            photo: result.photo,
-            pixelWidth: result.photo.naturalWidth,
-            colors: result.colors,
-            spotColors: result.colors.length,
-          },
-        });
+      useApparel.getState().update(el.id, {
+        content: {
+          ...el.content,
+          photo: result.photo,
+          pixelWidth: result.photo.naturalWidth,
+          colors: result.colors,
+          spotColors: result.colors.length,
+        },
+      });
       toast.success(t("separated", { count: result.colors.length }));
     } catch (error) {
       toast.error(errorMessage(error));
@@ -502,6 +515,15 @@ function PhotoSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zon
         </p>
         {editable && (
           <>
+            <Button
+              variant="default"
+              size="sm"
+              className="mb-1.5 w-full gap-2 bg-[#0B6B4F] text-xs font-semibold text-white shadow-sm hover:bg-[#09573f]"
+              onClick={() => openImageStudio(photo.src, el.id)}
+            >
+              <Wand2 className="size-3.5" />
+              Atelier Image (Détourer, DPI, SVG)
+            </Button>
             <div className="grid grid-cols-2 gap-1.5">
               {tools.map(({ tab, icon: Icon, label }) => (
                 <Button
@@ -583,6 +605,7 @@ function PhotoSettings({ el, zone, editable }: Readonly<{ el: EditorElement; zon
 
 function Rights({ el, editable }: Readonly<{ el: EditorElement; editable: boolean }>) {
   const t = useTranslations(INSPECTOR);
+  const { openImageStudio } = useApparelEditor();
   const attested = Boolean(el.content.rightsAttested);
   return (
     <Section title={t("rights")}>

@@ -40,6 +40,7 @@ import { qk } from "@/lib/query-keys";
 import { cn } from "@/lib/utils";
 import { GarmentPreview } from "./garment-view";
 import { STATUS_VARIANT } from "./status";
+import { NewOutfitModal } from "./new-outfit-modal";
 
 // Textile du projet : tenues (t-shirts, polos, maillots) et création d'une tenue sur un support.
 
@@ -49,143 +50,6 @@ const DEFAULT_TECHNIQUE: Partial<Record<ApparelTemplate["category"], PrintTechni
   FOOTBALL_JERSEY: "HEAT_TRANSFER_VINYL",
   BASKETBALL_JERSEY: "HEAT_TRANSFER_VINYL",
 };
-
-function NewApparelDialog({
-  templates,
-  initial,
-  onClose,
-}: Readonly<{
-  templates: ApparelTemplate[];
-  initial?: string;
-  onClose(): void;
-}>) {
-  const t = useTranslations("apparel");
-  const onError = useApiErrorToast();
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const { pid } = useProject();
-  const [templateId, setTemplateId] = useState(initial ?? templates[0]?.id ?? "");
-  const template = templates.find((tpl) => tpl.id === templateId);
-  const [technique, setTechnique] = useState<PrintTechnique>(
-    (template && DEFAULT_TECHNIQUE[template.category]) ?? "DTF",
-  );
-  const [color, setColor] = useState("#ffffff");
-  const [name, setName] = useState("");
-
-  const create = useMutation({
-    mutationFn: () =>
-      api.apparel.create(pid, {
-        templateId,
-        name: (name.trim() || (template?.name ?? "Tenue")).slice(0, 120),
-        technique,
-        garmentColor: color,
-      }),
-    onSuccess: (design) => {
-      void queryClient.invalidateQueries({ queryKey: qk.apparel(pid) });
-      onClose();
-      router.push(`/textile/${design.id}`);
-    },
-    onError,
-  });
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{t("list.newTitle")}</DialogTitle>
-          <DialogDescription>{t("list.newDescription")}</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-5">
-          <fieldset className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-            <legend className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-              {t("list.support")}
-            </legend>
-            {templates.map((tpl) => (
-              <button
-                key={tpl.id}
-                type="button"
-                aria-pressed={tpl.id === templateId}
-                onClick={() => {
-                  setTemplateId(tpl.id);
-                  setTechnique(DEFAULT_TECHNIQUE[tpl.category] ?? "DTF");
-                }}
-                className={cn(
-                  "grid gap-1 rounded-xl border p-2 text-center text-xs font-medium transition",
-                  tpl.id === templateId ? "border-primary bg-primary/5 text-primary" : "hover:bg-muted",
-                )}
-              >
-                <GarmentPreview
-                  category={tpl.category}
-                  view={tpl.zones.some((z) => z.view === "FRONT") ? "FRONT" : (tpl.zones[0]?.view ?? "FRONT")}
-                  color={color}
-                  zones={tpl.zones}
-                  className="bg-muted/60 mx-auto aspect-square w-full max-w-24 rounded-lg p-1"
-                />
-                {tpl.name}
-              </button>
-            ))}
-          </fieldset>
-          <div className="grid gap-2">
-            <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-              {t("settings.fabric")}
-            </span>
-            <fieldset className="flex flex-wrap gap-1.5">
-              <legend className="sr-only">{t("settings.fabric")}</legend>
-              {GARMENT_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  aria-pressed={color === c}
-                  aria-label={c}
-                  title={c}
-                  onClick={() => setColor(c)}
-                  className={cn(
-                    "size-7 rounded-full border shadow-xs transition hover:scale-110",
-                    color === c && "ring-primary ring-offset-background ring-2 ring-offset-2",
-                  )}
-                  style={{ background: c }}
-                />
-              ))}
-            </fieldset>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-1.5 text-sm font-medium">
-              {t("settings.technique")}
-              <NativeSelect
-                value={technique}
-                onChange={(e) => setTechnique(e.target.value as PrintTechnique)}
-              >
-                {TECHNIQUES.map((tech) => (
-                  <option key={tech} value={tech}>
-                    {t(`techniques.${tech}.name`)}
-                  </option>
-                ))}
-              </NativeSelect>
-              <span className="text-muted-foreground text-xs font-normal">
-                {t(`techniques.${technique}.hint`)}
-              </span>
-            </label>
-            <label className="grid content-start gap-1.5 text-sm font-medium">
-              {t("settings.name")}
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={template?.name}
-                maxLength={120}
-              />
-            </label>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button size="lg" onClick={() => create.mutate()} disabled={!template || create.isPending}>
-            {create.isPending ? <Loader2 className="animate-spin" /> : <Shirt />}
-            {t("list.create")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function DesignCard({
   design,
@@ -233,7 +97,7 @@ function DesignCard({
   const view = views.includes("FRONT") ? "FRONT" : (views[0] ?? "FRONT");
 
   return (
-    <div className="group bg-card relative overflow-hidden rounded-xl border shadow-xs transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="glow-card group bg-card border-border/80 hover:border-primary/40 relative overflow-hidden rounded-2xl border shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-xl">
       <Link href={`/textile/${design.id}`} className="block">
         <div className="bg-muted/50 flex aspect-[4/3.4] items-center justify-center p-3">
           {template ? (
@@ -316,7 +180,11 @@ function DesignCard({
 }
 
 /** Aucune tenue : présentation du module et bouton de création. */
-function EmptyDesigns({ canEdit, disabled, onNew }: Readonly<{ canEdit: boolean; disabled: boolean; onNew(): void }>) {
+function EmptyDesigns({
+  canEdit,
+  disabled,
+  onNew,
+}: Readonly<{ canEdit: boolean; disabled: boolean; onNew(): void }>) {
   const t = useTranslations("apparel.list");
   const features = [
     { icon: Shirt, key: "realistic" },
@@ -387,7 +255,7 @@ export function ApparelPage() {
                 key={tpl.id}
                 type="button"
                 onClick={() => setDialog({ template: tpl.id })}
-                className="bg-card hover:border-primary grid gap-1 rounded-xl border p-3 text-center transition hover:-translate-y-0.5 hover:shadow-sm"
+                className="glow-card bg-card hover:border-primary/50 border-border/80 grid gap-1 rounded-2xl border p-3.5 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
               >
                 <GarmentPreview
                   category={tpl.category}
@@ -433,9 +301,9 @@ export function ApparelPage() {
       </section>
 
       {dialog && templates.data && (
-        <NewApparelDialog
+        <NewOutfitModal
           templates={templates.data}
-          initial={dialog.template}
+          initialTemplateId={dialog.template}
           onClose={() => setDialog(null)}
         />
       )}

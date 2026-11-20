@@ -55,7 +55,8 @@ export const BLEND_MODES = [
 export type BlendMode = (typeof BLEND_MODES)[number];
 
 /** Rôle sémantique d'un élément : redimensionnement magique, application de la marque, contrôles. */
-export type ElementRole = "background" | "title" | "subtitle" | "body" | "logo" | "cta" | "photo" | "decor" | "info";
+export type ElementRole =
+  "background" | "title" | "subtitle" | "body" | "logo" | "cta" | "photo" | "decor" | "info";
 
 interface ElementBase {
   id: string;
@@ -100,7 +101,8 @@ export interface TextElement extends ElementBase {
   effects?: TextEffects | null;
 }
 
-export type ShapeKind = "rect" | "ellipse" | "triangle" | "polygon" | "star" | "line" | "arrow" | "blob" | "arch";
+export type ShapeKind =
+  "rect" | "ellipse" | "triangle" | "polygon" | "star" | "line" | "arrow" | "blob" | "arch";
 
 export interface ShapeElement extends ElementBase {
   type: "shape";

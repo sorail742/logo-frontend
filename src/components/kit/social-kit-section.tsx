@@ -8,7 +8,17 @@ import { brandAssets, socialSvg, SOCIAL_KIT } from "@/lib/render/logo-assets";
 import type { LogoSpec } from "@/lib/types";
 
 /** Kit réseaux sociaux : chaque format aperçu à sa proportion réelle, téléchargeable en PNG. */
-export function SocialKitSection({ spec, name, canDownload, isFree }: { spec: LogoSpec; name: string; canDownload: boolean; isFree: boolean }) {
+export function SocialKitSection({
+  spec,
+  name,
+  canDownload,
+  isFree,
+}: {
+  spec: LogoSpec;
+  name: string;
+  canDownload: boolean;
+  isFree: boolean;
+}) {
   const t = useTranslations("kit.social");
   const tFormat = useTranslations("logos.export.socialFormats");
   const base = slugify(name) || "marque";

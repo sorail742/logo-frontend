@@ -19,7 +19,9 @@ const MOBILE_WIDTH = 390;
 export function buildSiteHtml(website: Website, content: SiteContent, brand: WebsiteBrand, preview = true) {
   const urls: SiteUrls = {
     font: (id, weight, subset) =>
-      website.assetsUrl ? `${website.assetsUrl}/site-fonts/${id}/${closestWeight(id, weight)}/${subset}` : null,
+      website.assetsUrl
+        ? `${website.assetsUrl}/site-fonts/${id}/${closestWeight(id, weight)}/${subset}`
+        : null,
     media: (id) => website.media.find((m) => m.id === id)?.url ?? "",
     mockup: (scene) => mockupThumbnail(brand.assets, scene),
     file: () => null,
@@ -29,7 +31,11 @@ export function buildSiteHtml(website: Website, content: SiteContent, brand: Web
   return renderSiteHtml({
     content: { ...content, credit: content.credit || website.free },
     name: brand.name,
-    logo: { color: brand.assets.logo.color.svg, white: brand.assets.logo.white.svg, mark: brand.assets.mark.color.svg },
+    logo: {
+      color: brand.assets.logo.color.svg,
+      white: brand.assets.logo.white.svg,
+      mark: brand.assets.mark.color.svg,
+    },
     urls,
     platform: { name: PLATFORM_NAME, url: typeof window === "undefined" ? "" : window.location.origin },
     preview,
@@ -54,7 +60,12 @@ function useSiteHtml(website: Website, content: SiteContent, brand: WebsiteBrand
  * Iframe rendue à la largeur d'un écran réel, réduite à la largeur disponible. La position de
  * lecture survit au rechargement de la page ; `focus` amène la section modifiée à l'écran.
  */
-function ScaledFrame({ html, width, title, focus }: Readonly<{ html: string; width: number; title: string; focus?: SiteSectionType | null }>) {
+function ScaledFrame({
+  html,
+  width,
+  title,
+  focus,
+}: Readonly<{ html: string; width: number; title: string; focus?: SiteSectionType | null }>) {
   const box = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   const scrollY = useRef(0);
@@ -70,7 +81,9 @@ function ScaledFrame({ html, width, title, focus }: Readonly<{ html: string; wid
 
   useEffect(() => {
     if (!focus) return;
-    frame.current?.contentDocument?.querySelector(`section.${focus}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    frame.current?.contentDocument
+      ?.querySelector(`section.${focus}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [focus]);
 
   const onLoad = () => {
@@ -130,13 +143,15 @@ export function SitePreview({
   const html = useSiteHtml(website, content, brand);
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-muted/40">
-      <div className="flex items-center justify-between gap-2 border-b bg-background px-3 py-2">
+    <div className="bg-muted/40 overflow-hidden rounded-xl border">
+      <div className="bg-background flex items-center justify-between gap-2 border-b px-3 py-2">
         <div className="flex min-w-0 items-center gap-1.5" aria-hidden="true">
           <span className="size-2.5 rounded-full bg-red-400" />
           <span className="size-2.5 rounded-full bg-amber-400" />
           <span className="size-2.5 rounded-full bg-emerald-400" />
-          <span className="ml-2 truncate text-xs text-muted-foreground">{website.url.replace(/^https?:\/\//, "")}</span>
+          <span className="text-muted-foreground ml-2 truncate text-xs">
+            {website.url.replace(/^https?:\/\//, "")}
+          </span>
         </div>
         <fieldset className="flex gap-1">
           <legend className="sr-only">{t("label")}</legend>
@@ -163,12 +178,22 @@ export function SitePreview({
       </div>
       <div className={cn("p-3", device === "mobile" && "flex justify-center")}>
         {brand && (
-          <div className={cn(device === "mobile" && "w-[390px] max-w-full overflow-hidden rounded-[28px] border-8 border-foreground/80")}>
-            <ScaledFrame html={html} width={device === "mobile" ? MOBILE_WIDTH : DESKTOP_WIDTH} title={t("label")} focus={focus} />
+          <div
+            className={cn(
+              device === "mobile" &&
+                "border-foreground/80 w-[390px] max-w-full overflow-hidden rounded-[28px] border-8",
+            )}
+          >
+            <ScaledFrame
+              html={html}
+              width={device === "mobile" ? MOBILE_WIDTH : DESKTOP_WIDTH}
+              title={t("label")}
+              focus={focus}
+            />
           </div>
         )}
         {!brand && loading && <Skeleton className="h-[720px] w-full" aria-label={t("loading")} />}
-        {!brand && !loading && <p className="p-8 text-center text-sm text-muted-foreground">{t("noLogo")}</p>}
+        {!brand && !loading && <p className="text-muted-foreground p-8 text-center text-sm">{t("noLogo")}</p>}
       </div>
     </div>
   );

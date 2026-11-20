@@ -21,7 +21,13 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
     title: { default: t("title"), template: `%s · ${t("brand")}` },
     description: t("description"),
     applicationName: t("brand"),
-    openGraph: { type: "website", siteName: t("brand"), title: t("title"), description: t("description"), locale },
+    openGraph: {
+      type: "website",
+      siteName: t("brand"),
+      title: t("title"),
+      description: t("description"),
+      locale,
+    },
     alternates: { languages: { fr: "/", en: "/en" } },
   };
 }

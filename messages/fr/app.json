@@ -51,6 +51,10 @@
       "signature": {
         "title": "Signature e-mail",
         "body": "Gratuite, compatible Gmail et Outlook"
+      },
+      "textile": {
+        "title": "Atelier textile",
+        "body": "Maillots, t-shirts, DTF & flex"
       }
     },
     "openStudio": "Ouvrir le Studio",

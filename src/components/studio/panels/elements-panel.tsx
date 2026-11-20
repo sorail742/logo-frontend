@@ -19,7 +19,12 @@ import { addCentered, centered, pageUnit, releaseFocus, useInkColors } from "../
 // Formes, cadres photo, décors de fête et icônes (bibliothèque lucide complète, recherche en français
 // et en anglais).
 
-type ShapePreset = { id: string; shape: ShapeElement["shape"]; patch?: Partial<ShapeElement>; ratio?: number };
+type ShapePreset = {
+  id: string;
+  shape: ShapeElement["shape"];
+  patch?: Partial<ShapeElement>;
+  ratio?: number;
+};
 
 const SHAPES: ShapePreset[] = [
   { id: "rect", shape: "rect" },
@@ -43,10 +48,19 @@ const FRAMES: ShapePreset[] = [
   { id: "frameBlob", shape: "blob" },
 ];
 
-const TILE = "flex aspect-square items-center justify-center rounded-lg border bg-background transition hover:border-primary hover:bg-muted";
+const TILE =
+  "flex aspect-square items-center justify-center rounded-lg border bg-background transition hover:border-primary hover:bg-muted";
 
 /** Décors en bandeau (posés sur presque toute la largeur de la page). */
-const WIDE_DECORS = new Set<DecorId>(["confetti", "fireworks", "bunting", "mosque", "sparkles", "snowflakes", "flourish"]);
+const WIDE_DECORS = new Set<DecorId>([
+  "confetti",
+  "fireworks",
+  "bunting",
+  "mosque",
+  "sparkles",
+  "snowflakes",
+  "flourish",
+]);
 
 /** Mots français courants → noms d'icônes lucide (anglais). */
 const FRENCH: Record<string, string> = {
@@ -143,9 +157,27 @@ const FRENCH: Record<string, string> = {
 };
 
 function IconGlyph({ node, size = 22 }: { node: IconNode; size?: number }) {
-  const html = node.map(([tag, attrs]) => `<${tag} ${Object.entries(attrs).map(([k, v]) => `${k}="${v}"`).join(" ")}/>`).join("");
+  const html = node
+    .map(
+      ([tag, attrs]) =>
+        `<${tag} ${Object.entries(attrs)
+          .map(([k, v]) => `${k}="${v}"`)
+          .join(" ")}/>`,
+    )
+    .join("");
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" dangerouslySetInnerHTML={{ __html: html }} />
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 }
 
@@ -154,10 +186,20 @@ function shapeElement(preset: ShapePreset, color: string, role?: "photo") {
   const base = unit * 0.32;
   const ratio = preset.ratio ?? 1;
   const width = ratio >= 1 ? base * Math.min(ratio, 2.2) : base;
-  const height = ratio >= 1 ? (preset.shape === "line" || preset.shape === "arrow" ? Math.max(12, unit * 0.03) : base / ratio) : base / ratio;
+  const height =
+    ratio >= 1
+      ? preset.shape === "line" || preset.shape === "arrow"
+        ? Math.max(12, unit * 0.03)
+        : base / ratio
+      : base / ratio;
   const patch = { ...preset.patch };
   if (patch.radius !== undefined) patch.radius = patch.radius * Math.min(width, height);
-  const stroke = preset.id === "ring" ? { color, width: unit * 0.012, dash: "solid" as const } : preset.shape === "line" || preset.shape === "arrow" ? { color, width: Math.max(3, unit * 0.008), dash: "solid" as const } : null;
+  const stroke =
+    preset.id === "ring"
+      ? { color, width: unit * 0.012, dash: "solid" as const }
+      : preset.shape === "line" || preset.shape === "arrow"
+        ? { color, width: Math.max(3, unit * 0.008), dash: "solid" as const }
+        : null;
   return createShape(preset.shape, { width, height, fill: solid(color), ...patch, stroke, role });
 }
 
@@ -165,7 +207,15 @@ function ShapePreview({ preset, color, frame }: { preset: ShapePreset; color: st
   const svg = useMemo(() => {
     const el = { ...shapeElement(preset, color, frame ? "photo" : undefined), seed: 7 };
     const scale = 40 / Math.max(el.width, el.height);
-    const scaled = { ...el, x: 0, y: 0, width: el.width * scale, height: el.height * scale, radius: el.radius ? el.radius * scale : el.radius, stroke: el.stroke ? { ...el.stroke, width: Math.max(1.5, el.stroke.width * scale) } : null };
+    const scaled = {
+      ...el,
+      x: 0,
+      y: 0,
+      width: el.width * scale,
+      height: el.height * scale,
+      radius: el.radius ? el.radius * scale : el.radius,
+      stroke: el.stroke ? { ...el.stroke, width: Math.max(1.5, el.stroke.width * scale) } : null,
+    };
     const markup = renderElement({ ...scaled, x: (48 - scaled.width) / 2, y: (48 - scaled.height) / 2 });
     return `<svg viewBox="0 0 48 48" width="48" height="48">${markup}</svg>`;
   }, [preset, color, frame]);
@@ -185,7 +235,16 @@ export function ElementsPanel() {
   const country = getCountry(useSessionStore((s) => s.user?.country));
   const decors = useMemo(() => {
     const palette = {
-      colors: [...new Set([brand?.colors.primary ?? "#2563eb", brand?.colors.secondary ?? "#ec4899", "#f59e0b", "#22c55e"].map((c) => c.toLowerCase()))],
+      colors: [
+        ...new Set(
+          [
+            brand?.colors.primary ?? "#2563eb",
+            brand?.colors.secondary ?? "#ec4899",
+            "#f59e0b",
+            "#22c55e",
+          ].map((c) => c.toLowerCase()),
+        ),
+      ],
       gold: "#d4a017",
       ink: brand?.colors.text ?? "#111827",
     };
@@ -201,9 +260,22 @@ export function ElementsPanel() {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     const curated = ICONS.map((icon) => ({ id: icon.id, node: icon.node, tags: icon.tags }));
-    if (!icons) return q ? curated.filter((i) => i.id.includes(q) || i.tags.some((tag) => tag.includes(q))) : curated;
-    if (!q) return [...curated, ...Object.entries(icons).filter(([id]) => !ICONS.some((i) => i.id === id)).map(([id, node]) => ({ id, node, tags: [] as string[] }))];
-    const words = [q, ...(FRENCH[q]?.split(" ") ?? []), ...Object.entries(FRENCH).filter(([fr]) => fr.startsWith(q) && q.length >= 3).flatMap(([, en]) => en.split(" "))];
+    if (!icons)
+      return q ? curated.filter((i) => i.id.includes(q) || i.tags.some((tag) => tag.includes(q))) : curated;
+    if (!q)
+      return [
+        ...curated,
+        ...Object.entries(icons)
+          .filter(([id]) => !ICONS.some((i) => i.id === id))
+          .map(([id, node]) => ({ id, node, tags: [] as string[] })),
+      ];
+    const words = [
+      q,
+      ...(FRENCH[q]?.split(" ") ?? []),
+      ...Object.entries(FRENCH)
+        .filter(([fr]) => fr.startsWith(q) && q.length >= 3)
+        .flatMap(([, en]) => en.split(" ")),
+    ];
     const tagged = new Set(ICONS.filter((i) => i.tags.some((tag) => tag.includes(q))).map((i) => i.id));
     return Object.entries(icons)
       .filter(([id]) => tagged.has(id) || words.some((w) => id.includes(w)))
@@ -218,7 +290,9 @@ export function ElementsPanel() {
     const selected = page.elements.filter((el) => state.selection.includes(el.id));
     // Une icône sélectionnée est remplacée (même place, même couleur).
     if (selected.length === 1 && selected[0]!.type === "icon") {
-      state.updateElements([selected[0]!.id], (el) => (el.type === "icon" ? { ...el, iconId: id, node } : el));
+      state.updateElements([selected[0]!.id], (el) =>
+        el.type === "icon" ? { ...el, iconId: id, node } : el,
+      );
       return;
     }
     const size = pageUnit() * 0.18;
@@ -231,7 +305,14 @@ export function ElementsPanel() {
         <h3 className="text-xs font-semibold">{t("shapes")}</h3>
         <div className="grid grid-cols-4 gap-1.5">
           {SHAPES.map((preset) => (
-            <button key={preset.id} type="button" onClick={() => addCentered([shapeElement(preset, color)])} className={TILE} title={t(`shape.${preset.id}`)} aria-label={t(`shape.${preset.id}`)}>
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => addCentered([shapeElement(preset, color)])}
+              className={TILE}
+              title={t(`shape.${preset.id}`)}
+              aria-label={t(`shape.${preset.id}`)}
+            >
               <ShapePreview preset={preset} color={color} />
             </button>
           ))}
@@ -239,10 +320,17 @@ export function ElementsPanel() {
       </section>
       <section className="grid gap-2">
         <h3 className="text-xs font-semibold">{t("frames")}</h3>
-        <p className="text-[11px] leading-relaxed text-muted-foreground">{t("framesHelp")}</p>
+        <p className="text-muted-foreground text-[11px] leading-relaxed">{t("framesHelp")}</p>
         <div className="grid grid-cols-4 gap-1.5">
           {FRAMES.map((preset) => (
-            <button key={preset.id} type="button" onClick={() => addCentered([shapeElement(preset, frameColor, "photo")])} className={TILE} title={t(`shape.${preset.id}`)} aria-label={t(`shape.${preset.id}`)}>
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => addCentered([shapeElement(preset, frameColor, "photo")])}
+              className={TILE}
+              title={t(`shape.${preset.id}`)}
+              aria-label={t(`shape.${preset.id}`)}
+            >
               <ShapePreview preset={preset} color={frameColor} frame />
             </button>
           ))}
@@ -258,18 +346,26 @@ export function ElementsPanel() {
             title={flagLabel}
             aria-label={flagLabel}
           >
-            <span className="block w-full [&>svg]:block [&>svg]:h-auto [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: flag }} />
+            <span
+              className="block w-full [&>svg]:block [&>svg]:h-auto [&>svg]:w-full"
+              dangerouslySetInnerHTML={{ __html: flag }}
+            />
           </button>
           {decors.map(({ id, decor }) => (
             <button
               key={id}
               type="button"
-              onClick={() => addGraphic(decor.svg, decor.width / decor.height, t(`decor.${id}`), WIDE_DECORS.has(id))}
-              className={`flex aspect-square items-center justify-center rounded-lg border p-1.5 transition hover:border-primary ${id === "snowflakes" || id === "lanterns" ? "bg-slate-800 hover:bg-slate-700" : "bg-background hover:bg-muted"}`}
+              onClick={() =>
+                addGraphic(decor.svg, decor.width / decor.height, t(`decor.${id}`), WIDE_DECORS.has(id))
+              }
+              className={`hover:border-primary flex aspect-square items-center justify-center rounded-lg border p-1.5 transition ${id === "snowflakes" || id === "lanterns" ? "bg-slate-800 hover:bg-slate-700" : "bg-background hover:bg-muted"}`}
               title={t(`decor.${id}`)}
               aria-label={t(`decor.${id}`)}
             >
-              <span className="flex size-full items-center justify-center [&>svg]:h-auto [&>svg]:max-h-full [&>svg]:max-w-full" dangerouslySetInnerHTML={{ __html: decor.svg }} />
+              <span
+                className="flex size-full items-center justify-center [&>svg]:h-auto [&>svg]:max-h-full [&>svg]:max-w-full"
+                dangerouslySetInnerHTML={{ __html: decor.svg }}
+              />
             </button>
           ))}
         </div>
@@ -277,10 +373,15 @@ export function ElementsPanel() {
       <section className="grid gap-2">
         <div className="flex items-baseline justify-between">
           <h3 className="text-xs font-semibold">{t("icons")}</h3>
-          <span className="text-[11px] text-muted-foreground">{t("iconCount", { count: icons ? Object.keys(icons).length : ICONS.length })}</span>
+          <span className="text-muted-foreground text-[11px]">
+            {t("iconCount", { count: icons ? Object.keys(icons).length : ICONS.length })}
+          </span>
         </div>
         <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <Search
+            className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2"
+            aria-hidden="true"
+          />
           <Input
             value={query}
             onChange={(e) => {
@@ -293,7 +394,7 @@ export function ElementsPanel() {
           />
         </div>
         {results.length === 0 ? (
-          <p className="py-4 text-center text-xs text-muted-foreground">{t("noIcon")}</p>
+          <p className="text-muted-foreground py-4 text-center text-xs">{t("noIcon")}</p>
         ) : (
           <div className="grid grid-cols-6 gap-1">
             {results.slice(0, limit).map((icon) => (
@@ -301,7 +402,7 @@ export function ElementsPanel() {
                 key={icon.id}
                 type="button"
                 onClick={() => addIcon(icon.id, icon.node)}
-                className="flex aspect-square items-center justify-center rounded-md text-foreground/80 transition hover:bg-muted hover:text-foreground"
+                className="text-foreground/80 hover:bg-muted hover:text-foreground flex aspect-square items-center justify-center rounded-md transition"
                 title={icon.id}
                 aria-label={icon.id}
               >
@@ -311,7 +412,11 @@ export function ElementsPanel() {
           </div>
         )}
         {results.length > limit && (
-          <button type="button" onClick={() => setLimit(limit + 120)} className="rounded-md py-1.5 text-xs text-primary hover:bg-muted">
+          <button
+            type="button"
+            onClick={() => setLimit(limit + 120)}
+            className="text-primary hover:bg-muted rounded-md py-1.5 text-xs"
+          >
             {t("more", { count: results.length - limit })}
           </button>
         )}

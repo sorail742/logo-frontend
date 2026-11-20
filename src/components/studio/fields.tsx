@@ -24,7 +24,19 @@ export interface NumberFieldProps {
   disabled?: boolean;
 }
 
-export function NumberField({ label, value, onChange, min = -Infinity, max = Infinity, step = 1, precision = 0, suffix, title, className, disabled }: NumberFieldProps) {
+export function NumberField({
+  label,
+  value,
+  onChange,
+  min = -Infinity,
+  max = Infinity,
+  step = 1,
+  precision = 0,
+  suffix,
+  title,
+  className,
+  disabled,
+}: NumberFieldProps) {
   const [draft, setDraft] = useState<string | null>(null);
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
   const shown = draft ?? String(round(value, precision));
@@ -37,9 +49,16 @@ export function NumberField({ label, value, onChange, min = -Infinity, max = Inf
   };
 
   return (
-    <label className={cn("flex h-8 items-center rounded-lg border border-input bg-transparent text-xs focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50", disabled && "opacity-50", className)} title={title}>
+    <label
+      className={cn(
+        "border-input focus-within:border-ring focus-within:ring-ring/50 flex h-8 items-center rounded-lg border bg-transparent text-xs focus-within:ring-3",
+        disabled && "opacity-50",
+        className,
+      )}
+      title={title}
+    >
       <span
-        className="flex h-full min-w-7 cursor-ew-resize items-center justify-center px-1.5 text-[11px] text-muted-foreground select-none"
+        className="text-muted-foreground flex h-full min-w-7 cursor-ew-resize items-center justify-center px-1.5 text-[11px] select-none"
         onPointerDown={(event) => {
           if (disabled) return;
           event.preventDefault();
@@ -83,7 +102,7 @@ export function NumberField({ label, value, onChange, min = -Infinity, max = Inf
         }}
         className="h-full w-full min-w-0 bg-transparent pr-1 text-right tabular-nums outline-none"
       />
-      {suffix && <span className="pr-2 text-[11px] text-muted-foreground">{suffix}</span>}
+      {suffix && <span className="text-muted-foreground pr-2 text-[11px]">{suffix}</span>}
     </label>
   );
 }
@@ -117,10 +136,23 @@ export function SliderField({
   const resettable = onReset && value !== resetValue;
   return (
     <div className="grid grid-cols-[5.5rem_1fr_2.75rem] items-center gap-2">
-      <span className="truncate text-xs text-muted-foreground">{label}</span>
-      <Slider value={[value]} min={min} max={max} step={step} onValueChange={(v) => onChange(Array.isArray(v) ? v[0]! : (v as number))} aria-label={typeof label === "string" ? label : undefined} />
+      <span className="text-muted-foreground truncate text-xs">{label}</span>
+      <Slider
+        value={[value]}
+        min={min}
+        max={max}
+        step={step}
+        onValueChange={(v) => onChange(Array.isArray(v) ? v[0]! : (v as number))}
+        aria-label={typeof label === "string" ? label : undefined}
+      />
       {resettable ? (
-        <button type="button" onClick={onReset} className="rounded text-right text-[11px] tabular-nums underline decoration-dotted underline-offset-2 hover:text-primary" title={resetLabel} aria-label={resetLabel ? `${resetLabel} (${format(value)})` : undefined}>
+        <button
+          type="button"
+          onClick={onReset}
+          className="hover:text-primary rounded text-right text-[11px] tabular-nums underline decoration-dotted underline-offset-2"
+          title={resetLabel}
+          aria-label={resetLabel ? `${resetLabel} (${format(value)})` : undefined}
+        >
           {format(value)}
         </button>
       ) : (
@@ -142,7 +174,7 @@ export function ToggleButtons<T extends string>({
   label: string;
 }>) {
   return (
-    <fieldset className="flex rounded-lg border border-input p-0.5">
+    <fieldset className="border-input flex rounded-lg border p-0.5">
       <legend className="sr-only">{label}</legend>
       {options.map((option) => (
         <button
@@ -154,7 +186,9 @@ export function ToggleButtons<T extends string>({
           title={option.label}
           className={cn(
             "flex h-6 flex-1 items-center justify-center rounded-md transition [&_svg]:size-3.5",
-            value === option.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            value === option.value
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
           {option.icon}
@@ -164,13 +198,26 @@ export function ToggleButtons<T extends string>({
   );
 }
 
-export function Section({ title, children, action, defaultOpen = true }: Readonly<{ title: string; children: ReactNode; action?: ReactNode; defaultOpen?: boolean }>) {
+export function Section({
+  title,
+  children,
+  action,
+  defaultOpen = true,
+}: Readonly<{ title: string; children: ReactNode; action?: ReactNode; defaultOpen?: boolean }>) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <section className="border-b px-4 py-3 last:border-b-0">
       <div className="flex items-center justify-between gap-2">
-        <button type="button" onClick={() => setOpen(!open)} className="flex items-center gap-1 text-xs font-semibold tracking-wide text-foreground uppercase" aria-expanded={open}>
-          <ChevronDown className={cn("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden="true" />
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="text-foreground flex items-center gap-1 text-xs font-semibold tracking-wide uppercase"
+          aria-expanded={open}
+        >
+          <ChevronDown
+            className={cn("size-3.5 transition-transform", !open && "-rotate-90")}
+            aria-hidden="true"
+          />
           {title}
         </button>
         {action}

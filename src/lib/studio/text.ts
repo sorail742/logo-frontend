@@ -14,7 +14,12 @@ function familyOf(cssVar: string) {
   if (cached !== undefined) return cached;
   let family = "";
   if (typeof document !== "undefined") {
-    family = getComputedStyle(document.documentElement).getPropertyValue(cssVar).split(",")[0]?.trim().replace(/['"]/g, "") ?? "";
+    family =
+      getComputedStyle(document.documentElement)
+        .getPropertyValue(cssVar)
+        .split(",")[0]
+        ?.trim()
+        .replace(/['"]/g, "") ?? "";
   }
   families.set(cssVar, family);
   return family;
@@ -47,7 +52,9 @@ export async function ensureFonts(fonts: { fontId: string; fontWeight: number; t
   }
   await Promise.all(
     [...unique.values()].map((f) =>
-      document.fonts.load(`${closestWeight(f.fontId, f.fontWeight)} 32px ${fontStack(f.fontId)}`, f.text || undefined).catch(() => undefined),
+      document.fonts
+        .load(`${closestWeight(f.fontId, f.fontWeight)} 32px ${fontStack(f.fontId)}`, f.text || undefined)
+        .catch(() => undefined),
     ),
   );
 }
@@ -57,7 +64,8 @@ let context: CanvasRenderingContext2D | null = null;
 type Measurable = Pick<TextElement, "fontId" | "fontWeight" | "fontSize" | "letterSpacing">;
 
 export function measureText(text: string, style: Measurable) {
-  if (typeof document === "undefined") return text.length * style.fontSize * getFont(style.fontId).widthFactor;
+  if (typeof document === "undefined")
+    return text.length * style.fontSize * getFont(style.fontId).widthFactor;
   context ??= document.createElement("canvas").getContext("2d");
   if (!context) return text.length * style.fontSize * 0.6;
   context.font = `${closestWeight(style.fontId, style.fontWeight)} ${style.fontSize}px ${fontStack(style.fontId)}`;

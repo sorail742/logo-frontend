@@ -18,13 +18,13 @@ export default function AdminAiPage() {
         <CardHeader>
           <CardTitle className="text-sm">{t("provider")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">{t("providerValue")}</CardContent>
+        <CardContent className="text-muted-foreground text-sm">{t("providerValue")}</CardContent>
       </Card>
       <Card>
         <CardHeader>
           <CardTitle className="text-sm">{t("quotas")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">{t("quotaValue")}</CardContent>
+        <CardContent className="text-muted-foreground text-sm">{t("quotaValue")}</CardContent>
       </Card>
       <Card>
         <CardHeader>
@@ -45,7 +45,7 @@ export default function AdminAiPage() {
         <CardHeader>
           <CardTitle className="text-sm">{t("costs")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">{t("costsBody")}</CardContent>
+        <CardContent className="text-muted-foreground text-sm">{t("costsBody")}</CardContent>
       </Card>
     </div>
   );

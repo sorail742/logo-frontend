@@ -4,7 +4,14 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { SvgView } from "@/components/brand/svg-view";
 import { extractPalette } from "@/lib/render/color";
 import { sanitizeSvg } from "@/lib/render/svg";
@@ -80,13 +87,18 @@ export function ImportLogoDialog({
           <DialogTitle>{t("importTitle")}</DialogTitle>
           <DialogDescription>{t("importBody")}</DialogDescription>
         </DialogHeader>
-        <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-sm hover:bg-muted">
-          <Upload className="size-6 text-muted-foreground" aria-hidden="true" />
+        <label className="hover:bg-muted flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-sm">
+          <Upload className="text-muted-foreground size-6" aria-hidden="true" />
           {t("importFile")}
-          <input type="file" accept=".svg,image/svg+xml,.png,image/png" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
+          <input
+            type="file"
+            accept=".svg,image/svg+xml,.png,image/png"
+            className="sr-only"
+            onChange={(e) => onFile(e.target.files?.[0])}
+          />
         </label>
         {error && (
-          <p className="text-sm text-destructive" role="alert">
+          <p className="text-destructive text-sm" role="alert">
             {error}
           </p>
         )}
@@ -115,7 +127,12 @@ export function ImportLogoDialog({
           </div>
         )}
         <DialogFooter>
-          <Button disabled={!preview || busy} onClick={() => preview && onImport({ svg: preview.svg, pngDataUrl: preview.png, palette: preview.palette })}>
+          <Button
+            disabled={!preview || busy}
+            onClick={() =>
+              preview && onImport({ svg: preview.svg, pngDataUrl: preview.png, palette: preview.palette })
+            }
+          >
             {t("importConfirm")}
           </Button>
         </DialogFooter>

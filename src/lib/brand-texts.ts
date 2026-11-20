@@ -68,7 +68,11 @@ const COPY = {
     contact: "Écrivez-nous ici pour toute demande : nous répondons rapidement.",
     linkInBio: "Infos et commandes : lien ci-dessous",
     pitch: (name: string, mission: string, values: string, slogan: string) =>
-      [mission ? `${name} : ${lower(sentence(mission))}` : `${name}, une marque qui tient ses promesses.`, values && `Nous avançons avec ${values}.`, slogan && `${sentence(slogan)}`]
+      [
+        mission ? `${name} : ${lower(sentence(mission))}` : `${name}, une marque qui tient ses promesses.`,
+        values && `Nous avançons avec ${values}.`,
+        slogan && `${sentence(slogan)}`,
+      ]
         .filter(Boolean)
         .join(" "),
     googleTail: "Contactez-nous pour en savoir plus ou passer commande.",
@@ -80,7 +84,11 @@ const COPY = {
     contact: "Message us here for any request: we reply quickly.",
     linkInBio: "Info and orders: link below",
     pitch: (name: string, mission: string, values: string, slogan: string) =>
-      [mission ? `${name}: ${lower(sentence(mission))}` : `${name}, a brand that keeps its promises.`, values && `We are driven by ${values}.`, slogan && `${sentence(slogan)}`]
+      [
+        mission ? `${name}: ${lower(sentence(mission))}` : `${name}, a brand that keeps its promises.`,
+        values && `We are driven by ${values}.`,
+        slogan && `${sentence(slogan)}`,
+      ]
         .filter(Boolean)
         .join(" "),
     googleTail: "Contact us to learn more or place an order.",
@@ -94,16 +102,42 @@ export function brandTexts(input: BrandTextInput): BrandText[] {
   const slogan = input.slogan?.trim() ?? "";
   const mission = (input.mission ?? input.brief?.mission ?? "").trim();
   const sector = input.brief?.sector?.trim() ?? "";
-  const values = (input.brief?.values ?? []).map((v) => v.trim()).filter(Boolean).slice(0, 4);
+  const values = (input.brief?.values ?? [])
+    .map((v) => v.trim())
+    .filter(Boolean)
+    .slice(0, 4);
   const valuesText = list(values, copy.and);
   const missionSentence = sentence(mission);
 
-  const instagram = [sector ? `${name} · ${copy.sectorLine(sector)}` : name, slogan, values.length ? values.map((v) => `✓ ${v}`).join("  ") : "", `↓ ${copy.linkInBio}`]
+  const instagram = [
+    sector ? `${name} · ${copy.sectorLine(sector)}` : name,
+    slogan,
+    values.length ? values.map((v) => `✓ ${v}`).join("  ") : "",
+    `↓ ${copy.linkInBio}`,
+  ]
     .filter(Boolean)
     .join("\n");
-  const whatsapp = [missionSentence || sentence(slogan), slogan && missionSentence ? sentence(slogan) : "", values.length ? copy.values(valuesText) : "", copy.contact].filter(Boolean).join(" ");
-  const facebook = [missionSentence ? `${name} : ${lower(missionSentence)}` : name, slogan && sentence(slogan)].filter(Boolean).join(" ");
-  const linkedin = [sector && copy.sectorLine(sector), values.length ? values.map((v) => v[0]!.toUpperCase() + v.slice(1)).join(" · ") : slogan].filter(Boolean).join(" | ") || name;
+  const whatsapp = [
+    missionSentence || sentence(slogan),
+    slogan && missionSentence ? sentence(slogan) : "",
+    values.length ? copy.values(valuesText) : "",
+    copy.contact,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const facebook = [
+    missionSentence ? `${name} : ${lower(missionSentence)}` : name,
+    slogan && sentence(slogan),
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const linkedin =
+    [
+      sector && copy.sectorLine(sector),
+      values.length ? values.map((v) => v[0]!.toUpperCase() + v.slice(1)).join(" · ") : slogan,
+    ]
+      .filter(Boolean)
+      .join(" | ") || name;
   const google = [copy.pitch(name, mission, valuesText, slogan), copy.googleTail].join(" ");
   const pitch = copy.pitch(name, mission, valuesText, slogan);
   // Une devise en trois termes (« Travail – Justice – Solidarité ») donne trois mots-dièses.

@@ -83,7 +83,9 @@ export function CutoutView({
       return c;
     };
     const photo = make();
-    photo.getContext("2d")!.putImageData(new ImageData(new Uint8ClampedArray(source.data), width, height), 0, 0);
+    photo
+      .getContext("2d")!
+      .putImageData(new ImageData(new Uint8ClampedArray(source.data), width, height), 0, 0);
     return { photo, matte: make() };
   }, [source, width, height]);
 
@@ -129,7 +131,16 @@ export function CutoutView({
 
   const stroke = (p: { x: number; y: number }) => {
     const from = last.current ?? p;
-    paintMask(mask, width, height, from, p, settings.size, settings.hardness, settings.tool === "erase" ? 0 : 255);
+    paintMask(
+      mask,
+      width,
+      height,
+      from,
+      p,
+      settings.size,
+      settings.hardness,
+      settings.tool === "erase" ? 0 : 255,
+    );
     last.current = p;
     cancelAnimationFrame(frame.current);
     frame.current = requestAnimationFrame(() => draw(mask));
@@ -141,12 +152,18 @@ export function CutoutView({
         ref={canvas}
         width={width}
         height={height}
-        className={cn("bg-checker max-h-full max-w-full touch-none", settings.tool === "wand" ? "cursor-crosshair" : "cursor-none")}
+        className={cn(
+          "bg-checker max-h-full max-w-full touch-none",
+          settings.tool === "wand" ? "cursor-crosshair" : "cursor-none",
+        )}
         aria-label={t("maskCanvas")}
         onPointerDown={(event) => {
           const p = toImage(event);
           if (settings.tool === "wand") {
-            magicWand(source, mask, p.x, p.y, settings.tolerance, { contiguous: settings.contiguous, restore: event.altKey });
+            magicWand(source, mask, p.x, p.y, settings.tolerance, {
+              contiguous: settings.contiguous,
+              restore: event.altKey,
+            });
             onEdit();
             return;
           }
@@ -158,7 +175,11 @@ export function CutoutView({
           const p = toImage(event);
           const origin = box.current!.getBoundingClientRect();
           const r = settings.size * p.scale;
-          setCursor({ left: event.clientX - origin.left - r, top: event.clientY - origin.top - r, size: r * 2 });
+          setCursor({
+            left: event.clientX - origin.left - r,
+            top: event.clientY - origin.top - r,
+            size: r * 2,
+          });
           if (last.current && event.buttons === 1) stroke(p);
         }}
         onPointerUp={() => {
@@ -214,15 +235,23 @@ export function CutoutPanel({
   return (
     <div className="grid gap-5">
       <section className="grid gap-2">
-        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("cutoutAuto")}</h3>
+        <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          {t("cutoutAuto")}
+        </h3>
         <Button type="button" variant="default" disabled={!aiAvailable || aiPending} onClick={onAi}>
           {aiPending ? <Loader2 className="animate-spin" /> : <Sparkles />} {t("cutoutAi")}
         </Button>
-        {!aiAvailable && <p className="text-xs text-muted-foreground">{t("cutoutAiUnavailable")}</p>}
+        {!aiAvailable && <p className="text-muted-foreground text-xs">{t("cutoutAiUnavailable")}</p>}
         <Button type="button" variant="outline" onClick={onAuto}>
           <Wand2 /> {t("cutoutPlain")}
         </Button>
-        <SliderField label={t("tolerance")} value={settings.tolerance} min={1} max={100} onChange={(tolerance) => onSettings({ tolerance })} />
+        <SliderField
+          label={t("tolerance")}
+          value={settings.tolerance}
+          min={1}
+          max={100}
+          onChange={(tolerance) => onSettings({ tolerance })}
+        />
         <label className="flex items-center justify-between text-xs">
           {t("holes")}
           <Switch checked={settings.holes} onCheckedChange={(holes) => onSettings({ holes })} />
@@ -230,10 +259,17 @@ export function CutoutPanel({
       </section>
 
       <section className="grid gap-2">
-        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("tools")}</h3>
+        <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">{t("tools")}</h3>
         <div className="grid grid-cols-3 gap-1.5">
           {TOOLS.map(({ id, icon: Icon }) => (
-            <Button key={id} type="button" size="sm" variant={settings.tool === id ? "default" : "outline"} aria-pressed={settings.tool === id} onClick={() => onSettings({ tool: id })}>
+            <Button
+              key={id}
+              type="button"
+              size="sm"
+              variant={settings.tool === id ? "default" : "outline"}
+              aria-pressed={settings.tool === id}
+              onClick={() => onSettings({ tool: id })}
+            >
               <Icon /> {t(`cutoutTools.${id}`)}
             </Button>
           ))}
@@ -242,14 +278,30 @@ export function CutoutPanel({
           <>
             <label className="flex items-center justify-between text-xs">
               {t("contiguous")}
-              <Switch checked={settings.contiguous} onCheckedChange={(contiguous) => onSettings({ contiguous })} />
+              <Switch
+                checked={settings.contiguous}
+                onCheckedChange={(contiguous) => onSettings({ contiguous })}
+              />
             </label>
-            <p className="text-xs text-muted-foreground">{t("wandHint")}</p>
+            <p className="text-muted-foreground text-xs">{t("wandHint")}</p>
           </>
         ) : (
           <>
-            <SliderField label={t("brushSize")} value={settings.size} min={2} max={maxSize} onChange={(size) => onSettings({ size })} />
-            <SliderField label={t("hardness")} value={Math.round(settings.hardness * 100)} min={0} max={100} format={(v) => `${v} %`} onChange={(v) => onSettings({ hardness: v / 100 })} />
+            <SliderField
+              label={t("brushSize")}
+              value={settings.size}
+              min={2}
+              max={maxSize}
+              onChange={(size) => onSettings({ size })}
+            />
+            <SliderField
+              label={t("hardness")}
+              value={Math.round(settings.hardness * 100)}
+              min={0}
+              max={100}
+              format={(v) => `${v} %`}
+              onChange={(v) => onSettings({ hardness: v / 100 })}
+            />
           </>
         )}
         <div className="flex flex-wrap gap-1.5">
@@ -267,23 +319,47 @@ export function CutoutPanel({
       </section>
 
       <section className="grid gap-2">
-        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("edges")}</h3>
-        <SliderField label={t("feather")} value={settings.feather} min={0} max={20} onChange={(feather) => onSettings({ feather })} />
-        <SliderField label={t("contract")} value={settings.contract} min={0} max={10} onChange={(contract) => onSettings({ contract })} />
+        <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">{t("edges")}</h3>
+        <SliderField
+          label={t("feather")}
+          value={settings.feather}
+          min={0}
+          max={20}
+          onChange={(feather) => onSettings({ feather })}
+        />
+        <SliderField
+          label={t("contract")}
+          value={settings.contract}
+          min={0}
+          max={10}
+          onChange={(contract) => onSettings({ contract })}
+        />
       </section>
 
       <section className="grid gap-2">
-        <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("sticker")}</h3>
+        <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+          {t("sticker")}
+        </h3>
         <div className="flex items-center gap-2">
           <input
             type="color"
             value={el.outline?.color ?? "#ffffff"}
             aria-label={t("outlineColor")}
-            onChange={(e) => onChange({ outline: { color: e.target.value, width: positiveOr(el.outline?.width, 8) } })}
+            onChange={(e) =>
+              onChange({ outline: { color: e.target.value, width: positiveOr(el.outline?.width, 8) } })
+            }
             className="h-7 w-9 shrink-0 cursor-pointer rounded border bg-transparent p-0.5"
           />
           <div className="min-w-0 flex-1">
-            <SliderField label={t("outline")} value={Math.round(el.outline?.width ?? 0)} min={0} max={60} onChange={(width) => onChange({ outline: width ? { color: el.outline?.color ?? "#ffffff", width } : null })} />
+            <SliderField
+              label={t("outline")}
+              value={Math.round(el.outline?.width ?? 0)}
+              min={0}
+              max={60}
+              onChange={(width) =>
+                onChange({ outline: width ? { color: el.outline?.color ?? "#ffffff", width } : null })
+              }
+            />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -291,11 +367,31 @@ export function CutoutPanel({
             type="color"
             value={el.glow?.color ?? "#ffd166"}
             aria-label={t("glowColor")}
-            onChange={(e) => onChange({ glow: { color: e.target.value, size: positiveOr(el.glow?.size, 24), opacity: el.glow?.opacity ?? 0.8 } })}
+            onChange={(e) =>
+              onChange({
+                glow: {
+                  color: e.target.value,
+                  size: positiveOr(el.glow?.size, 24),
+                  opacity: el.glow?.opacity ?? 0.8,
+                },
+              })
+            }
             className="h-7 w-9 shrink-0 cursor-pointer rounded border bg-transparent p-0.5"
           />
           <div className="min-w-0 flex-1">
-            <SliderField label={t("glow")} value={Math.round(el.glow?.size ?? 0)} min={0} max={120} onChange={(size) => onChange({ glow: size ? { color: el.glow?.color ?? "#ffd166", size, opacity: el.glow?.opacity ?? 0.8 } : null })} />
+            <SliderField
+              label={t("glow")}
+              value={Math.round(el.glow?.size ?? 0)}
+              min={0}
+              max={120}
+              onChange={(size) =>
+                onChange({
+                  glow: size
+                    ? { color: el.glow?.color ?? "#ffd166", size, opacity: el.glow?.opacity ?? 0.8 }
+                    : null,
+                })
+              }
+            />
           </div>
         </div>
       </section>

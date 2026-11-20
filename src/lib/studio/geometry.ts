@@ -23,7 +23,10 @@ export function rotatePoint(p: Point, center: Point, degrees: number): Point {
   const a = degrees * RAD;
   const dx = p.x - center.x;
   const dy = p.y - center.y;
-  return { x: center.x + dx * Math.cos(a) - dy * Math.sin(a), y: center.y + dx * Math.sin(a) + dy * Math.cos(a) };
+  return {
+    x: center.x + dx * Math.cos(a) - dy * Math.sin(a),
+    y: center.y + dx * Math.sin(a) + dy * Math.cos(a),
+  };
 }
 
 export function center(box: Box): Point {
@@ -65,7 +68,12 @@ export function intersects(a: Box, b: Box) {
 }
 
 export function normalizeBox(a: Point, b: Point): Box {
-  return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), width: Math.abs(b.x - a.x), height: Math.abs(b.y - a.y) };
+  return {
+    x: Math.min(a.x, b.x),
+    y: Math.min(a.y, b.y),
+    width: Math.abs(b.x - a.x),
+    height: Math.abs(b.y - a.y),
+  };
 }
 
 // ─── Aimantation ───
@@ -101,7 +109,8 @@ function nearest(values: number[], targets: number[], threshold: number) {
   for (const value of values) {
     for (const target of targets) {
       const delta = target - value;
-      if (Math.abs(delta) <= threshold && (!best || Math.abs(delta) < Math.abs(best.delta))) best = { delta, target, value };
+      if (Math.abs(delta) <= threshold && (!best || Math.abs(delta) < Math.abs(best.delta)))
+        best = { delta, target, value };
     }
   }
   return best;
@@ -118,12 +127,16 @@ export function snapBox(box: Box, targets: SnapTargets, threshold: number) {
   const moved = { ...box, x: box.x + dx, y: box.y + dy };
   const guides: Guide[] = [];
   if (sx) {
-    const related = targets.boxes.filter((b) => [b.x, b.x + b.width / 2, b.x + b.width].some((v) => Math.abs(v - sx.target) < 0.5));
+    const related = targets.boxes.filter((b) =>
+      [b.x, b.x + b.width / 2, b.x + b.width].some((v) => Math.abs(v - sx.target) < 0.5),
+    );
     const span = union([moved, ...related])!;
     guides.push({ axis: "x", position: sx.target, from: span.y, to: span.y + span.height });
   }
   if (sy) {
-    const related = targets.boxes.filter((b) => [b.y, b.y + b.height / 2, b.y + b.height].some((v) => Math.abs(v - sy.target) < 0.5));
+    const related = targets.boxes.filter((b) =>
+      [b.y, b.y + b.height / 2, b.y + b.height].some((v) => Math.abs(v - sy.target) < 0.5),
+    );
     const span = union([moved, ...related])!;
     guides.push({ axis: "y", position: sy.target, from: span.x, to: span.x + span.width });
   }

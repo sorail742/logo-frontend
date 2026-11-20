@@ -3,7 +3,16 @@
 import type { BrandKit, EmailSignatureData, HandwrittenData, Signature, StampData } from "@/lib/types";
 import { renderEmailSignature, type EmailTemplateId, type SignatureBrand } from "./email-signature";
 import { svgToPngBlob, svgToStandalone } from "./export";
-import { brandAssets, iconPackEntries, licencesText, MOCKUP_SCENES, MOCKUP_WIDTH, mockupSceneSvg, socialSvg, SOCIAL_KIT } from "./logo-assets";
+import {
+  brandAssets,
+  iconPackEntries,
+  licencesText,
+  MOCKUP_SCENES,
+  MOCKUP_WIDTH,
+  mockupSceneSvg,
+  socialSvg,
+  SOCIAL_KIT,
+} from "./logo-assets";
 import { LOGO_VARIANTS, renderLogoSvg } from "./logo";
 import { renderHandwrittenSvg, renderStampSvg } from "./stamp";
 import { buildZip, type ZipEntry } from "./zip";
@@ -12,16 +21,26 @@ import { buildZip, type ZipEntry } from "./zip";
  * Archive du kit rangée comme en production (KIT-03). Dans le navigateur, la charte est jointe
  * en HTML imprimable ; le worker produit charte.pdf et les PDF vectoriels du logo.
  */
-export async function buildKitZip(kit: BrandKit, options: { projectName: string; signatures: Signature[]; brand: SignatureBrand; charterHtml?: string }) {
+export async function buildKitZip(
+  kit: BrandKit,
+  options: { projectName: string; signatures: Signature[]; brand: SignatureBrand; charterHtml?: string },
+) {
   const spec = kit.logoSpec!;
   const entries: ZipEntry[] = [];
 
   for (const variant of LOGO_VARIANTS) {
-    const { svg } = renderLogoSvg(spec, { variant: variant.variant, layout: variant.layout, withBackground: false });
+    const { svg } = renderLogoSvg(spec, {
+      variant: variant.variant,
+      layout: variant.layout,
+      withBackground: false,
+    });
     entries.push({ path: `logo/svg/${variant.id}.svg`, data: await svgToStandalone(svg) });
     const sizes = variant.id === "color" ? [512, 1024, 2048] : [1024];
     for (const size of sizes) {
-      entries.push({ path: `logo/png/${variant.id}-${size}.png`, data: await svgToPngBlob(svg, { size, padding: 0.06 }) });
+      entries.push({
+        path: `logo/png/${variant.id}-${size}.png`,
+        data: await svgToPngBlob(svg, { size, padding: 0.06 }),
+      });
     }
   }
 
@@ -31,20 +50,33 @@ export async function buildKitZip(kit: BrandKit, options: { projectName: string;
   for (const format of SOCIAL_KIT) {
     entries.push({
       path: `reseaux-sociaux/${format.file}.png`,
-      data: await svgToPngBlob(socialSvg(spec, format, assets), { size: Math.max(format.width, format.height) }),
+      data: await svgToPngBlob(socialSvg(spec, format, assets), {
+        size: Math.max(format.width, format.height),
+      }),
     });
   }
   for (const scene of MOCKUP_SCENES) {
     entries.push({
       path: `mises-en-situation/${scene.file}.jpg`,
-      data: await svgToPngBlob(mockupSceneSvg(spec, scene, assets), { size: MOCKUP_WIDTH, type: "image/jpeg", quality: 0.88 }),
+      data: await svgToPngBlob(mockupSceneSvg(spec, scene, assets), {
+        size: MOCKUP_WIDTH,
+        type: "image/jpeg",
+        quality: 0.88,
+      }),
     });
   }
 
   for (const signature of options.signatures) {
     if (signature.kind === "EMAIL") {
-      const html = renderEmailSignature((signature.templateId as EmailTemplateId) ?? "classic", signature.data as EmailSignatureData, options.brand);
-      entries.push({ path: "signatures/signature-email.html", data: `<!doctype html><meta charset="utf-8">${html}` });
+      const html = renderEmailSignature(
+        (signature.templateId as EmailTemplateId) ?? "classic",
+        signature.data as EmailSignatureData,
+        options.brand,
+      );
+      entries.push({
+        path: "signatures/signature-email.html",
+        data: `<!doctype html><meta charset="utf-8">${html}`,
+      });
     }
     // Les cachets en attente de validation ou refusés ne sont jamais exportés (§6.4)
     if (signature.status !== "ACTIVE") continue;

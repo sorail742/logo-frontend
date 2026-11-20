@@ -31,11 +31,18 @@ function CharterContent() {
   const t = useTranslations("kit");
   const version = Number(useSearchParams().get("v"));
   const { project, pid } = useProject();
-  const { data: kits = [] } = useQuery({ queryKey: qk.brandKits(pid), queryFn: () => api.brandKits.list(pid) });
-  const { data: signatures = [] } = useQuery({ queryKey: qk.signatures(pid), queryFn: () => api.signatures.list(pid) });
+  const { data: kits = [] } = useQuery({
+    queryKey: qk.brandKits(pid),
+    queryFn: () => api.brandKits.list(pid),
+  });
+  const { data: signatures = [] } = useQuery({
+    queryKey: qk.signatures(pid),
+    queryFn: () => api.signatures.list(pid),
+  });
   const kit = kits.find((k) => k.version === version) ?? kits[0];
 
-  if (!kit?.logoSpec || !project) return <p className="text-sm text-muted-foreground">{t("charter.notReady")}</p>;
+  if (!kit?.logoSpec || !project)
+    return <p className="text-muted-foreground text-sm">{t("charter.notReady")}</p>;
   const spec = kit.logoSpec;
   const name = project.chosenName?.value ?? project.title;
   const stamp = signatures.find((s) => s.kind === "STAMP" && s.status === "ACTIVE");
@@ -50,10 +57,21 @@ function CharterContent() {
         </Button>
       </div>
 
-      <header className="flex min-h-[60vh] flex-col justify-center gap-6 rounded-xl p-10 print:min-h-[90vh]" style={{ background: spec.colors.primary, color: readableOn(spec.colors.primary) }}>
-        <SvgView svg={renderLogoSvg(spec, { variant: readableOn(spec.colors.primary) === "#ffffff" ? "white" : "black", withBackground: false }).svg} className="h-40 justify-start" />
+      <header
+        className="flex min-h-[60vh] flex-col justify-center gap-6 rounded-xl p-10 print:min-h-[90vh]"
+        style={{ background: spec.colors.primary, color: readableOn(spec.colors.primary) }}
+      >
+        <SvgView
+          svg={
+            renderLogoSvg(spec, {
+              variant: readableOn(spec.colors.primary) === "#ffffff" ? "white" : "black",
+              withBackground: false,
+            }).svg
+          }
+          className="h-40 justify-start"
+        />
         <div>
-          <p className="text-sm uppercase tracking-widest opacity-80">{t("charter.title")}</p>
+          <p className="text-sm tracking-widest uppercase opacity-80">{t("charter.title")}</p>
           <p className="text-4xl font-semibold">{name}</p>
           <p className="mt-2 opacity-80">{t("version", { version: kit.version })}</p>
         </div>
@@ -64,7 +82,9 @@ function CharterContent() {
 
         <Section title={t("charter.origin")}>
           <p className="text-2xl font-semibold">{name}</p>
-          {project.chosenName?.acronym && project.chosenName.acronym !== name && <p>{project.chosenName.acronym}</p>}
+          {project.chosenName?.acronym && project.chosenName.acronym !== name && (
+            <p>{project.chosenName.acronym}</p>
+          )}
           <p className="mt-2 text-neutral-700">{project.chosenName?.meaning ?? "—"}</p>
           {kit.slogan && <p className="mt-4 text-lg italic">« {kit.slogan} »</p>}
         </Section>
@@ -72,9 +92,18 @@ function CharterContent() {
         <Section title={t("charter.logo")}>
           <SvgView svg={main} className="bg-checker aspect-[2/1] rounded-lg p-8" />
           <div className="mt-4 grid grid-cols-3 gap-3">
-            <SvgView svg={renderLogoSvg(spec, { variant: "black" }).svg} className="aspect-[3/2] rounded-lg border p-3" />
-            <SvgView svg={renderLogoSvg(spec, { variant: "white", withBackground: false }).svg} className="aspect-[3/2] rounded-lg bg-neutral-900 p-3" />
-            <SvgView svg={renderLogoSvg(spec, { layout: "icon" }).svg} className="aspect-[3/2] rounded-lg border p-3" />
+            <SvgView
+              svg={renderLogoSvg(spec, { variant: "black" }).svg}
+              className="aspect-[3/2] rounded-lg border p-3"
+            />
+            <SvgView
+              svg={renderLogoSvg(spec, { variant: "white", withBackground: false }).svg}
+              className="aspect-[3/2] rounded-lg bg-neutral-900 p-3"
+            />
+            <SvgView
+              svg={renderLogoSvg(spec, { layout: "icon" }).svg}
+              className="aspect-[3/2] rounded-lg border p-3"
+            />
           </div>
         </Section>
 
@@ -145,7 +174,12 @@ function CharterContent() {
 
         <Section title={t("charter.signatures")}>
           {kit.slogan && <p className="mb-4 text-lg italic">« {kit.slogan} »</p>}
-          {stamp && <SvgView svg={renderStampSvg(stamp.data as StampData, { idPrefix: "charter-stamp" })} className="w-48" />}
+          {stamp && (
+            <SvgView
+              svg={renderStampSvg(stamp.data as StampData, { idPrefix: "charter-stamp" })}
+              className="w-48"
+            />
+          )}
         </Section>
 
         <Section title={t("charter.examples")}>

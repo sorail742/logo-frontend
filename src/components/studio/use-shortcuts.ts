@@ -7,14 +7,22 @@ import { useStudio } from "@/stores/studio";
 // Raccourcis clavier de l'éditeur (ignorés pendant la saisie dans un champ).
 
 function typing(target: EventTarget | null) {
-  return target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
+  );
 }
 
 export function useStudioShortcuts(handlers: { onExport(): void; onHelp(): void; onPresent(): void }) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       // Saisie dans un champ, ou focus dans une fenêtre ou un menu ouvert : pas de raccourci.
-      if (typing(event.target) || (event.target instanceof Element && event.target.closest("[role=dialog], [role=menu], [role=listbox]"))) return;
+      if (
+        typing(event.target) ||
+        (event.target instanceof Element &&
+          event.target.closest("[role=dialog], [role=menu], [role=listbox]"))
+      )
+        return;
       const state = useStudio.getState();
       if (!state.doc) return;
       const mod = event.metaKey || event.ctrlKey;
@@ -33,13 +41,17 @@ export function useStudioShortcuts(handlers: { onExport(): void; onHelp(): void;
         return;
       }
       if (mod && key === "y") return run(() => state.redo());
-      if (mod && key === "a") return run(() => state.select(page.elements.filter((el) => !el.locked && !el.hidden).map((el) => el.id)));
+      if (mod && key === "a")
+        return run(() =>
+          state.select(page.elements.filter((el) => !el.locked && !el.hidden).map((el) => el.id)),
+        );
       if (mod && key === "d") return run(() => state.duplicateSelected());
       if (mod && key === "c" && state.selection.length) return run(() => state.copy());
-      if (mod && key === "x" && state.selection.length) return run(() => {
-        state.copy();
-        state.removeSelected();
-      });
+      if (mod && key === "x" && state.selection.length)
+        return run(() => {
+          state.copy();
+          state.removeSelected();
+        });
       if (mod && key === "v" && state.clipboard.length) return run(() => state.paste());
       if (mod && key === "e") return run(() => handlers.onExport());
       if (mod && key === "enter") return run(() => handlers.onPresent());
@@ -70,7 +82,8 @@ export function useStudioShortcuts(handlers: { onExport(): void; onHelp(): void;
         if (state.cropId) return state.setCrop(null);
         return state.select([]);
       }
-      if ((key === "delete" || key === "backspace") && state.selection.length) return run(() => state.removeSelected());
+      if ((key === "delete" || key === "backspace") && state.selection.length)
+        return run(() => state.removeSelected());
       if (key === "enter" && state.selection.length === 1) {
         const el = page.elements.find((e) => e.id === state.selection[0]);
         if (el?.type === "text" && !el.locked) return run(() => state.setEditing(el.id));
@@ -89,7 +102,13 @@ export function useStudioShortcuts(handlers: { onExport(): void; onHelp(): void;
         const dy = key === "arrowup" ? -step : key === "arrowdown" ? step : 0;
         const ids = new Set(state.selection);
         state.change(
-          (d) => mapPage(d, state.pageIndex, (p) => ({ ...p, elements: p.elements.map((el) => (ids.has(el.id) && !el.locked ? { ...el, x: el.x + dx, y: el.y + dy } : el)) })),
+          (d) =>
+            mapPage(d, state.pageIndex, (p) => ({
+              ...p,
+              elements: p.elements.map((el) =>
+                ids.has(el.id) && !el.locked ? { ...el, x: el.x + dx, y: el.y + dy } : el,
+              ),
+            })),
           { merge: "nudge" },
         );
       }

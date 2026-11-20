@@ -51,7 +51,7 @@ export function ForgotPasswordForm() {
       }
     >
       {sent ? (
-        <output className="block rounded-lg bg-accent p-3 text-sm text-accent-foreground">
+        <output className="bg-accent text-accent-foreground block rounded-lg p-3 text-sm">
           {t("forgot.sent")}
         </output>
       ) : (
@@ -90,7 +90,7 @@ export function ResetPasswordForm() {
   if (!token) {
     return (
       <AuthCard title={t("reset.title")}>
-        <p className="text-sm text-destructive">{t("reset.invalid")}</p>
+        <p className="text-destructive text-sm">{t("reset.invalid")}</p>
       </AuthCard>
     );
   }

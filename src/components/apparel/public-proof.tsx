@@ -106,7 +106,11 @@ export function PublicProof() {
       void ensureFonts(
         data.elements
           .filter((e) => e.content.fontId)
-          .map((e) => ({ fontId: e.content.fontId!, fontWeight: e.content.fontWeight ?? 700, text: e.content.text })),
+          .map((e) => ({
+            fontId: e.content.fontId!,
+            fontWeight: e.content.fontWeight ?? 700,
+            text: e.content.text,
+          })),
       );
   }, [data]);
 
@@ -162,7 +166,10 @@ export function PublicProof() {
 
       <section className="grid gap-4 sm:grid-cols-2" aria-label={t("public.views")}>
         {views.map((view) => (
-          <figure key={view} className="bg-muted/50 grid gap-2 rounded-2xl p-4">
+          <figure
+            key={view}
+            className="glow-card studio-stage border-border/80 hover:border-primary/40 grid gap-2 rounded-2xl border p-5 shadow-xs transition-all hover:shadow-md"
+          >
             <GarmentPreview
               category={data.template.category}
               view={view}
@@ -213,7 +220,10 @@ export function PublicProof() {
         </section>
       )}
 
-      <section className="rounded-2xl border p-5" aria-labelledby="proof-approval">
+      <section
+        className="glow-card border-primary/40 bg-card rounded-2xl border-2 p-6 shadow-xs hover:shadow-md"
+        aria-labelledby="proof-approval"
+      >
         <h2 id="proof-approval" className="text-lg font-semibold">
           {t("public.approval")}
         </h2>

@@ -39,7 +39,8 @@ function ProfileForm() {
     onSuccess: (updated) => {
       setUser(updated);
       toast.success(t("saved"));
-      if (updated.locale !== user?.locale) router.replace(pathname, { locale: updated.locale as "fr" | "en" });
+      if (updated.locale !== user?.locale)
+        router.replace(pathname, { locale: updated.locale as "fr" | "en" });
     },
     onError: (error) => {
       const fields = fieldErrors(error);
@@ -103,7 +104,11 @@ function ProfileForm() {
                 </NativeSelect>
               </Field>
               <Field label={t("country")} htmlFor="profile-country">
-                <NativeSelect id="profile-country" value={country} onChange={(e) => setCountry(e.target.value)}>
+                <NativeSelect
+                  id="profile-country"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                >
                   {["GN", "SN", "ML", "CI", "SL", "LR", "FR", "BE", "CA", "US"].map((code) => (
                     <option key={code} value={code}>
                       {new Intl.DisplayNames([locale], { type: "region" }).of(code)}
@@ -124,13 +129,15 @@ function ProfileForm() {
           <CardTitle className="flex items-center gap-2 text-sm">
             <ShieldCheck className="size-4" aria-hidden="true" />
             {t("twoFactor")}
-            <Badge variant={user.totpEnabled ? "default" : "secondary"}>{user.totpEnabled ? t("twoFactorOn") : t("twoFactorOff")}</Badge>
+            <Badge variant={user.totpEnabled ? "default" : "secondary"}>
+              {user.totpEnabled ? t("twoFactorOn") : t("twoFactorOff")}
+            </Badge>
           </CardTitle>
           <CardDescription className="text-xs">{t("twoFactorRequired")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3">
           {backupCodes && (
-            <div className="rounded-lg bg-muted p-3">
+            <div className="bg-muted rounded-lg p-3">
               <p className="mb-2 text-sm font-medium">{t("backupCodes")}</p>
               <ul className="grid grid-cols-2 gap-1 font-mono text-sm">
                 {backupCodes.map((c) => (
@@ -140,7 +147,11 @@ function ProfileForm() {
             </div>
           )}
           {!user.totpEnabled && !totp && (
-            <Button variant="outline" className="justify-self-start" onClick={() => api.auth.setup2fa().then(setTotp, onError)}>
+            <Button
+              variant="outline"
+              className="justify-self-start"
+              onClick={() => api.auth.setup2fa().then(setTotp, onError)}
+            >
               {t("enable2fa")}
             </Button>
           )}
@@ -148,10 +159,17 @@ function ProfileForm() {
             <>
               <p className="text-sm">{t("scan")}</p>
               <Field label={t("secret")}>
-                <code className="rounded bg-muted px-2 py-1 font-mono text-sm break-all">{totp.secret}</code>
+                <code className="bg-muted rounded px-2 py-1 font-mono text-sm break-all">{totp.secret}</code>
               </Field>
               <div className="flex gap-2">
-                <Input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" aria-label={t("code")} placeholder="123456" />
+                <Input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  aria-label={t("code")}
+                  placeholder="123456"
+                />
                 <Button onClick={() => verify.mutate()} disabled={code.length !== 6 || verify.isPending}>
                   {t("verify")}
                 </Button>

@@ -79,13 +79,19 @@ function footer(data: EmailSignatureData, brand: SignatureBrand) {
   const parts: string[] = [];
   if (data.bannerUrl) {
     const img = `<img src="${esc(safeUrl(data.bannerUrl))}" alt="" width="480" style="display:block;border:0;width:480px;max-width:100%;height:auto;">`;
-    parts.push(`<tr><td style="padding-top:12px;">${data.bannerLink ? `<a href="${esc(safeUrl(data.bannerLink))}">${img}</a>` : img}</td></tr>`);
+    parts.push(
+      `<tr><td style="padding-top:12px;">${data.bannerLink ? `<a href="${esc(safeUrl(data.bannerLink))}">${img}</a>` : img}</td></tr>`,
+    );
   }
   if (data.legal) {
-    parts.push(`<tr><td style="padding-top:10px;font-family:${FONT};font-size:10px;line-height:14px;color:#888888;">${esc(data.legal)}</td></tr>`);
+    parts.push(
+      `<tr><td style="padding-top:10px;font-family:${FONT};font-size:10px;line-height:14px;color:#888888;">${esc(data.legal)}</td></tr>`,
+    );
   }
   if (brand.poweredBy) {
-    parts.push(`<tr><td style="padding-top:6px;font-family:${FONT};font-size:10px;color:#aaaaaa;">${esc(brand.poweredBy)}</td></tr>`);
+    parts.push(
+      `<tr><td style="padding-top:6px;font-family:${FONT};font-size:10px;color:#aaaaaa;">${esc(brand.poweredBy)}</td></tr>`,
+    );
   }
   return parts.join("");
 }
@@ -94,11 +100,17 @@ function wrap(inner: string, data: EmailSignatureData, brand: SignatureBrand) {
   return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;font-family:${FONT};font-size:13px;line-height:18px;color:#333333;"><tr><td>${inner}</td></tr>${footer(data, brand)}</table>`;
 }
 
-export function renderEmailSignature(templateId: EmailTemplateId, data: EmailSignatureData, brand: SignatureBrand): string {
+export function renderEmailSignature(
+  templateId: EmailTemplateId,
+  data: EmailSignatureData,
+  brand: SignatureBrand,
+): string {
   const primary = ensureContrast(brand.primary, "#ffffff");
   const accent = ensureContrast(brand.secondary, "#ffffff", 3);
   const name = `<span style="font-size:16px;font-weight:bold;color:#111111;">${esc(data.fullName)}</span>`;
-  const title = data.jobTitle ? `<span style="color:${primary};font-weight:bold;">${esc(data.jobTitle)}</span>` : "";
+  const title = data.jobTitle
+    ? `<span style="color:${primary};font-weight:bold;">${esc(data.jobTitle)}</span>`
+    : "";
   const org = `<span style="color:#555555;">${esc(brand.name)}</span>`;
   const contacts = contactLines(data, primary);
   const social = socials(data, primary);

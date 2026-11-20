@@ -31,8 +31,13 @@ function withoutMedia(content: SiteContent, mediaId: string): SiteContent {
   return {
     ...content,
     sections: content.sections.map((section) => {
-      if (section.type === "hero" && section.image?.kind === "media" && section.image.id === mediaId) return { ...section, image: null };
-      if (section.type === "gallery") return { ...section, images: section.images.filter((img) => img.kind !== "media" || img.id !== mediaId) };
+      if (section.type === "hero" && section.image?.kind === "media" && section.image.id === mediaId)
+        return { ...section, image: null };
+      if (section.type === "gallery")
+        return {
+          ...section,
+          images: section.images.filter((img) => img.kind !== "media" || img.id !== mediaId),
+        };
       return section;
     }),
   };
@@ -44,7 +49,7 @@ function SaveIndicator({ state }: Readonly<{ state: SaveState }>) {
   const icons = { saving: Loader2, saved: Check, error: CloudOff } as const;
   const Icon = icons[state];
   return (
-    <output className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+    <output className="text-muted-foreground inline-flex items-center gap-1 text-xs">
       <Icon className={state === "saving" ? "size-3.5 animate-spin" : "size-3.5"} aria-hidden="true" />
       {t(state)}
     </output>
@@ -72,7 +77,10 @@ export function SiteEditor({ website, logos }: Readonly<{ website: Website; logo
     staleTime: 5 * 60_000,
   });
 
-  const setWebsite = useCallback((updated: Website) => queryClient.setQueryData(qk.website(pid), updated), [pid, queryClient]);
+  const setWebsite = useCallback(
+    (updated: Website) => queryClient.setQueryData(qk.website(pid), updated),
+    [pid, queryClient],
+  );
 
   /** Enregistre tout de suite les modifications en attente (avant publication, au départ de la page). */
   const flush = useCallback(async () => {
@@ -102,7 +110,8 @@ export function SiteEditor({ website, logos }: Readonly<{ website: Website; logo
   // Départ de la page avant la fin du délai : la dernière version part quand même.
   useEffect(
     () => () => {
-      if (pending.current) api.websites.update(website.id, { content: latest.current }).catch(() => undefined);
+      if (pending.current)
+        api.websites.update(website.id, { content: latest.current }).catch(() => undefined);
     },
     [website.id],
   );
@@ -184,7 +193,9 @@ export function SiteEditor({ website, logos }: Readonly<{ website: Website; logo
           </>
         }
       />
-      {!canEdit && <p className="mb-4 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">{t("readOnly")}</p>}
+      {!canEdit && (
+        <p className="bg-muted text-muted-foreground mb-4 rounded-lg px-3 py-2 text-sm">{t("readOnly")}</p>
+      )}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         <Tabs value={tab} onValueChange={(value) => setTab(String(value))} className="min-w-0">
@@ -195,12 +206,20 @@ export function SiteEditor({ website, logos }: Readonly<{ website: Website; logo
             {canEdit && (
               <TabsTrigger value="messages">
                 {t("tabs.messages")}
-                {website.unreadMessages > 0 && <Badge className="ml-1 h-4 px-1.5 text-[10px]">{website.unreadMessages}</Badge>}
+                {website.unreadMessages > 0 && (
+                  <Badge className="ml-1 h-4 px-1.5 text-[10px]">{website.unreadMessages}</Badge>
+                )}
               </TabsTrigger>
             )}
           </TabsList>
           <TabsContent value="content" className="mt-4">
-            <SiteContentPanel content={content} onChange={change} open={open} onOpen={setOpen} {...panelProps} />
+            <SiteContentPanel
+              content={content}
+              onChange={change}
+              open={open}
+              onOpen={setOpen}
+              {...panelProps}
+            />
           </TabsContent>
           <TabsContent value="style" className="mt-4">
             <SiteStylePanel
@@ -232,7 +251,13 @@ export function SiteEditor({ website, logos }: Readonly<{ website: Website; logo
           )}
         </Tabs>
         <div className="lg:sticky lg:top-4">
-          <SitePreview website={website} content={content} brand={brand} loading={brandLoading} focus={tab === "content" ? open : null} />
+          <SitePreview
+            website={website}
+            content={content}
+            brand={brand}
+            loading={brandLoading}
+            focus={tab === "content" ? open : null}
+          />
         </div>
       </div>
     </div>

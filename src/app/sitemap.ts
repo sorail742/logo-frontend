@@ -1,7 +1,14 @@
 import type { MetadataRoute } from "next";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const PUBLIC_PATHS = ["", "/tarifs", "/outils/generateur-de-noms", "/outils/signature-email", "/legal/cgu", "/legal/confidentialite"];
+const PUBLIC_PATHS = [
+  "",
+  "/tarifs",
+  "/outils/generateur-de-noms",
+  "/outils/signature-email",
+  "/legal/cgu",
+  "/legal/confidentialite",
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return PUBLIC_PATHS.map((path) => ({

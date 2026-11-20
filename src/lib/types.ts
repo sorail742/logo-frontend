@@ -18,20 +18,51 @@ export type LogoEngine = "SVG_COMPOSER" | "IMAGE_VECTORIZE" | "UPLOAD";
 export type LogoStyle = "MINIMAL" | "MODERN" | "CLASSIC" | "INSTITUTIONAL" | "PLAYFUL" | "AFRICAN";
 export type SignatureKind = "EMAIL" | "HANDWRITTEN" | "STAMP";
 export type SignatureStatus = "ACTIVE" | "PENDING_REVIEW" | "REJECTED";
-export type JobKind = "NAMES" | "LOGOS" | "LOGO_EXPORT" | "SLOGANS" | "SIGNATURE" | "BRAND_GUIDE" | "EXPORT_ZIP" | "DESIGN_EXPORT" | "STUDIO_IMAGES";
+export type JobKind =
+  | "NAMES"
+  | "LOGOS"
+  | "LOGO_EXPORT"
+  | "SLOGANS"
+  | "SIGNATURE"
+  | "BRAND_GUIDE"
+  | "EXPORT_ZIP"
+  | "DESIGN_EXPORT"
+  | "STUDIO_IMAGES";
 export type JobStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELED";
-export type LedgerReason = "PURCHASE" | "SUBSCRIPTION_GRANT" | "GENERATION" | "REFUND" | "ADMIN_ADJUSTMENT" | "PROMO";
+export type LedgerReason =
+  "PURCHASE" | "SUBSCRIPTION_GRANT" | "GENERATION" | "REFUND" | "ADMIN_ADJUSTMENT" | "PROMO";
 export type PaymentProvider = "ORANGE_MONEY" | "MOBILE_MONEY_AGGREGATOR" | "CARD";
 export type PaymentStatus = "PENDING" | "SUCCEEDED" | "FAILED" | "REFUNDED";
 export type PlanCode = "FREE" | "PACK" | "ASSOCIATION" | "PRO" | "AGENCY";
 export type SloganKind = "SLOGAN" | "DEVISE" | "MISSION";
 export type SloganTone = "INSPIRING" | "INSTITUTIONAL" | "CATCHY" | "ENGAGED";
 
-export const ENTITY_TYPES: EntityType[] = ["ASSOCIATION", "APPLICATION", "PLATFORM", "COMPANY", "EVENT", "OTHER"];
+export const ENTITY_TYPES: EntityType[] = [
+  "ASSOCIATION",
+  "APPLICATION",
+  "PLATFORM",
+  "COMPANY",
+  "EVENT",
+  "OTHER",
+];
 export const PROJECT_STATUSES: ProjectStatus[] = ["DRAFT", "IN_PROGRESS", "FINALIZED", "ARCHIVED"];
-export const NAME_STYLES: NameStyle[] = ["DESCRIPTIVE", "INVENTED", "COMPOUND", "METAPHORICAL", "ACRONYM", "PROPER"];
+export const NAME_STYLES: NameStyle[] = [
+  "DESCRIPTIVE",
+  "INVENTED",
+  "COMPOUND",
+  "METAPHORICAL",
+  "ACRONYM",
+  "PROPER",
+];
 export const LOGO_TYPES: LogoType[] = ["WORDMARK", "MONOGRAM", "ICON_TEXT", "EMBLEM"];
-export const LOGO_STYLES: LogoStyle[] = ["MINIMAL", "MODERN", "CLASSIC", "INSTITUTIONAL", "PLAYFUL", "AFRICAN"];
+export const LOGO_STYLES: LogoStyle[] = [
+  "MINIMAL",
+  "MODERN",
+  "CLASSIC",
+  "INSTITUTIONAL",
+  "PLAYFUL",
+  "AFRICAN",
+];
 export const SLOGAN_TONES: SloganTone[] = ["INSPIRING", "INSTITUTIONAL", "CATCHY", "ENGAGED"];
 
 export interface User {
@@ -118,7 +149,14 @@ export interface Project {
   updatedAt: string;
   deletedAt: string | null;
   // Avancement du parcours (calculé par l'API)
-  progress: { brief: boolean; name: boolean; logo: boolean; signatures: boolean; kit: boolean; site?: boolean };
+  progress: {
+    brief: boolean;
+    name: boolean;
+    logo: boolean;
+    signatures: boolean;
+    kit: boolean;
+    site?: boolean;
+  };
   previewSpec?: LogoSpec | null;
 }
 

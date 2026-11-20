@@ -31,7 +31,8 @@ export function sanitizeSvg(source: string): string | null {
       const value = attr.value.trim().toLowerCase();
       const isLink = name === "href" || name === "xlink:href" || name === "src";
       if (name.startsWith("on")) element.removeAttribute(attr.name);
-      else if (isLink && !value.startsWith("#") && !value.startsWith("data:image/")) element.removeAttribute(attr.name);
+      else if (isLink && !value.startsWith("#") && !value.startsWith("data:image/"))
+        element.removeAttribute(attr.name);
       else if (value.includes("javascript:")) element.removeAttribute(attr.name);
       else if (name === "style" && /url\(\s*['"]?(?!#)/.test(value)) element.removeAttribute(attr.name);
     }

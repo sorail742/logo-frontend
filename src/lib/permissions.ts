@@ -50,13 +50,18 @@ export interface WorkspacePolicy {
   viewerDownloads?: boolean;
 }
 
-export function can(action: Action, workspaceRole: WorkspaceRole | null | undefined, policy: WorkspacePolicy = {}): boolean {
+export function can(
+  action: Action,
+  workspaceRole: WorkspaceRole | null | undefined,
+  policy: WorkspacePolicy = {},
+): boolean {
   if (!workspaceRole) return false;
   if (action === "export.download" && workspaceRole === "VIEWER" && policy.viewerDownloads) return true;
   return WORKSPACE_MATRIX[action].includes(workspaceRole);
 }
 
-export type AdminSection = "dashboard" | "users" | "payments" | "moderation" | "library" | "ai" | "settings" | "audit";
+export type AdminSection =
+  "dashboard" | "users" | "payments" | "moderation" | "library" | "ai" | "settings" | "audit";
 
 const SUPPORT_UP: PlatformRole[] = ["SUPPORT", "ADMIN", "SUPER_ADMIN"];
 const ADMIN_UP: PlatformRole[] = ["ADMIN", "SUPER_ADMIN"];

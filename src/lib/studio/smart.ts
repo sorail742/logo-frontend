@@ -4,7 +4,16 @@ import { harmony, paintColor } from "./color";
 import { createImage, newId, scaleElement } from "./doc";
 import { aabb, union, type Box } from "./geometry";
 import { naturalWidth, relayout } from "./text";
-import type { DesignDoc, DesignElement, DesignPage, ImageElement, Paint, PrintSpec, ShapeElement, TextElement } from "./types";
+import type {
+  DesignDoc,
+  DesignElement,
+  DesignPage,
+  ImageElement,
+  Paint,
+  PrintSpec,
+  ShapeElement,
+  TextElement,
+} from "./types";
 import { mapEffectColors } from "./lettering";
 
 // Fonctions « intelligentes » du Studio : redimensionnement magique vers un autre format,
@@ -37,7 +46,11 @@ function classify(el: DesignElement, width: number, height: number): Kind {
 }
 
 /** Place un élément pour que le centre de sa boîte soit (cx, cy). */
-const centerAt = <T extends DesignElement>(el: T, cx: number, cy: number): T => ({ ...el, x: cx - el.width / 2, y: cy - el.height / 2 });
+const centerAt = <T extends DesignElement>(el: T, cx: number, cy: number): T => ({
+  ...el,
+  x: cx - el.width / 2,
+  y: cy - el.height / 2,
+});
 
 interface Band {
   items: DesignElement[];
@@ -60,7 +73,11 @@ function bands(items: DesignElement[]): Band[] {
   return out;
 }
 
-function adaptPage(page: DesignPage, source: { width: number; height: number }, target: TargetFormat): DesignPage {
+function adaptPage(
+  page: DesignPage,
+  source: { width: number; height: number },
+  target: TargetFormat,
+): DesignPage {
   const { width: w, height: h } = source;
   const { width: tw, height: th } = target;
   const sx = tw / w;
@@ -77,7 +94,10 @@ function adaptPage(page: DesignPage, source: { width: number; height: number }, 
     const kind = classify(el, w, h);
     if (kind === "background") {
       // Étiré pour couvrir le même espace (une photo en recouvrement se recadre seule).
-      const stretched = el.type === "text" || el.type === "icon" || el.type === "svg" ? scaleElement(el, sd) : scaleElement(el, s, sx, sy);
+      const stretched =
+        el.type === "text" || el.type === "icon" || el.type === "svg"
+          ? scaleElement(el, sd)
+          : scaleElement(el, s, sx, sy);
       placed.push(centerAt(stretched, (el.x + el.width / 2) * sx, (el.y + el.height / 2) * sy));
     } else if (kind === "decor") {
       // Ancré au coin le plus proche, à l'échelle moyenne.
@@ -97,9 +117,16 @@ function adaptPage(page: DesignPage, source: { width: number; height: number }, 
     const contentBox = union(groups.map((g) => g.box))!;
     // Chaque bande garde sa composition ; elle peut grandir un peu si la place le permet.
     const boost = Math.sqrt(Math.max(1, Math.max(sx, sy) / s));
-    const scales = groups.map((g) => Math.max(Math.min(s * boost, (tw - 2 * tm) / Math.max(1, g.box.width)), Math.min(s, (tw - 2 * tm) / Math.max(1, g.box.width))));
+    const scales = groups.map((g) =>
+      Math.max(
+        Math.min(s * boost, (tw - 2 * tm) / Math.max(1, g.box.width)),
+        Math.min(s, (tw - 2 * tm) / Math.max(1, g.box.width)),
+      ),
+    );
     let heights = groups.map((g, i) => g.box.height * scales[i]!);
-    const gaps = groups.slice(1).map((g, i) => Math.max(0, g.box.y - (groups[i]!.box.y + groups[i]!.box.height)));
+    const gaps = groups
+      .slice(1)
+      .map((g, i) => Math.max(0, g.box.y - (groups[i]!.box.y + groups[i]!.box.height)));
     const available = th - 2 * tm;
     let total = heights.reduce((a, b) => a + b, 0);
     if (total > available * 0.96) {
@@ -126,7 +153,8 @@ function adaptPage(page: DesignPage, source: { width: number; height: number }, 
       let gx: number;
       if (centered) gx = (tw - gw) / 2;
       else if (nearLeft && !nearRight) gx = Math.max(tm, (group.box.x / m) * tm);
-      else if (nearRight && !nearLeft) gx = tw - Math.max(tm, ((w - group.box.x - group.box.width) / m) * tm) - gw;
+      else if (nearRight && !nearLeft)
+        gx = tw - Math.max(tm, ((w - group.box.x - group.box.width) / m) * tm) - gw;
       else gx = ((group.box.x + group.box.width / 2) / w) * tw - gw / 2;
       gx = Math.min(Math.max(gx, Math.min(tm, (tw - gw) / 2)), tw - gw - Math.min(tm, (tw - gw) / 2));
       for (const el of group.items) {
@@ -165,10 +193,22 @@ const FRAME_MASKS: Partial<Record<ShapeElement["shape"], ImageElement["mask"]>> 
 };
 
 /** Un cadre (forme) prend une photo : même boîte, masque assorti à la forme. */
-export function fillFrame(frame: DesignElement, image: { src: string; naturalWidth: number; naturalHeight: number }): ImageElement {
+export function fillFrame(
+  frame: DesignElement,
+  image: { src: string; naturalWidth: number; naturalHeight: number },
+): ImageElement {
   const mask: ImageElement["mask"] =
-    frame.type === "shape" ? (FRAME_MASKS[frame.shape] ?? (frame.shape === "rect" && frame.radius ? "rounded" : "none")) : frame.type === "image" ? frame.mask : "none";
-  const radius = frame.type === "shape" && frame.shape === "rect" ? frame.radius : frame.type === "image" ? frame.radius : undefined;
+    frame.type === "shape"
+      ? (FRAME_MASKS[frame.shape] ?? (frame.shape === "rect" && frame.radius ? "rounded" : "none"))
+      : frame.type === "image"
+        ? frame.mask
+        : "none";
+  const radius =
+    frame.type === "shape" && frame.shape === "rect"
+      ? frame.radius
+      : frame.type === "image"
+        ? frame.radius
+        : undefined;
   return createImage(image.src, image.naturalWidth, image.naturalHeight, {
     id: frame.id,
     x: frame.x,
@@ -197,7 +237,8 @@ type ColorMap = (color: string) => string;
 
 function mapPaint(paint: Paint, map: ColorMap): Paint {
   if (paint.type === "solid") return { ...paint, color: map(paint.color) };
-  if (paint.type === "linear" || paint.type === "radial") return { ...paint, stops: paint.stops.map((s) => ({ ...s, color: map(s.color) })) };
+  if (paint.type === "linear" || paint.type === "radial")
+    return { ...paint, stops: paint.stops.map((s) => ({ ...s, color: map(s.color) })) };
   return paint;
 }
 
@@ -222,7 +263,11 @@ function recolor(page: DesignPage, map: ColorMap): DesignPage {
             effects: mapEffectColors(el.effects, m),
           };
         case "shape":
-          return { ...el, fill: mapPaint(el.fill, m), stroke: el.stroke ? { ...el.stroke, color: m(el.stroke.color) } : el.stroke };
+          return {
+            ...el,
+            fill: mapPaint(el.fill, m),
+            stroke: el.stroke ? { ...el.stroke, color: m(el.stroke.color) } : el.stroke,
+          };
         case "icon":
           return { ...el, color: m(el.color) };
         default:
@@ -310,10 +355,14 @@ function swapFonts(page: DesignPage, pairing: (typeof FONT_PAIRINGS)[number]): D
 }
 
 function mirror(page: DesignPage, width: number): DesignPage {
-  const flipAlign = (align: TextElement["align"]): TextElement["align"] => (align === "left" ? "right" : align === "right" ? "left" : align);
+  const flipAlign = (align: TextElement["align"]): TextElement["align"] =>
+    align === "left" ? "right" : align === "right" ? "left" : align;
   return {
     ...page,
-    background: page.background.type === "linear" ? { ...page.background, angle: 180 - page.background.angle } : page.background,
+    background:
+      page.background.type === "linear"
+        ? { ...page.background, angle: 180 - page.background.angle }
+        : page.background,
     elements: page.elements.map((el) => {
       const moved = { ...el, x: width - el.x - el.width, rotation: -el.rotation };
       return moved.type === "text" ? { ...moved, align: flipAlign(moved.align) } : moved;
@@ -324,7 +373,9 @@ function mirror(page: DesignPage, width: number): DesignPage {
 function reshape(page: DesignPage, salt: number): DesignPage {
   return {
     ...page,
-    elements: page.elements.map((el) => (el.type === "shape" && el.shape === "blob" ? { ...el, seed: ((el.seed ?? 1) * 31 + salt) % 997 } : el)),
+    elements: page.elements.map((el) =>
+      el.type === "shape" && el.shape === "blob" ? { ...el, seed: ((el.seed ?? 1) * 31 + salt) % 997 } : el,
+    ),
   };
 }
 
@@ -338,7 +389,11 @@ export interface Variation {
  * Variations à la marque d'une page : permutations de la palette, mode sombre, harmonie de
  * couleurs, associations de polices, mise en page en miroir. Les textes restent lisibles.
  */
-export function variations(page: DesignPage, doc: Pick<DesignDoc, "width" | "height">, brand: StudioBrand): Variation[] {
+export function variations(
+  page: DesignPage,
+  doc: Pick<DesignDoc, "width" | "height">,
+  brand: StudioBrand,
+): Variation[] {
   const { primary, secondary, background } = brand.colors;
   const lower = (c: string) => c.toLowerCase();
   const swap = (pairs: [string, string][]): ColorMap => {
@@ -350,21 +405,102 @@ export function variations(page: DesignPage, doc: Pick<DesignDoc, "width" | "hei
   };
   // Fond inversé : un fond clair devient sombre (teinte de la marque), un fond sombre ou saturé devient clair.
   const pageBg = paintColor(page.background) ?? background;
-  const inverted = luminance(pageBg) > 0.45 ? mix(primary, "#000000", 0.72) : luminance(background) > 0.6 ? background : mix(primary, "#ffffff", 0.9);
+  const inverted =
+    luminance(pageBg) > 0.45
+      ? mix(primary, "#000000", 0.72)
+      : luminance(background) > 0.6
+        ? background
+        : mix(primary, "#ffffff", 0.9);
   const analog = harmony(primary, "analogous");
-  const currentFont = page.elements.find((el): el is TextElement => el.type === "text" && el.role === "title")?.fontId;
+  const currentFont = page.elements.find(
+    (el): el is TextElement => el.type === "text" && el.role === "title",
+  )?.fontId;
   const pairings = FONT_PAIRINGS.filter(([h]) => h.fontId !== currentFont);
   const pick = (i: number) => pairings[(i * 5 + 3) % pairings.length]!;
 
   const out: Variation[] = [
-    { id: "swap", kind: "palette", page: keepReadable(recolor(page, swap([[primary, secondary], [secondary, primary]])), brand) },
-    { id: "dark", kind: "dark", page: keepReadable({ ...recolor(page, swap([[pageBg, inverted], [inverted, pageBg]])), background: { type: "solid", color: inverted } }, brand) },
+    {
+      id: "swap",
+      kind: "palette",
+      page: keepReadable(
+        recolor(
+          page,
+          swap([
+            [primary, secondary],
+            [secondary, primary],
+          ]),
+        ),
+        brand,
+      ),
+    },
+    {
+      id: "dark",
+      kind: "dark",
+      page: keepReadable(
+        {
+          ...recolor(
+            page,
+            swap([
+              [pageBg, inverted],
+              [inverted, pageBg],
+            ]),
+          ),
+          background: { type: "solid", color: inverted },
+        },
+        brand,
+      ),
+    },
     { id: "fonts-a", kind: "fonts", page: swapFonts(page, pick(0)) },
     { id: "mirror", kind: "mirror", page: reshape(mirror(page, doc.width), 7) },
-    { id: "harmony", kind: "harmony", page: keepReadable(recolor(page, swap([[primary, analog[0]!], [secondary, analog[2]!]])), brand) },
+    {
+      id: "harmony",
+      kind: "harmony",
+      page: keepReadable(
+        recolor(
+          page,
+          swap([
+            [primary, analog[0]!],
+            [secondary, analog[2]!],
+          ]),
+        ),
+        brand,
+      ),
+    },
     { id: "fonts-b", kind: "fonts", page: swapFonts(reshape(page, 13), pick(1)) },
-    { id: "mix", kind: "mix", page: swapFonts(keepReadable(recolor(mirror(page, doc.width), swap([[primary, secondary], [secondary, primary]])), brand), pick(2)) },
-    { id: "light", kind: "palette", page: keepReadable(recolor(page, swap([[primary, mix(primary, "#ffffff", 0.82)], [background, primary]])), brand) },
+    {
+      id: "mix",
+      kind: "mix",
+      page: swapFonts(
+        keepReadable(
+          recolor(
+            mirror(page, doc.width),
+            swap([
+              [primary, secondary],
+              [secondary, primary],
+            ]),
+          ),
+          brand,
+        ),
+        pick(2),
+      ),
+    },
+    {
+      id: "light",
+      kind: "palette",
+      page: keepReadable(
+        recolor(
+          page,
+          swap([
+            [primary, mix(primary, "#ffffff", 0.82)],
+            [background, primary],
+          ]),
+        ),
+        brand,
+      ),
+    },
   ];
-  return out.map((v) => ({ ...v, page: { ...v.page, id: newId(), elements: v.page.elements.map((el) => ({ ...el, id: newId() })) } }));
+  return out.map((v) => ({
+    ...v,
+    page: { ...v.page, id: newId(), elements: v.page.elements.map((el) => ({ ...el, id: newId() })) },
+  }));
 }

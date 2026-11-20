@@ -30,6 +30,7 @@ interface ApparelState {
   /** Taille affichée (aperçu) ; null = taille de référence, seule modifiable. */
   previewSize: string | null;
   showZones: boolean;
+  isMirrored: boolean;
   /** Photo ouverte dans l'atelier de retouche, sur l'onglet demandé. */
   photoEditing: { id: string; tab: string } | null;
 
@@ -53,6 +54,7 @@ interface ApparelState {
   setTargetZone(key: string | null): void;
   setPreviewSize(label: string | null): void;
   toggleZones(): void;
+  toggleMirror(): void;
   editPhoto(editing: { id: string; tab: string } | null): void;
 }
 
@@ -75,6 +77,7 @@ export const useApparel = create<ApparelState>((set, get) => ({
   revision: 0,
   previewSize: null,
   showZones: true,
+  isMirrored: false,
   photoEditing: null,
 
   load(design, view) {
@@ -219,6 +222,10 @@ export const useApparel = create<ApparelState>((set, get) => ({
 
   setPreviewSize(label) {
     set({ previewSize: label, selection: null });
+  },
+
+  toggleMirror() {
+    set({ isMirrored: !get().isMirrored });
   },
 
   toggleZones() {

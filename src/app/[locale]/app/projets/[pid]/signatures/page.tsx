@@ -39,8 +39,14 @@ function SignaturesContent() {
   const [rendered, setRendered] = useState<{ spec: unknown; url: string } | null>(null);
 
   const { data: logos = [] } = useQuery({ queryKey: qk.logos(pid), queryFn: () => api.logos.list(pid) });
-  const { data: slogans = [] } = useQuery({ queryKey: qk.slogans(pid), queryFn: () => api.slogans.list(pid) });
-  const { data: signatures, isLoading } = useQuery({ queryKey: qk.signatures(pid), queryFn: () => api.signatures.list(pid) });
+  const { data: slogans = [] } = useQuery({
+    queryKey: qk.slogans(pid),
+    queryFn: () => api.slogans.list(pid),
+  });
+  const { data: signatures, isLoading } = useQuery({
+    queryKey: qk.signatures(pid),
+    queryFn: () => api.signatures.list(pid),
+  });
 
   const logoSpec = (logos.find((l) => l.isFavorite) ?? logos[0])?.current.spec ?? null;
   const name = project?.chosenName?.value ?? project?.title ?? "";
@@ -74,7 +80,12 @@ function SignaturesContent() {
   );
 
   const create = useMutation({
-    mutationFn: (input: { kind: SignatureKind; data: Signature["data"]; templateId?: string; attested?: boolean }) => api.signatures.create(pid, input),
+    mutationFn: (input: {
+      kind: SignatureKind;
+      data: Signature["data"];
+      templateId?: string;
+      attested?: boolean;
+    }) => api.signatures.create(pid, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk.signatures(pid) });
       queryClient.invalidateQueries({ queryKey: qk.project(pid) });
@@ -101,7 +112,12 @@ function SignaturesContent() {
         </TabsList>
 
         <TabsContent value="slogan">
-          <SloganPanel pid={pid} canEdit={can("generation.run")} isAssociation={project?.entityType === "ASSOCIATION"} logoSpec={logoSpec} />
+          <SloganPanel
+            pid={pid}
+            canEdit={can("generation.run")}
+            isAssociation={project?.entityType === "ASSOCIATION"}
+            logoSpec={logoSpec}
+          />
         </TabsContent>
 
         <TabsContent value="email">
@@ -167,7 +183,10 @@ function SignaturesContent() {
               canEdit={canEdit}
               saving={create.isPending}
               onSave={(data, attested) =>
-                (stamp ? api.signatures.update(stamp.id, { data, attested }) : api.signatures.create(pid, { kind: "STAMP", data, attested })).then(
+                (stamp
+                  ? api.signatures.update(stamp.id, { data, attested })
+                  : api.signatures.create(pid, { kind: "STAMP", data, attested })
+                ).then(
                   (signature) => {
                     queryClient.invalidateQueries({ queryKey: qk.signatures(pid) });
                     queryClient.invalidateQueries({ queryKey: qk.project(pid) });

@@ -23,9 +23,15 @@ import { InkPicker } from "./handwritten-panel";
 /** Symbole du logo, sans balise <svg> racine, pour le centre du cachet. */
 function logoMark(spec: LogoSpec | null, size: number) {
   if (!spec) return undefined;
-  const { svg, width, height } = renderLogoSvg({ ...spec, colors: { primary: "#000", secondary: "#000", text: "#000", background: "#fff" } }, { layout: "icon", variant: "black" });
+  const { svg, width, height } = renderLogoSvg(
+    { ...spec, colors: { primary: "#000", secondary: "#000", text: "#000", background: "#fff" } },
+    { layout: "icon", variant: "black" },
+  );
   const scale = size / Math.max(width, height);
-  return `<g transform="scale(${scale})">${svg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "").replace(/<title>.*?<\/title>/, "")}</g>`;
+  return `<g transform="scale(${scale})">${svg
+    .replace(/^<svg[^>]*>/, "")
+    .replace(/<\/svg>$/, "")
+    .replace(/<title>.*?<\/title>/, "")}</g>`;
 }
 
 export function StampPanel({
@@ -47,9 +53,13 @@ export function StampPanel({
   const [data, setData] = useState<StampData>(initial);
   const [attested, setAttested] = useState(false);
   const [status, setStatus] = useState(existing?.status ?? null);
-  const set = <K extends keyof StampData>(key: K, value: StampData[K]) => setData((d) => ({ ...d, [key]: value }));
+  const set = <K extends keyof StampData>(key: K, value: StampData[K]) =>
+    setData((d) => ({ ...d, [key]: value }));
 
-  const svg = useMemo(() => renderStampSvg(data, { idPrefix: "stamp-editor", logoMarkup: logoMark(logoSpec, 70) }), [data, logoSpec]);
+  const svg = useMemo(
+    () => renderStampSvg(data, { idPrefix: "stamp-editor", logoMarkup: logoMark(logoSpec, 70) }),
+    [data, logoSpec],
+  );
   const terms = findOfficialTerms(data.ringText, data.bottomText, data.centerText);
 
   const save = async () => {
@@ -65,10 +75,14 @@ export function StampPanel({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-      <Card>
+      <Card className="glow-card border-border/80 hover:border-primary/40 shadow-xs">
         <CardContent className="grid gap-4">
           <Field label={t("stamp.shape")} htmlFor="stamp-shape">
-            <NativeSelect id="stamp-shape" value={data.shape} onChange={(e) => set("shape", e.target.value as StampData["shape"])}>
+            <NativeSelect
+              id="stamp-shape"
+              value={data.shape}
+              onChange={(e) => set("shape", e.target.value as StampData["shape"])}
+            >
               {(["round", "oval", "rectangle"] as const).map((shape) => (
                 <option key={shape} value={shape}>
                   {t(`stamp.shapes.${shape}`)}
@@ -77,13 +91,27 @@ export function StampPanel({
             </NativeSelect>
           </Field>
           <Field label={t("stamp.ringText")} htmlFor="stamp-ring">
-            <Input id="stamp-ring" value={data.ringText} maxLength={48} onChange={(e) => set("ringText", e.target.value)} />
+            <Input
+              id="stamp-ring"
+              value={data.ringText}
+              maxLength={48}
+              onChange={(e) => set("ringText", e.target.value)}
+            />
           </Field>
           <Field label={t("stamp.bottomText")} htmlFor="stamp-bottom">
-            <Input id="stamp-bottom" value={data.bottomText} maxLength={40} onChange={(e) => set("bottomText", e.target.value)} />
+            <Input
+              id="stamp-bottom"
+              value={data.bottomText}
+              maxLength={40}
+              onChange={(e) => set("bottomText", e.target.value)}
+            />
           </Field>
           <Field label={t("stamp.center")} htmlFor="stamp-center-mode">
-            <NativeSelect id="stamp-center-mode" value={data.centerMode} onChange={(e) => set("centerMode", e.target.value as StampData["centerMode"])}>
+            <NativeSelect
+              id="stamp-center-mode"
+              value={data.centerMode}
+              onChange={(e) => set("centerMode", e.target.value as StampData["centerMode"])}
+            >
               {(["acronym", "title", "logo"] as const).map((mode) => (
                 <option key={mode} value={mode} disabled={mode === "logo" && !logoSpec}>
                   {t(`stamp.centerModes.${mode}`)}
@@ -93,7 +121,12 @@ export function StampPanel({
           </Field>
           {data.centerMode !== "logo" && (
             <Field label={t("stamp.centerText")} htmlFor="stamp-center">
-              <Input id="stamp-center" value={data.centerText} maxLength={30} onChange={(e) => set("centerText", e.target.value)} />
+              <Input
+                id="stamp-center"
+                value={data.centerText}
+                maxLength={30}
+                onChange={(e) => set("centerText", e.target.value)}
+              />
             </Field>
           )}
           <Field label={t("stamp.ink")}>
@@ -104,7 +137,10 @@ export function StampPanel({
             <Switch checked={data.inkEffect} onCheckedChange={(checked) => set("inkEffect", checked)} />
           </label>
           {terms.length > 0 && (
-            <p className="flex gap-2 rounded-lg bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100" role="alert">
+            <p
+              className="flex gap-2 rounded-lg bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100"
+              role="alert"
+            >
               <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
               {t("stamp.officialWarning", { terms: terms.join(", ") })}
             </p>
@@ -112,9 +148,15 @@ export function StampPanel({
         </CardContent>
       </Card>
       <div className="grid content-start gap-4">
-        <SvgView svg={svg} className="bg-checker aspect-square rounded-xl border p-6" label={data.ringText} />
-        {status === "PENDING_REVIEW" && <p className="rounded-lg bg-amber-100 p-3 text-sm text-amber-950">{t("stamp.pendingStatus")}</p>}
-        {status === "REJECTED" && <p className="rounded-lg bg-red-100 p-3 text-sm text-red-900">{t("stamp.rejected")}</p>}
+        <div className="glow-card studio-stage border-border/80 hover:border-primary/40 flex aspect-square items-center justify-center rounded-2xl border p-8 shadow-xs transition-all duration-300 hover:shadow-xl">
+          <SvgView svg={svg} className="size-full max-w-[260px] drop-shadow-md" label={data.ringText} />
+        </div>
+        {status === "PENDING_REVIEW" && (
+          <p className="rounded-lg bg-amber-100 p-3 text-sm text-amber-950">{t("stamp.pendingStatus")}</p>
+        )}
+        {status === "REJECTED" && (
+          <p className="rounded-lg bg-red-100 p-3 text-sm text-red-900">{t("stamp.rejected")}</p>
+        )}
         <Attestation checked={attested} onChange={setAttested} />
         {canEdit && (
           <div className="flex flex-wrap items-center gap-2">
@@ -123,7 +165,12 @@ export function StampPanel({
               {t("stamp.save")}
             </Button>
             <CreditCost cost={CREDIT_COSTS.HANDWRITTEN_OR_STAMP} />
-            <Button variant="outline" disabled={!exportable} onClick={() => downloadSvg(svg, "cachet.svg")} title={exportable ? undefined : t("export.requiresSave")}>
+            <Button
+              variant="outline"
+              disabled={!exportable}
+              onClick={() => downloadSvg(svg, "cachet.svg")}
+              title={exportable ? undefined : t("export.requiresSave")}
+            >
               <Download />
               {t("export.svg")}
             </Button>

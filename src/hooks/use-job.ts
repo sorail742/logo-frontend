@@ -26,7 +26,8 @@ export function useJob(
       finished = true;
       invalidate.forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-      if (next.status === "FAILED") toast.error(failedMessage ?? next.error ?? "La génération a échoué. Vos crédits ont été remboursés.");
+      if (next.status === "FAILED")
+        toast.error(failedMessage ?? next.error ?? "La génération a échoué. Vos crédits ont été remboursés.");
       onDone?.(next);
     };
     const handle = (next: JobEvent) => {

@@ -54,7 +54,10 @@ export function LoginForm() {
     email: z.email(t("errors.email")),
     password: z.string().min(1, t("errors.required")),
   });
-  const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema), defaultValues: { email: "", password: "" } });
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "", password: "" },
+  });
 
   const onSubmit = form.handleSubmit((values) =>
     attempt(
@@ -79,7 +82,7 @@ export function LoginForm() {
       footer={
         <>
           {t("login.noAccount")}{" "}
-          <Link href="/inscription" className="font-medium text-primary hover:underline">
+          <Link href="/inscription" className="text-primary font-medium hover:underline">
             {t("login.signup")}
           </Link>
         </>
@@ -89,12 +92,26 @@ export function LoginForm() {
         <GoogleButton onCredential={google} locale={locale} />
       ) : (
         api.mode === "mock" && (
-          <Button type="button" variant="outline" size="lg" onClick={() => toast.info(t("errors.googleMock"))}>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={() => toast.info(t("errors.googleMock"))}
+          >
             <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
-              <path fill="#4285F4" d="M22.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2-1.9 3.3-4.7 3.3-7.8z" />
-              <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8A11 11 0 0 0 12 23z" />
+              <path
+                fill="#4285F4"
+                d="M22.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2-1.9 3.3-4.7 3.3-7.8z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8A11 11 0 0 0 12 23z"
+              />
               <path fill="#FBBC05" d="M5.8 14.2a6.6 6.6 0 0 1 0-4.3V7.1H2.1a11 11 0 0 0 0 9.9z" />
-              <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2A11 11 0 0 0 2.1 7.1l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z" />
+              <path
+                fill="#EA4335"
+                d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2A11 11 0 0 0 2.1 7.1l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z"
+              />
             </svg>
             {t("login.google")}
           </Button>
@@ -107,10 +124,10 @@ export function LoginForm() {
         </Button>
       )}
       {(api.isAvailable("googleLogin") || api.mode === "mock" || api.isAvailable("smsLogin")) && (
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
+        <div className="text-muted-foreground flex items-center gap-3 text-xs">
+          <span className="bg-border h-px flex-1" />
           {t("login.or")}
-          <span className="h-px flex-1 bg-border" />
+          <span className="bg-border h-px flex-1" />
         </div>
       )}
       <form onSubmit={onSubmit} className="grid gap-4" noValidate>
@@ -121,7 +138,7 @@ export function LoginForm() {
           label={
             <span className="flex w-full justify-between">
               {t("login.password")}
-              <Link href="/mot-de-passe-oublie" className="text-xs font-normal text-primary hover:underline">
+              <Link href="/mot-de-passe-oublie" className="text-primary text-xs font-normal hover:underline">
                 {t("login.forgot")}
               </Link>
             </span>
@@ -129,7 +146,12 @@ export function LoginForm() {
           htmlFor="password"
           error={form.formState.errors.password?.message}
         >
-          <PasswordInput id="password" autoComplete="current-password" maxLength={128} {...form.register("password")} />
+          <PasswordInput
+            id="password"
+            autoComplete="current-password"
+            maxLength={128}
+            {...form.register("password")}
+          />
         </Field>
         <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
           {t("login.submit")}
@@ -140,7 +162,15 @@ export function LoginForm() {
 }
 
 /** Deuxième étape : code de l'application d'authentification ou code de secours (§14.1). */
-function MfaForm({ login, onBack, onLoggedIn }: { login: PendingLogin; onBack: () => void; onLoggedIn: ReturnType<typeof useAfterLogin> }) {
+function MfaForm({
+  login,
+  onBack,
+  onLoggedIn,
+}: {
+  login: PendingLogin;
+  onBack: () => void;
+  onLoggedIn: ReturnType<typeof useAfterLogin>;
+}) {
   const t = useTranslations("auth");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -169,7 +199,14 @@ function MfaForm({ login, onBack, onLoggedIn }: { login: PendingLogin; onBack: (
     >
       <form onSubmit={submit} className="grid gap-4" noValidate>
         <Field label={t("mfa.code")} htmlFor="totp" hint={t("mfa.hint")}>
-          <Input id="totp" autoComplete="one-time-code" autoFocus maxLength={9} value={code} onChange={(e) => setCode(e.target.value)} />
+          <Input
+            id="totp"
+            autoComplete="one-time-code"
+            autoFocus
+            maxLength={9}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
         </Field>
         <Button type="submit" size="lg" disabled={busy || !valid}>
           {t("mfa.submit")}
@@ -179,7 +216,13 @@ function MfaForm({ login, onBack, onLoggedIn }: { login: PendingLogin; onBack: (
   );
 }
 
-function OtpForm({ onBack, onLoggedIn }: { onBack: () => void; onLoggedIn: ReturnType<typeof useAfterLogin> }) {
+function OtpForm({
+  onBack,
+  onLoggedIn,
+}: {
+  onBack: () => void;
+  onLoggedIn: ReturnType<typeof useAfterLogin>;
+}) {
   const t = useTranslations("auth");
   const [phone, setPhone] = useState("+224 ");
   const [code, setCode] = useState("");
@@ -221,13 +264,28 @@ function OtpForm({ onBack, onLoggedIn }: { onBack: () => void; onLoggedIn: Retur
       }
     >
       <Field label={t("otp.phone")} htmlFor="phone">
-        <Input id="phone" type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={sent} />
+        <Input
+          id="phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          disabled={sent}
+        />
       </Field>
       {sent ? (
         <>
-          <p className="text-sm text-muted-foreground">{t("otp.sent", { phone })}</p>
+          <p className="text-muted-foreground text-sm">{t("otp.sent", { phone })}</p>
           <Field label={t("otp.code")} htmlFor="code">
-            <Input id="code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value)} />
+            <Input
+              id="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
           </Field>
           <Button size="lg" onClick={verify} disabled={busy || code.length !== 6}>
             {t("otp.verify")}

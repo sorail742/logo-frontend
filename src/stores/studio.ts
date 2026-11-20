@@ -106,7 +106,8 @@ export const useStudio = create<StudioState>((set, get) => {
       return;
     }
     const now = Date.now();
-    const merging = typeof history === "object" && lastMerge?.key === history.merge && now - lastMerge.at < MERGE_WINDOW_MS;
+    const merging =
+      typeof history === "object" && lastMerge?.key === history.merge && now - lastMerge.at < MERGE_WINDOW_MS;
     lastMerge = typeof history === "object" ? { key: history.merge, at: now } : null;
     set((s) => ({
       doc: next,
@@ -147,7 +148,21 @@ export const useStudio = create<StudioState>((set, get) => {
     load: (meta, doc) => {
       gestureBase = null;
       lastMerge = null;
-      set({ meta, doc, pageIndex: 0, selection: [], editingId: null, cropId: null, past: [], future: [], revision: 0, guides: [], commentMode: false, activeThread: null, draftPin: null });
+      set({
+        meta,
+        doc,
+        pageIndex: 0,
+        selection: [],
+        editingId: null,
+        cropId: null,
+        past: [],
+        future: [],
+        revision: 0,
+        guides: [],
+        commentMode: false,
+        activeThread: null,
+        draftPin: null,
+      });
       get().fit();
     },
     rename: (name) => set((s) => (s.meta ? { meta: { ...s.meta, name }, revision: s.revision + 1 } : s)),
@@ -193,11 +208,26 @@ export const useStudio = create<StudioState>((set, get) => {
       const next = future[0];
       if (!doc || !next) return;
       lastMerge = null;
-      set((s) => ({ doc: next, past: [...past, doc], future: future.slice(1), revision: s.revision + 1, pageIndex: Math.min(s.pageIndex, next.pages.length - 1) }));
+      set((s) => ({
+        doc: next,
+        past: [...past, doc],
+        future: future.slice(1),
+        revision: s.revision + 1,
+        pageIndex: Math.min(s.pageIndex, next.pages.length - 1),
+      }));
     },
-    setPage: (index) => set({ pageIndex: index, selection: [], editingId: null, cropId: null, draftPin: null }),
-    select: (ids) => set((s) => ({ selection: ids, editingId: null, cropId: ids.length === 1 && ids[0] === s.cropId ? s.cropId : null })),
-    toggle: (id) => set((s) => ({ selection: s.selection.includes(id) ? s.selection.filter((x) => x !== id) : [...s.selection, id] })),
+    setPage: (index) =>
+      set({ pageIndex: index, selection: [], editingId: null, cropId: null, draftPin: null }),
+    select: (ids) =>
+      set((s) => ({
+        selection: ids,
+        editingId: null,
+        cropId: ids.length === 1 && ids[0] === s.cropId ? s.cropId : null,
+      })),
+    toggle: (id) =>
+      set((s) => ({
+        selection: s.selection.includes(id) ? s.selection.filter((x) => x !== id) : [...s.selection, id],
+      })),
     updateElements: (ids, fn, history = "push") => {
       const { doc, pageIndex } = get();
       if (!doc || !ids.length) return;
@@ -214,9 +244,16 @@ export const useStudio = create<StudioState>((set, get) => {
       if (!doc || !selection.length) return;
       const ids = new Set(selection);
       const page = pageOf();
-      const removable = new Set(page?.elements.filter((el) => ids.has(el.id) && !el.locked).map((el) => el.id));
+      const removable = new Set(
+        page?.elements.filter((el) => ids.has(el.id) && !el.locked).map((el) => el.id),
+      );
       if (!removable.size) return;
-      commit(mapPage(doc, pageIndex, (p) => ({ ...p, elements: p.elements.filter((el) => !removable.has(el.id)) })));
+      commit(
+        mapPage(doc, pageIndex, (p) => ({
+          ...p,
+          elements: p.elements.filter((el) => !removable.has(el.id)),
+        })),
+      );
       set({ selection: selection.filter((id) => !removable.has(id)), editingId: null });
     },
     duplicateSelected: () => {
@@ -228,7 +265,9 @@ export const useStudio = create<StudioState>((set, get) => {
     copy: () => {
       const page = pageOf();
       const ids = new Set(get().selection);
-      set({ clipboard: page?.elements.filter((el) => ids.has(el.id)).map((el) => structuredClone(el)) ?? [] });
+      set({
+        clipboard: page?.elements.filter((el) => ids.has(el.id)).map((el) => structuredClone(el)) ?? [],
+      });
     },
     paste: () => {
       const { clipboard } = get();
@@ -271,7 +310,10 @@ export const useStudio = create<StudioState>((set, get) => {
       const { doc } = get();
       const page = doc?.pages[index];
       if (!doc || !page) return;
-      commit({ ...doc, pages: [...doc.pages.slice(0, index + 1), clonePage(page), ...doc.pages.slice(index + 1)] });
+      commit({
+        ...doc,
+        pages: [...doc.pages.slice(0, index + 1), clonePage(page), ...doc.pages.slice(index + 1)],
+      });
       set({ pageIndex: index + 1, selection: [] });
     },
     removePage: (index) => {
@@ -297,23 +339,45 @@ export const useStudio = create<StudioState>((set, get) => {
       set({ viewport });
       // La zone change (panneaux ouverts ou fermés, fenêtre) : la page reste ajustée, ou centrée.
       if (autoFit || !previous.width) get().fit();
-      else set({ panX: panX + (viewport.width - previous.width) / 2, panY: panY + (viewport.height - previous.height) / 2 });
+      else
+        set({
+          panX: panX + (viewport.width - previous.width) / 2,
+          panY: panY + (viewport.height - previous.height) / 2,
+        });
     },
     fit: () => {
       const { doc, viewport } = get();
       if (!doc || !viewport.width || !viewport.height) return;
-      const zoom = Math.max(MIN_ZOOM, Math.min((viewport.width - FIT_PADDING * 2) / doc.width, (viewport.height - FIT_PADDING * 2) / doc.height, 4));
-      set({ zoom, panX: (viewport.width - doc.width * zoom) / 2, panY: (viewport.height - doc.height * zoom) / 2, autoFit: true });
+      const zoom = Math.max(
+        MIN_ZOOM,
+        Math.min(
+          (viewport.width - FIT_PADDING * 2) / doc.width,
+          (viewport.height - FIT_PADDING * 2) / doc.height,
+          4,
+        ),
+      );
+      set({
+        zoom,
+        panX: (viewport.width - doc.width * zoom) / 2,
+        panY: (viewport.height - doc.height * zoom) / 2,
+        autoFit: true,
+      });
     },
     zoomAt: (value, anchor) => {
       const { zoom, panX, panY, viewport } = get();
       const next = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value));
       const point = anchor ?? { x: viewport.width / 2, y: viewport.height / 2 };
-      set({ zoom: next, panX: point.x - ((point.x - panX) * next) / zoom, panY: point.y - ((point.y - panY) * next) / zoom, autoFit: false });
+      set({
+        zoom: next,
+        panX: point.x - ((point.x - panX) * next) / zoom,
+        panY: point.y - ((point.y - panY) * next) / zoom,
+        autoFit: false,
+      });
     },
     setCrop: (id) => set({ cropId: id, editingId: null, selection: id ? [id] : get().selection }),
     togglePrintGuides: () => set((s) => ({ printGuides: !s.printGuides })),
-    setCommentMode: (on) => set({ commentMode: on, draftPin: null, ...(on && { selection: [], editingId: null, cropId: null }) }),
+    setCommentMode: (on) =>
+      set({ commentMode: on, draftPin: null, ...(on && { selection: [], editingId: null, cropId: null }) }),
     openThread: (id) => set({ activeThread: id, draftPin: null }),
     setDraftPin: (pin) => set({ draftPin: pin, activeThread: null }),
   };

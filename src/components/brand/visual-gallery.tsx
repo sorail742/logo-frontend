@@ -75,7 +75,11 @@ export function VisualGallery({
     setBusy(visual.id);
     try {
       const type = visual.type ?? "image/png";
-      const blob = await svgToPngBlob(visual.render(), { size: Math.max(visual.width, visual.height), type, quality: 0.9 });
+      const blob = await svgToPngBlob(visual.render(), {
+        size: Math.max(visual.width, visual.height),
+        type,
+        quality: 0.9,
+      });
       downloadBlob(blob, `${visual.file}.${type === "image/jpeg" ? "jpg" : "png"}`);
       toast.success(labels.done);
     } catch (error) {
@@ -94,7 +98,10 @@ export function VisualGallery({
       <CardContent className="grid gap-4 sm:grid-cols-2">
         {visuals.map((visual) => (
           <figure key={visual.id} className="grid content-start gap-2">
-            <div className="overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: `${visual.width} / ${visual.height}` }}>
+            <div
+              className="bg-muted overflow-hidden rounded-lg border"
+              style={{ aspectRatio: `${visual.width} / ${visual.height}` }}
+            >
               {previews[visual.id] ? (
                 // eslint-disable-next-line @next/next/no-img-element -- aperçu local (URL blob), hors de l'optimiseur d'images
                 <img src={previews[visual.id]} alt={visual.label} className="size-full object-cover" />
@@ -102,7 +109,7 @@ export function VisualGallery({
                 <div className="size-full animate-pulse" />
               )}
             </div>
-            <figcaption className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <figcaption className="text-muted-foreground flex items-center justify-between gap-2 text-xs">
               <span className="min-w-0">{visual.label}</span>
               {canDownload && (
                 <Button

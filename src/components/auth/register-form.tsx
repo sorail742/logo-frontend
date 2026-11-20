@@ -55,7 +55,7 @@ export function RegisterForm() {
       footer={
         <>
           {t("register.hasAccount")}{" "}
-          <Link href="/connexion" className="font-medium text-primary hover:underline">
+          <Link href="/connexion" className="text-primary font-medium hover:underline">
             {t("register.login")}
           </Link>
         </>
@@ -68,8 +68,18 @@ export function RegisterForm() {
         <Field label={t("register.email")} htmlFor="email" error={errors.email?.message}>
           <Input id="email" type="email" autoComplete="email" maxLength={254} {...form.register("email")} />
         </Field>
-        <Field label={t("register.password")} htmlFor="password" hint={t("register.passwordHint")} error={errors.password?.message}>
-          <PasswordInput id="password" autoComplete="new-password" maxLength={128} {...form.register("password")} />
+        <Field
+          label={t("register.password")}
+          htmlFor="password"
+          hint={t("register.passwordHint")}
+          error={errors.password?.message}
+        >
+          <PasswordInput
+            id="password"
+            autoComplete="new-password"
+            maxLength={128}
+            {...form.register("password")}
+          />
         </Field>
         <PasswordStrength password={password} />
         <div className="grid gap-1">
@@ -84,7 +94,7 @@ export function RegisterForm() {
             <span>{t("register.terms")}</span>
           </label>
           {errors.terms && (
-            <p id="terms-error" className="text-xs text-destructive" role="alert">
+            <p id="terms-error" className="text-destructive text-xs" role="alert">
               {errors.terms.message}
             </p>
           )}

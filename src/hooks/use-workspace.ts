@@ -10,7 +10,11 @@ import { useSessionStore } from "@/stores/session";
 export function useWorkspace() {
   const status = useSessionStore((s) => s.status);
   const selectedId = useSessionStore((s) => s.workspaceId);
-  const query = useQuery({ queryKey: qk.workspaces, queryFn: api.workspaces.list, enabled: status === "authenticated" });
+  const query = useQuery({
+    queryKey: qk.workspaces,
+    queryFn: api.workspaces.list,
+    enabled: status === "authenticated",
+  });
   const workspaces = query.data ?? [];
   const workspace = workspaces.find((w) => w.id === selectedId) ?? workspaces[0] ?? null;
   return {

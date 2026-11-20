@@ -19,5 +19,11 @@ export function LogoPreview({
     () => renderLogoSvg(spec, { variant, layout, watermark, withBackground }),
     [spec, variant, layout, watermark, withBackground],
   );
-  return <SvgView svg={svg} label={spec.text} className={cn("p-3", dark ? "bg-neutral-900" : "bg-checker", className)} />;
+  return (
+    <SvgView
+      svg={svg}
+      label={spec.text}
+      className={cn("p-3", dark ? "bg-neutral-900" : "bg-checker", className)}
+    />
+  );
 }

@@ -7,9 +7,7 @@ export const metadata: Metadata = { title: "Textile", robots: { index: false, fo
 export default function ApparelLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <Suspense
-      fallback={
-        <output className="bg-muted flex min-h-svh items-center justify-center" aria-busy="true" />
-      }
+      fallback={<output className="bg-muted flex min-h-svh items-center justify-center" aria-busy="true" />}
     >
       {children}
     </Suspense>

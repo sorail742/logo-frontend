@@ -12,7 +12,7 @@ export default function AdminSettingsPage() {
   const locale = useLocale();
   return (
     <div className="grid gap-6">
-      <p className="text-sm text-muted-foreground">{t("readOnlyNote")}</p>
+      <p className="text-muted-foreground text-sm">{t("readOnlyNote")}</p>
       <Card>
         <CardHeader>
           <CardTitle className="text-sm">{t("plans")}</CardTitle>
@@ -47,7 +47,7 @@ export default function AdminSettingsPage() {
           <CardHeader>
             <CardTitle className="text-sm">{t("tax")}</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">{t("taxValue")}</CardContent>
+          <CardContent className="text-muted-foreground text-sm">{t("taxValue")}</CardContent>
         </Card>
         <Card>
           <CardHeader>

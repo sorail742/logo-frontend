@@ -84,14 +84,20 @@ function paintColors(paint: Paint): string[] {
 
 function mapPaint(paint: Paint, fn: (c: string) => string): Paint {
   if (paint.type === "solid") return { ...paint, color: fn(paint.color) };
-  if (paint.type === "linear" || paint.type === "radial") return { ...paint, stops: paint.stops.map((s) => ({ ...s, color: fn(s.color) })) };
+  if (paint.type === "linear" || paint.type === "radial")
+    return { ...paint, stops: paint.stops.map((s) => ({ ...s, color: fn(s.color) })) };
   return paint;
 }
 
 function elementColors(el: DesignElement): string[] {
   switch (el.type) {
     case "text":
-      return [...paintColors(el.fill), ...(el.stroke ? [el.stroke.color] : []), ...(el.highlight ? [el.highlight.color] : []), ...effectColors(el.effects)];
+      return [
+        ...paintColors(el.fill),
+        ...(el.stroke ? [el.stroke.color] : []),
+        ...(el.highlight ? [el.highlight.color] : []),
+        ...effectColors(el.effects),
+      ];
     case "shape":
       return [...paintColors(el.fill), ...(el.stroke ? [el.stroke.color] : [])];
     case "icon":
@@ -113,7 +119,11 @@ function snapColors(el: DesignElement, palette: string[]): DesignElement {
         effects: mapEffectColors(el.effects, snap),
       };
     case "shape":
-      return { ...el, fill: mapPaint(el.fill, snap), stroke: el.stroke ? { ...el.stroke, color: snap(el.stroke.color) } : el.stroke };
+      return {
+        ...el,
+        fill: mapPaint(el.fill, snap),
+        stroke: el.stroke ? { ...el.stroke, color: snap(el.stroke.color) } : el.stroke,
+      };
     case "icon":
       return { ...el, color: snap(el.color) };
     default:
@@ -121,8 +131,19 @@ function snapColors(el: DesignElement, palette: string[]): DesignElement {
   }
 }
 
-function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: StudioBrand | null, issues: QualityIssue[]) {
-  const push = (issue: Omit<QualityIssue, "id" | "pageIndex">) => issues.push({ ...issue, pageIndex, id: `${pageIndex}-${issue.code}-${issue.elementId ?? issues.length}` });
+function checkPage(
+  doc: DesignDoc,
+  page: DesignPage,
+  pageIndex: number,
+  brand: StudioBrand | null,
+  issues: QualityIssue[],
+) {
+  const push = (issue: Omit<QualityIssue, "id" | "pageIndex">) =>
+    issues.push({
+      ...issue,
+      pageIndex,
+      id: `${pageIndex}-${issue.code}-${issue.elementId ?? issues.length}`,
+    });
   const mm = mmPerPx(doc);
   const safe = mm ? SAFE_MM / mm : 0;
   const texts = page.elements.filter((el): el is TextElement => el.type === "text" && !el.hidden);
@@ -138,7 +159,13 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
 
     if (el.type === "text") {
       if (!el.text.trim()) {
-        push({ code: "emptyText", severity: "info", elementId: el.id, fix: (d) => mapPage(d, pageIndex, (p) => ({ ...p, elements: p.elements.filter((e) => e.id !== el.id) })) });
+        push({
+          code: "emptyText",
+          severity: "info",
+          elementId: el.id,
+          fix: (d) =>
+            mapPage(d, pageIndex, (p) => ({ ...p, elements: p.elements.filter((e) => e.id !== el.id) })),
+        });
         continue;
       }
       // Contraste du texte sur ce qui se trouve derrière lui.
@@ -150,7 +177,16 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
               code: "textOverPhoto",
               severity: "warning",
               elementId: el.id,
-              fix: fixElement(pageIndex, el.id, (e) => ({ ...e, shadow: { x: 0, y: el.fontSize * 0.04, blur: el.fontSize * 0.25, color: "#000000", opacity: 0.55 } })),
+              fix: fixElement(pageIndex, el.id, (e) => ({
+                ...e,
+                shadow: {
+                  x: 0,
+                  y: el.fontSize * 0.04,
+                  blur: el.fontSize * 0.25,
+                  color: "#000000",
+                  opacity: 0.55,
+                },
+              })),
             });
           }
         } else {
@@ -162,7 +198,21 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
               severity: ratio < 2 ? "error" : "warning",
               elementId: el.id,
               params: { ratio: round(ratio), minimum },
-              fix: fixElement(pageIndex, el.id, (e) => (e.type === "text" ? { ...e, fill: { type: "solid", color: ensureContrast(el.fill.type === "solid" ? el.fill.color : "#000000", backdrop, minimum) } } : e)),
+              fix: fixElement(pageIndex, el.id, (e) =>
+                e.type === "text"
+                  ? {
+                      ...e,
+                      fill: {
+                        type: "solid",
+                        color: ensureContrast(
+                          el.fill.type === "solid" ? el.fill.color : "#000000",
+                          backdrop,
+                          minimum,
+                        ),
+                      },
+                    }
+                  : e,
+              ),
             });
           }
         }
@@ -177,7 +227,9 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
             severity: pt < MIN_PRINT_PT ? "error" : "warning",
             elementId: el.id,
             params: { size: `${round(pt)} pt`, minimum: `${COMFORT_PRINT_PT} pt` },
-            fix: fixElement(pageIndex, el.id, (e) => (e.type === "text" ? relayout({ ...e, fontSize: target }) : e)),
+            fix: fixElement(pageIndex, el.id, (e) =>
+              e.type === "text" ? relayout({ ...e, fontSize: target }) : e,
+            ),
           });
         }
       } else {
@@ -188,19 +240,47 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
             severity: "warning",
             elementId: el.id,
             params: { size: `${Math.round(el.fontSize)} px`, minimum: `${Math.ceil(minimum)} px` },
-            fix: fixElement(pageIndex, el.id, (e) => (e.type === "text" ? relayout({ ...e, fontSize: Math.ceil(minimum) }) : e)),
+            fix: fixElement(pageIndex, el.id, (e) =>
+              e.type === "text" ? relayout({ ...e, fontSize: Math.ceil(minimum) }) : e,
+            ),
           });
         }
       }
     }
 
-    const essential = el.type === "text" || el.type === "icon" || el.role === "logo" || el.type === "svg" || el.role === "cta";
+    const essential =
+      el.type === "text" ||
+      el.type === "icon" ||
+      el.role === "logo" ||
+      el.type === "svg" ||
+      el.role === "cta";
     if (essential && onPage && el.role !== "decor") {
-      const off = box.x < -0.5 || box.y < -0.5 || box.x + box.width > doc.width + 0.5 || box.y + box.height > doc.height + 0.5;
+      const off =
+        box.x < -0.5 ||
+        box.y < -0.5 ||
+        box.x + box.width > doc.width + 0.5 ||
+        box.y + box.height > doc.height + 0.5;
       if (off) {
-        push({ code: "offPage", severity: "warning", elementId: el.id, fix: fixElement(pageIndex, el.id, (e, d) => moveInside(e, d, safe)) });
-      } else if (safe && (box.x < safe || box.y < safe || box.x + box.width > doc.width - safe || box.y + box.height > doc.height - safe)) {
-        push({ code: "safeMargin", severity: "warning", elementId: el.id, params: { margin: `${SAFE_MM} mm` }, fix: fixElement(pageIndex, el.id, (e, d) => moveInside(e, d, safe)) });
+        push({
+          code: "offPage",
+          severity: "warning",
+          elementId: el.id,
+          fix: fixElement(pageIndex, el.id, (e, d) => moveInside(e, d, safe)),
+        });
+      } else if (
+        safe &&
+        (box.x < safe ||
+          box.y < safe ||
+          box.x + box.width > doc.width - safe ||
+          box.y + box.height > doc.height - safe)
+      ) {
+        push({
+          code: "safeMargin",
+          severity: "warning",
+          elementId: el.id,
+          params: { margin: `${SAFE_MM} mm` },
+          fix: fixElement(pageIndex, el.id, (e, d) => moveInside(e, d, safe)),
+        });
       }
     }
 
@@ -245,7 +325,13 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
       const scale = place.width / el.naturalWidth;
       if (mm) {
         const dpi = (el.naturalWidth / (place.width * mm)) * 25.4;
-        if (dpi < 150) push({ code: "lowResolution", severity: dpi < 96 ? "error" : "warning", elementId: el.id, params: { dpi: Math.round(dpi) } });
+        if (dpi < 150)
+          push({
+            code: "lowResolution",
+            severity: dpi < 96 ? "error" : "warning",
+            elementId: el.id,
+            params: { dpi: Math.round(dpi) },
+          });
       } else if (scale > 1.5) {
         push({ code: "upscaled", severity: "warning", elementId: el.id, params: { factor: round(scale) } });
       }
@@ -253,7 +339,9 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
 
     // Couleurs hors marque (les neutres sont toujours admis).
     if (brandPalette.length) {
-      const off = elementColors(el).filter((c) => !isNeutral(c) && nearestColor(c, brandPalette).distance > 14);
+      const off = elementColors(el).filter(
+        (c) => !isNeutral(c) && nearestColor(c, brandPalette).distance > 14,
+      );
       if (off.length) {
         push({
           code: "offBrand",
@@ -281,13 +369,21 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
 
   // Fond de page hors marque.
   if (brandPalette.length) {
-    const off = paintColors(page.background).filter((c) => !isNeutral(c) && nearestColor(c, brandPalette).distance > 14);
+    const off = paintColors(page.background).filter(
+      (c) => !isNeutral(c) && nearestColor(c, brandPalette).distance > 14,
+    );
     if (off.length) {
       push({
         code: "offBrand",
         severity: "info",
         params: { color: off[0]!.toUpperCase() },
-        fix: (d) => mapPage(d, pageIndex, (p) => ({ ...p, background: mapPaint(p.background, (c) => (isNeutral(c) ? c : nearestColor(c, brandPalette).color)) })),
+        fix: (d) =>
+          mapPage(d, pageIndex, (p) => ({
+            ...p,
+            background: mapPaint(p.background, (c) =>
+              isNeutral(c) ? c : nearestColor(c, brandPalette).color,
+            ),
+          })),
       });
     }
   }
@@ -296,9 +392,21 @@ function checkPage(doc: DesignDoc, page: DesignPage, pageIndex: number, brand: S
 export function checkDesign(doc: DesignDoc, brand: StudioBrand | null): QualityIssue[] {
   const issues: QualityIssue[] = [];
   doc.pages.forEach((page, index) => checkPage(doc, page, index, brand, issues));
-  const families = new Set(doc.pages.flatMap((p) => p.elements.filter((el): el is TextElement => el.type === "text" && !el.hidden).map((el) => getFont(el.fontId).name)));
+  const families = new Set(
+    doc.pages.flatMap((p) =>
+      p.elements
+        .filter((el): el is TextElement => el.type === "text" && !el.hidden)
+        .map((el) => getFont(el.fontId).name),
+    ),
+  );
   if (families.size > 3) {
-    issues.push({ id: "fonts", code: "tooManyFonts", severity: "warning", pageIndex: 0, params: { count: families.size } });
+    issues.push({
+      id: "fonts",
+      code: "tooManyFonts",
+      severity: "warning",
+      pageIndex: 0,
+      params: { count: families.size },
+    });
   }
   const rank = { error: 0, warning: 1, info: 2 };
   return issues.sort((a, b) => rank[a.severity] - rank[b.severity] || a.pageIndex - b.pageIndex);
@@ -306,7 +414,10 @@ export function checkDesign(doc: DesignDoc, brand: StudioBrand | null): QualityI
 
 /** Score de 0 à 100 affiché dans l'éditeur. */
 export function qualityScore(issues: QualityIssue[]) {
-  const penalty = issues.reduce((sum, issue) => sum + (issue.severity === "error" ? 18 : issue.severity === "warning" ? 7 : 1), 0);
+  const penalty = issues.reduce(
+    (sum, issue) => sum + (issue.severity === "error" ? 18 : issue.severity === "warning" ? 7 : 1),
+    0,
+  );
   return Math.max(0, 100 - penalty);
 }
 
@@ -314,4 +425,3 @@ export function qualityScore(issues: QualityIssue[]) {
 export function fixAll(doc: DesignDoc, issues: QualityIssue[]) {
   return issues.reduce((current, issue) => (issue.fix ? issue.fix(current) : current), doc);
 }
-

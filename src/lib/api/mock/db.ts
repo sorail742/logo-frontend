@@ -140,7 +140,14 @@ export interface Db {
   users: DbUser[];
   workspaces: DbWorkspace[];
   memberships: { userId: string; workspaceId: string; role: WorkspaceRole; joinedAt: string }[];
-  invitations: { id: string; workspaceId: string; email: string; role: WorkspaceRole; token: string; expiresAt: string }[];
+  invitations: {
+    id: string;
+    workspaceId: string;
+    email: string;
+    role: WorkspaceRole;
+    token: string;
+    expiresAt: string;
+  }[];
   projects: DbProject[];
   names: DbName[];
   logos: DbLogo[];
@@ -150,7 +157,12 @@ export interface Db {
   brandKits: DbBrandKit[];
   jobs: DbJob[];
   ledger: (LedgerEntry & { workspaceId: string; jobId?: string; paymentId?: string })[];
-  payments: (Payment & { workspaceId: string; creditsGranted: number; resolveAt: number; willFail: boolean })[];
+  payments: (Payment & {
+    workspaceId: string;
+    creditsGranted: number;
+    resolveAt: number;
+    willFail: boolean;
+  })[];
   invoices: (Invoice & { workspaceId: string; paymentId: string })[];
   notifications: (AppNotification & { userId: string })[];
   comments: (Comment & { projectId: string })[];
@@ -175,7 +187,8 @@ function seed(): Db {
   const created = now();
   const demoBrief: Brief = {
     sector: "Environnement",
-    mission: "Mobiliser les jeunes de Conakry pour reboiser les quartiers et sensibiliser à la gestion des déchets.",
+    mission:
+      "Mobiliser les jeunes de Conakry pour reboiser les quartiers et sensibiliser à la gestion des déchets.",
     values: ["solidarité", "nature", "jeunesse"],
     audience: "Jeunes de 15 à 30 ans, partenaires locaux",
     languages: ["fr"],
@@ -221,8 +234,24 @@ function seed(): Db {
       },
     ],
     workspaces: [
-      { id: "w_demo", name: "Espace d'Aïssatou", slug: "aissatou", kind: "PERSONAL", creditBalance: 20, planCode: "FREE", renewsAt: null },
-      { id: "w_admin", name: "Espace de Mamadou", slug: "mamadou", kind: "PERSONAL", creditBalance: 100, planCode: "PRO", renewsAt: null },
+      {
+        id: "w_demo",
+        name: "Espace d'Aïssatou",
+        slug: "aissatou",
+        kind: "PERSONAL",
+        creditBalance: 20,
+        planCode: "FREE",
+        renewsAt: null,
+      },
+      {
+        id: "w_admin",
+        name: "Espace de Mamadou",
+        slug: "mamadou",
+        kind: "PERSONAL",
+        creditBalance: 100,
+        planCode: "PRO",
+        renewsAt: null,
+      },
     ],
     memberships: [
       { userId: "u_demo", workspaceId: "w_demo", role: "OWNER", joinedAt: created },
@@ -251,8 +280,22 @@ function seed(): Db {
     brandKits: [],
     jobs: [],
     ledger: [
-      { id: id("l"), workspaceId: "w_demo", delta: 20, reason: "PROMO", note: "Crédits de bienvenue", createdAt: created },
-      { id: id("l"), workspaceId: "w_admin", delta: 100, reason: "SUBSCRIPTION_GRANT", note: "Offre Pro", createdAt: created },
+      {
+        id: id("l"),
+        workspaceId: "w_demo",
+        delta: 20,
+        reason: "PROMO",
+        note: "Crédits de bienvenue",
+        createdAt: created,
+      },
+      {
+        id: id("l"),
+        workspaceId: "w_admin",
+        delta: 100,
+        reason: "SUBSCRIPTION_GRANT",
+        note: "Offre Pro",
+        createdAt: created,
+      },
     ],
     payments: [],
     invoices: [],
@@ -305,7 +348,13 @@ export function resetDb() {
 }
 
 /** Écrit dans le grand livre et met à jour le solde dans la même « transaction » (§12.1). */
-export function writeLedger(workspaceId: string, delta: number, reason: LedgerReason, note: string | null, refs: { jobId?: string; paymentId?: string } = {}) {
+export function writeLedger(
+  workspaceId: string,
+  delta: number,
+  reason: LedgerReason,
+  note: string | null,
+  refs: { jobId?: string; paymentId?: string } = {},
+) {
   const data = db();
   const workspace = data.workspaces.find((w) => w.id === workspaceId);
   if (!workspace) return;
@@ -326,7 +375,15 @@ export function notify(userId: string, notification: Omit<AppNotification, "id" 
 export function audit(action: string, entityType: string, entityId: string) {
   const data = db();
   const actorName = data.users.find((u) => u.id === data.currentUserId)?.fullName ?? "système";
-  data.audit.unshift({ id: id("au"), actorName, action, entityType, entityId, ip: "127.0.0.1", createdAt: now() });
+  data.audit.unshift({
+    id: id("au"),
+    actorName,
+    action,
+    entityType,
+    entityId,
+    ip: "127.0.0.1",
+    createdAt: now(),
+  });
 }
 
 export const JOB_DURATIONS: Record<JobKind, number> = {

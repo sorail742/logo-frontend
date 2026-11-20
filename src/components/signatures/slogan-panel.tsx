@@ -24,7 +24,17 @@ import { slugify } from "@/lib/format";
 import { SLOGAN_TONES, type LogoSpec, type Slogan, type SloganKind, type SloganTone } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function SloganPanel({ pid, canEdit, isAssociation, logoSpec }: { pid: string; canEdit: boolean; isAssociation: boolean; logoSpec: LogoSpec | null }) {
+export function SloganPanel({
+  pid,
+  canEdit,
+  isAssociation,
+  logoSpec,
+}: {
+  pid: string;
+  canEdit: boolean;
+  isAssociation: boolean;
+  logoSpec: LogoSpec | null;
+}) {
   const t = useTranslations("signatures.slogan");
   const queryClient = useQueryClient();
   const onError = useApiErrorToast();
@@ -35,7 +45,10 @@ export function SloganPanel({ pid, canEdit, isAssociation, logoSpec }: { pid: st
   const [jobId, setJobId] = useState<string | null>(null);
   const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
 
-  const { data: slogans = [] } = useQuery({ queryKey: qk.slogans(pid), queryFn: () => api.slogans.list(pid) });
+  const { data: slogans = [] } = useQuery({
+    queryKey: qk.slogans(pid),
+    queryFn: () => api.slogans.list(pid),
+  });
   const job = useJob(jobId, { invalidate: [qk.slogans(pid)] });
   const generate = useMutation({
     mutationFn: () => api.slogans.generate(pid, { tone, kind, maxWords, language }, newIdempotencyKey()),
@@ -43,7 +56,13 @@ export function SloganPanel({ pid, canEdit, isAssociation, logoSpec }: { pid: st
     onError,
   });
   const update = useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: Partial<Pick<Slogan, "isFavorite" | "isChosen" | "text">> }) => api.slogans.update(id, patch),
+    mutationFn: ({
+      id,
+      patch,
+    }: {
+      id: string;
+      patch: Partial<Pick<Slogan, "isFavorite" | "isChosen" | "text">>;
+    }) => api.slogans.update(id, patch),
     onSuccess: (_, { patch }) => {
       if (patch.isChosen) toast.success(t("chosenToast"));
       queryClient.invalidateQueries({ queryKey: qk.slogans(pid) });
@@ -53,7 +72,10 @@ export function SloganPanel({ pid, canEdit, isAssociation, logoSpec }: { pid: st
   });
 
   const chosen = slogans.find((s) => s.isChosen && s.kind === "SLOGAN") ?? slogans.find((s) => s.isChosen);
-  const combined = useMemo(() => (logoSpec && chosen ? { ...logoSpec, tagline: chosen.text } : null), [logoSpec, chosen]);
+  const combined = useMemo(
+    () => (logoSpec && chosen ? { ...logoSpec, tagline: chosen.text } : null),
+    [logoSpec, chosen],
+  );
   const kinds: SloganKind[] = isAssociation ? ["SLOGAN", "DEVISE", "MISSION"] : ["SLOGAN"];
   const visible = slogans.filter((s) => s.kind === kind);
 
@@ -63,7 +85,11 @@ export function SloganPanel({ pid, canEdit, isAssociation, logoSpec }: { pid: st
         <Card>
           <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
             <Field label={t("kind")} htmlFor="slogan-kind">
-              <NativeSelect id="slogan-kind" value={kind} onChange={(e) => setKind(e.target.value as SloganKind)}>
+              <NativeSelect
+                id="slogan-kind"
+                value={kind}
+                onChange={(e) => setKind(e.target.value as SloganKind)}
+              >
                 {kinds.map((k) => (
                   <option key={k} value={k}>
                     {t(`kinds.${k}`)}
@@ -72,7 +98,11 @@ export function SloganPanel({ pid, canEdit, isAssociation, logoSpec }: { pid: st
               </NativeSelect>
             </Field>
             <Field label={t("tone")} htmlFor="slogan-tone">
-              <NativeSelect id="slogan-tone" value={tone} onChange={(e) => setTone(e.target.value as SloganTone)}>
+              <NativeSelect
+                id="slogan-tone"
+                value={tone}
+                onChange={(e) => setTone(e.target.value as SloganTone)}
+              >
                 {SLOGAN_TONES.map((value) => (
                   <option key={value} value={value}>
                     {t(`tones.${value}`)}
@@ -81,35 +111,56 @@ export function SloganPanel({ pid, canEdit, isAssociation, logoSpec }: { pid: st
               </NativeSelect>
             </Field>
             <Field label={t("maxWords")} htmlFor="slogan-words">
-              <Input id="slogan-words" type="number" min={2} max={20} value={maxWords} onChange={(e) => setMaxWords(Number(e.target.value) || 8)} />
+              <Input
+                id="slogan-words"
+                type="number"
+                min={2}
+                max={20}
+                value={maxWords}
+                onChange={(e) => setMaxWords(Number(e.target.value) || 8)}
+              />
             </Field>
             <Field label={t("language")} htmlFor="slogan-lang">
-              <NativeSelect id="slogan-lang" value={language} onChange={(e) => setLanguage(e.target.value as "fr" | "en")}>
+              <NativeSelect
+                id="slogan-lang"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as "fr" | "en")}
+              >
                 <option value="fr">Français</option>
                 <option value="en">English</option>
               </NativeSelect>
             </Field>
             <div className="flex items-center justify-end gap-3">
               <CreditCost cost={CREDIT_COSTS.SLOGANS_BATCH} />
-              <Button size="lg" onClick={() => generate.mutate()} disabled={generate.isPending || job.running}>
+              <Button
+                size="lg"
+                onClick={() => generate.mutate()}
+                disabled={generate.isPending || job.running}
+              >
                 <Sparkles />
                 {t("generate")}
               </Button>
             </div>
             <div className="sm:col-span-2 lg:col-span-5">
               <JobProgress event={job.event} running={job.running} />
-              <p className="text-xs text-muted-foreground">{t("similarWarning")}</p>
+              <p className="text-muted-foreground text-xs">{t("similarWarning")}</p>
             </div>
           </CardContent>
         </Card>
       )}
 
       {visible.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">{t("empty")}</p>
+        <p className="text-muted-foreground py-6 text-center text-sm">{t("empty")}</p>
       ) : (
         <ul className="grid gap-2 md:grid-cols-2">
           {visible.map((slogan) => (
-            <li key={slogan.id} className={cn("flex items-center gap-2 rounded-xl border bg-card p-3", slogan.isChosen && "border-primary ring-2 ring-primary/20")}>
+            <li
+              key={slogan.id}
+              className={cn(
+                "bg-card flex items-center gap-2 rounded-xl border p-3",
+                slogan.isChosen && "border-primary ring-primary/20 ring-2",
+              )}
+            >
               {editing?.id === slogan.id ? (
                 <form
                   className="flex flex-1 gap-2"
@@ -119,22 +170,45 @@ export function SloganPanel({ pid, canEdit, isAssociation, logoSpec }: { pid: st
                     setEditing(null);
                   }}
                 >
-                  <Input value={editing.text} onChange={(e) => setEditing({ id: slogan.id, text: e.target.value })} autoFocus aria-label={t("edit")} />
+                  <Input
+                    value={editing.text}
+                    onChange={(e) => setEditing({ id: slogan.id, text: e.target.value })}
+                    autoFocus
+                    aria-label={t("edit")}
+                  />
                   <Button type="submit" size="sm">
                     OK
                   </Button>
                 </form>
               ) : (
-                <button type="button" className="flex-1 text-left text-sm" onClick={() => canEdit && setEditing({ id: slogan.id, text: slogan.text })} title={canEdit ? t("edit") : undefined}>
+                <button
+                  type="button"
+                  className="flex-1 text-left text-sm"
+                  onClick={() => canEdit && setEditing({ id: slogan.id, text: slogan.text })}
+                  title={canEdit ? t("edit") : undefined}
+                >
                   {slogan.text}
                 </button>
               )}
               {canEdit && (
                 <>
-                  <Button variant="ghost" size="icon-sm" onClick={() => update.mutate({ id: slogan.id, patch: { isFavorite: !slogan.isFavorite } })} aria-pressed={slogan.isFavorite} aria-label="Favori">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() =>
+                      update.mutate({ id: slogan.id, patch: { isFavorite: !slogan.isFavorite } })
+                    }
+                    aria-pressed={slogan.isFavorite}
+                    aria-label="Favori"
+                  >
                     <Heart className={cn(slogan.isFavorite && "fill-red-500 text-red-500")} />
                   </Button>
-                  <Button variant={slogan.isChosen ? "secondary" : "outline"} size="sm" onClick={() => update.mutate({ id: slogan.id, patch: { isChosen: true } })} disabled={slogan.isChosen}>
+                  <Button
+                    variant={slogan.isChosen ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={() => update.mutate({ id: slogan.id, patch: { isChosen: true } })}
+                    disabled={slogan.isChosen}
+                  >
                     {slogan.isChosen && <Check />}
                     {slogan.isChosen ? t("chosen") : t("choose")}
                   </Button>
@@ -153,14 +227,24 @@ export function SloganPanel({ pid, canEdit, isAssociation, logoSpec }: { pid: st
         <CardContent>
           {combined ? (
             <div className="grid gap-3">
-              <SvgView svg={renderLogoSvg(combined).svg} className="bg-checker aspect-[3/1] rounded-lg p-4" label={combined.text} />
-              <Button variant="outline" className="justify-self-start" onClick={() => downloadSvg(renderLogoSvg(combined).svg, `${slugify(combined.text)}-signature.svg`)}>
+              <SvgView
+                svg={renderLogoSvg(combined).svg}
+                className="bg-checker aspect-[3/1] rounded-lg p-4"
+                label={combined.text}
+              />
+              <Button
+                variant="outline"
+                className="justify-self-start"
+                onClick={() =>
+                  downloadSvg(renderLogoSvg(combined).svg, `${slugify(combined.text)}-signature.svg`)
+                }
+              >
                 <Download />
                 {t("downloadSvg")}
               </Button>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">{t("noLogo")}</p>
+            <p className="text-muted-foreground text-sm">{t("noLogo")}</p>
           )}
         </CardContent>
       </Card>

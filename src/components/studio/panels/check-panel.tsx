@@ -30,8 +30,16 @@ export function ScoreRing({ score, size = 56 }: { score: number; size?: number }
   const color = score >= 85 ? "stroke-emerald-500" : score >= 60 ? "stroke-amber-500" : "stroke-destructive";
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true" className="-rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} className="fill-none stroke-muted" strokeWidth={5} />
-      <circle cx={size / 2} cy={size / 2} r={r} className={cn("fill-none transition-all", color)} strokeWidth={5} strokeLinecap="round" strokeDasharray={`${(score / 100) * c} ${c}`} />
+      <circle cx={size / 2} cy={size / 2} r={r} className="stroke-muted fill-none" strokeWidth={5} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        className={cn("fill-none transition-all", color)}
+        strokeWidth={5}
+        strokeLinecap="round"
+        strokeDasharray={`${(score / 100) * c} ${c}`}
+      />
     </svg>
   );
 }
@@ -57,11 +65,20 @@ export function CheckPanel() {
       <div className="flex items-center gap-3 rounded-xl border p-3">
         <div className="relative">
           <ScoreRing score={score} />
-          <span className="absolute inset-0 flex items-center justify-center text-sm font-bold tabular-nums">{score}</span>
+          <span className="absolute inset-0 flex items-center justify-center text-sm font-bold tabular-nums">
+            {score}
+          </span>
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold">{score >= 85 ? t("great") : score >= 60 ? t("good") : t("needsWork")}</p>
-          <p className="text-[11px] text-muted-foreground">{t("summary", { errors: issues.filter((i) => i.severity === "error").length, warnings: issues.filter((i) => i.severity === "warning").length })}</p>
+          <p className="text-sm font-semibold">
+            {score >= 85 ? t("great") : score >= 60 ? t("good") : t("needsWork")}
+          </p>
+          <p className="text-muted-foreground text-[11px]">
+            {t("summary", {
+              errors: issues.filter((i) => i.severity === "error").length,
+              warnings: issues.filter((i) => i.severity === "warning").length,
+            })}
+          </p>
         </div>
       </div>
       {fixable.length > 1 && (
@@ -79,7 +96,7 @@ export function CheckPanel() {
         <div className="grid place-items-center gap-2 py-6 text-center">
           <CircleCheck className="size-8 text-emerald-500" aria-hidden="true" />
           <p className="text-sm font-medium">{t("perfect")}</p>
-          <p className="text-xs text-muted-foreground">{t("perfectBody")}</p>
+          <p className="text-muted-foreground text-xs">{t("perfectBody")}</p>
         </div>
       ) : (
         <ul className="grid gap-1.5">
@@ -90,12 +107,18 @@ export function CheckPanel() {
                 <div className="flex gap-2">
                   <Icon className={cn("mt-0.5 size-4 shrink-0", className)} aria-hidden="true" />
                   <div className="min-w-0">
-                    <p className="text-xs font-medium">{t(`codes.${issue.code}.title`, issue.params ?? {})}</p>
-                    <p className="text-[11px] leading-relaxed text-muted-foreground">{t(`codes.${issue.code}.body`, issue.params ?? {})}</p>
+                    <p className="text-xs font-medium">
+                      {t(`codes.${issue.code}.title`, issue.params ?? {})}
+                    </p>
+                    <p className="text-muted-foreground text-[11px] leading-relaxed">
+                      {t(`codes.${issue.code}.body`, issue.params ?? {})}
+                    </p>
                   </div>
                 </div>
                 <div className="flex justify-end gap-1.5">
-                  <span className="mr-auto self-center text-[10px] text-muted-foreground">{t("page", { number: issue.pageIndex + 1 })}</span>
+                  <span className="text-muted-foreground mr-auto self-center text-[10px]">
+                    {t("page", { number: issue.pageIndex + 1 })}
+                  </span>
                   {issue.elementId && (
                     <Button variant="ghost" size="xs" onClick={() => show(issue)}>
                       {t("show")}
